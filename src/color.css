@@ -1,0 +1,15 @@
+:root {
+  --color-background: #141414;
+  --color-control-font: #d0e6ff;
+  --color-control-active-background: #96b4ff33;
+  --color-control-active-shadow: #78b4ff4d;
+  --color-control-active-icon: #4da3ff;
+  --color-controls-background: #50505099;
+  --color-control-inactive-background: #ffffff1a;
+  --color-control-border: #ffffff4d;
+  --color-control-hover: #ffffff33;
+  --color-control-click: #0014284d;
+
+  --color-info-display-border: #b4c8ff26;
+  --color-info-display-text: #d8e2f0;
+}
