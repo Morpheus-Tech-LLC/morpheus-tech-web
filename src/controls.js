@@ -1,5 +1,19 @@
+import { state } from "./state.js";
+import { initSimulation } from "./simulationModel.js";
+import { updatePoints } from "./simulationModel.js";
+
 // controls.js
-export function initControls({ updatePointsCallback, getViewMode, setPlaybackDirection, setPlayPauseToggle, setViewMode, setSliceAxis, setSliceIndex, getSliceMax }) {
+export function initControls() {
+
+  const shapeSelect = document.getElementById("shape-select");
+
+  shapeSelect.addEventListener("change", (e) => {
+    // Update state
+    state.reset();
+    state.shapeKey = e.target.value;
+    initSimulation();
+  });
+
 
   // --- Slice Tri-State Button ---
   const sliceToggleButton = document.getElementById('triStateButton');
@@ -18,8 +32,8 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
     sliceToggleButton.classList.add(`state-active-${nextSection.dataset.value}`)
     nextSection.classList.add('active');
     const newAxis = nextSection.dataset.value;
-    setSliceAxis(newAxis);
-    updatePointsCallback();
+    state.sliceAxis = newAxis;
+    updatePoints();
   });
 
   // --- Dual-State for Dimension View Button ---
@@ -40,10 +54,10 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
     nextSection.classList.add('active');
 
     const newViewMode = nextSection.dataset.value;
-    console.log("View Mode Change")
-    console.log(newViewMode)
-    setViewMode(newViewMode);
-    updatePointsCallback();
+    console.log("View Mode Change");
+    console.log(newViewMode);
+    state.viewMode = newViewMode;
+    updatePoints();
     updateTriStateVisibility();
   });
 
@@ -52,13 +66,13 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
   const sliceValueLabel = document.getElementById('slice-value');
   sliceIndexSlider.addEventListener('input', () => {
     const index = parseInt(sliceIndexSlider.value);
-    setSliceIndex(index);
+    state.sliceIndex = index;
     sliceValueLabel.textContent = index;
-    if (getViewMode() === 'slice') updatePointsCallback();
+    if (state.viewMode === 'slice') updatePoints();
   });
 
   if (sliceIndexSlider) {
-    const sliceMax = getSliceMax();
+    const sliceMax = state.sim_size;
     sliceIndexSlider.max= sliceMax;
   }
 
@@ -74,7 +88,8 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
     isReversing = !isReversing; // toggle on/off
     updateArrows();
     console.log("Reverse mode:", isReversing);
-    setPlaybackDirection(isReversing);
+    // setPlaybackDirection(isReversing);
+    state.isReversing = isReversing;
   });
   
   function updateArrows() {
@@ -95,7 +110,7 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
     isPlaying = !isPlaying;
     playPauseIcon.className = isPlaying ? "pause" : "play";
     console.log("Playback Direction:", isPlaying);
-    setPlayPauseToggle(isPlaying);
+    state.isPlaying = isPlaying;
   }
 }
 
