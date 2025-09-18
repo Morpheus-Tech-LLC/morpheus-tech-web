@@ -1,18 +1,18 @@
 import { state } from "./state.js";
-import { initSimulation } from "./simulationModel.js";
+// import { initSimulation } from "./simulationModel.js";
 import { updatePoints } from "./simulationModel.js";
 
 // controls.js
 export function initControls() {
 
-  const shapeSelect = document.getElementById("shape-select");
+  // const shapeSelect = document.getElementById("shape-select");
 
-  shapeSelect.addEventListener("change", (e) => {
-    // Update state
-    state.reset();
-    state.shapeKey = e.target.value;
-    initSimulation();
-  });
+  // shapeSelect.addEventListener("change", (e) => {
+  //   // Update state
+  //   state.reset();
+  //   state.shapeKey = e.target.value;
+  //   initSimulation();
+  // });
 
 
   // --- Slice Tri-State Button ---
