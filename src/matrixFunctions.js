@@ -1,10 +1,11 @@
 import { Grid3D } from './grid3D.js';
+import { generateClockHistory } from './time.js';
 
 // ---------------------------
 // Matrix evolution
 // ---------------------------
 
-export function generateSimulation(size, generations, shapeFn) {
+export async function generateSimulation(size, generations, shapeFn) {
   const history = [];
   let grid = initMatrix(size, shapeFn);
 
@@ -13,7 +14,15 @@ export function generateSimulation(size, generations, shapeFn) {
     grid = convolve3D(grid);
     history.push(grid);
   }
-  return history;
+
+  const timeHistory = await generateClockHistory(128, generations);
+
+  console.log("Generated frames:", timeHistory.length);
+
+  console.log(history)
+  console.log(timeHistory)
+
+  return [history, timeHistory];
 }
 
 // ---------------------------

@@ -86,10 +86,12 @@ export function initControls() {
   reverseBtn.addEventListener("click", () => {
     // isReversing = getPlaybackDirection
     isReversing = !isReversing; // toggle on/off
-    updateArrows();
+
     console.log("Reverse mode:", isReversing);
     // setPlaybackDirection(isReversing);
     state.isReversing = isReversing;
+    updateArrows();
+    
   });
   
   function updateArrows() {
@@ -100,6 +102,7 @@ export function initControls() {
       leftArrow.classList.remove("active");
       rightArrow.classList.add("active");
     }
+    updateDirectionIcon();
   }
 
   // Buttons
@@ -111,8 +114,48 @@ export function initControls() {
     playPauseIcon.className = isPlaying ? "pause" : "play";
     console.log("Playback Direction:", isPlaying);
     state.isPlaying = isPlaying;
+    updateStepButtonVisibility();
   }
+
+  // const reverseButton = document.getElementById("reverseButton");
+  const stepButton = document.getElementById("stepButton");
+  stepButton.addEventListener("click", () => {
+    if (state.isReversing) {
+      state.currentGen = (state.currentGen - 1 + state.simulationData.length) % state.simulationData.length;
+    } else {
+      state.currentGen = (state.currentGen + 1) % state.simulationData.length;
+    }
+
+    // update display
+    document.getElementById("gen").textContent = `${state.currentGen}`;
+  });
+
+  updateStepButtonVisibility();
+
+  const directionButton = document.getElementById("directionButton");
+  const directionIcon = document.getElementById("directionIcon");
+
+  updateDirectionIcon();
+
+  // document.getElementById("reverseButton").addEventListener("click", () => {
+  //   state.isReversing = !state.isReversing;
+  //   updateDirectionIcon();
+  // });
+
+
 }
+
+function updateStepButtonVisibility() {
+  stepButton.style.display = state.isPlaying ? "none" : "inline-flex";
+}
+
+  function updateDirectionIcon() {
+    if (state.isReversing) {
+      directionIcon.textContent = "⏪"; // backwards
+    } else {
+      directionIcon.textContent = "⏩"; // forwards
+    }
+  }
 
 function updateTriStateVisibility() {
   const activeSection = dualStateButton.querySelector('.state-section.active');

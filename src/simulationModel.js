@@ -4,7 +4,7 @@ import { state } from "./state.js";
 import { initControls } from './controls.js';
 import { initSpace } from './space.js';
 
-export function initSimulation() {
+export async function initSimulation() {
 
   state.reset();
   // Initialize subsystems
@@ -21,8 +21,13 @@ export function initSimulation() {
   state.viewMode = 'full';
   state.sliceAxis = 'x';
   state.sliceIndex = Math.floor(simSize/2);
-  state.simulationData = generateSimulation(simSize, simGenerations, simSeed);   // Generate Simulation Data - History (Game of Life)
-  state.simulationModel = buildSimulationModel(simSize);  // Simulation Model
+  // state.simulationData =    // Generate Simulation Data - History (Game of Life)
+  const [simulationData, clockData] = await generateSimulation(simSize, simGenerations, simSeed);
+  state.simulationData = simulationData;
+  state.clockData = clockData;
+
+  state.simulationModel =  await buildSimulationModel(simSize);  // Simulation Model
+  // state.simulationModel = simulationModel;
   
   // Model Data to build scene
   const geometry = state.simulationModel.geometry;
@@ -30,11 +35,12 @@ export function initSimulation() {
   const points = new THREE.Points(geometry, material);
 
   updatePoints();
+  drawClock();
   scene.add(points);
 }
 
 // Point Cloud
-function buildSimulationModel(simSize) {
+async function buildSimulationModel(simSize) {
 
     const matrixSize = simSize;
     const cellSize = 0.4;
@@ -98,6 +104,8 @@ export function updatePoints() {
     state.simulationModel.colors[3 * i + 2] = color.b;
 
     i++;
+
+    drawClock();
   }
 
   geometry.setDrawRange(0, i);
@@ -106,4 +114,11 @@ export function updatePoints() {
 
   document.getElementById("gen").textContent = `${gen}`;
   document.getElementById("slice-value").textContent = `${state.sliceAxis}-${state.sliceIndex}`;
+}
+
+function drawClock() {
+  const ctx = document.getElementById("clockCanvas").getContext("2d");
+  const frame = state.clockData[state.currentGen % state.clockData.length];
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.drawImage(frame, 0, 0, ctx.canvas.width, ctx.canvas.height);
 }

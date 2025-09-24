@@ -20,9 +20,17 @@
             <button id="playPauseButton" class="glass-button">
               <span id="playPauseIcon" class="play"></span>
             </button>
+            <button id="stepButton" class="glass-button" style="display: none;">
+              <span id="stepIcon">↻</span>
+            </button>
             <button id="reverseButton" class="glass-button">
               <span id="leftArrow" class="arrow">&larr;</span>
               <span id="rightArrow" class="arrow">&rarr;</span>
+            </button>
+          </div>
+          <div id="controls-time">
+            <button id="directionButton" class="glass-button">
+              <span id="directionIcon">⏩</span>
             </button>
           </div>
           <div id="dualStateButton" class="multi-section-button state-active-x">
@@ -43,6 +51,7 @@
       </div>
     </div>
   </div>
+  <canvas id="clockCanvas" width="150" height="150"></canvas>
   <div class="glass-display-container">
     <div class="glass-display">
       <h3 id="gen-display">Generation</h3>
@@ -339,6 +348,37 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
+}
+
+#stepButton {
+  width: 60px;
+  height: 60px;
+  font-size: 1.2rem;
+  border-radius: 50%;
+}
+
+#stepIcon {
+  font-size: 24px;
+}
+
+#directionButton {
+  width: 60px;
+  height: 60px;
+  font-size: 1.5rem;
+  border-radius: 50%;
+}
+
+#directionIcon {
+  font-size: 28px;
+}
+
+#clockCanvas {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 150px;
+  height: 150px;
+  pointer-events: none; /* let clicks go through to 3D scene */
 }
 
 </style>

@@ -16,6 +16,7 @@ export const state = {
   camera: null,
   simulationData: null,
   simulationModel: null,
+  clockData: null,
   shapeKey: "cube",
   shapes: {
     random: randomShape(0.3),
@@ -32,6 +33,7 @@ export const state = {
     this.currentGen = 0;
     this.isPlaying = false;
     this.isReversing = false;
+    this.clockData = null;
     // Don't reset this - set up
     // this.scene = null;
     // this.renderer = null;
