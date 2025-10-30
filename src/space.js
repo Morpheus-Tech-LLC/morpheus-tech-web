@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { state } from "./state.js";
 
-export function initSpace({setScene, setCamera, setRenderer, getSimSize}) {
+export function initSpace() {
 
-    const simSize = getSimSize();
+    const simSize = state.sim_size;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x141414);
@@ -14,14 +15,16 @@ export function initSpace({setScene, setCamera, setRenderer, getSimSize}) {
     scene.add(light);
     scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
-    setScene(scene);
+    state.scene = scene;
+
+    // setScene(scene);
 
     // Rendering
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    setRenderer(renderer);
+    state.renderer = renderer;
 
     // Camera Setup
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -34,7 +37,8 @@ export function initSpace({setScene, setCamera, setRenderer, getSimSize}) {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
     
-    // Camera Controls -- In Progress. Need to apply controls for orbit behavior
+    // Camera Controls
     const controls = new OrbitControls(camera, renderer.domElement);
-    setCamera(camera);
+    
+    state.camera = camera;
 }

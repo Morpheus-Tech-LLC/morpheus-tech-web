@@ -1,5 +1,19 @@
+import { state } from "./state.js";
+// import { initSimulation } from "./simulationModel.js";
+import { updatePoints } from "./simulationModel.js";
+
 // controls.js
-export function initControls({ updatePointsCallback, getViewMode, setPlaybackDirection, setPlayPauseToggle, setViewMode, setSliceAxis, setSliceIndex, getSliceMax }) {
+export function initControls() {
+
+  // const shapeSelect = document.getElementById("shape-select");
+
+  // shapeSelect.addEventListener("change", (e) => {
+  //   // Update state
+  //   state.reset();
+  //   state.shapeKey = e.target.value;
+  //   initSimulation();
+  // });
+
 
   // --- Slice Tri-State Button ---
   const sliceToggleButton = document.getElementById('triStateButton');
@@ -18,8 +32,8 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
     sliceToggleButton.classList.add(`state-active-${nextSection.dataset.value}`)
     nextSection.classList.add('active');
     const newAxis = nextSection.dataset.value;
-    setSliceAxis(newAxis);
-    updatePointsCallback();
+    state.sliceAxis = newAxis;
+    updatePoints();
   });
 
   // --- Dual-State for Dimension View Button ---
@@ -40,10 +54,10 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
     nextSection.classList.add('active');
 
     const newViewMode = nextSection.dataset.value;
-    console.log("View Mode Change")
-    console.log(newViewMode)
-    setViewMode(newViewMode);
-    updatePointsCallback();
+    console.log("View Mode Change");
+    console.log(newViewMode);
+    state.viewMode = newViewMode;
+    updatePoints();
     updateTriStateVisibility();
   });
 
@@ -52,13 +66,13 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
   const sliceValueLabel = document.getElementById('slice-value');
   sliceIndexSlider.addEventListener('input', () => {
     const index = parseInt(sliceIndexSlider.value);
-    setSliceIndex(index);
+    state.sliceIndex = index;
     sliceValueLabel.textContent = index;
-    if (getViewMode() === 'slice') updatePointsCallback();
+    if (state.viewMode === 'slice') updatePoints();
   });
 
   if (sliceIndexSlider) {
-    const sliceMax = getSliceMax();
+    const sliceMax = state.sim_size;
     sliceIndexSlider.max= sliceMax;
   }
 
@@ -72,9 +86,12 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
   reverseBtn.addEventListener("click", () => {
     // isReversing = getPlaybackDirection
     isReversing = !isReversing; // toggle on/off
-    updateArrows();
+
     console.log("Reverse mode:", isReversing);
-    setPlaybackDirection(isReversing);
+    // setPlaybackDirection(isReversing);
+    state.isReversing = isReversing;
+    updateArrows();
+    
   });
   
   function updateArrows() {
@@ -85,6 +102,7 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
       leftArrow.classList.remove("active");
       rightArrow.classList.add("active");
     }
+    // updateDirectionIcon();
   }
 
   // Buttons
@@ -95,9 +113,54 @@ export function initControls({ updatePointsCallback, getViewMode, setPlaybackDir
     isPlaying = !isPlaying;
     playPauseIcon.className = isPlaying ? "pause" : "play";
     console.log("Playback Direction:", isPlaying);
-    setPlayPauseToggle(isPlaying);
+    state.isPlaying = isPlaying;
+    updateStepButtonVisibility();
+  }
+
+  // const reverseButton = document.getElementById("reverseButton");
+  const stepButton = document.getElementById("stepButton");
+  stepButton.addEventListener("click", () => {
+    if (state.isReversing) {
+      state.currentGen = (state.currentGen - 1 + state.simulationData.length) % state.simulationData.length;
+    } else {
+      state.currentGen = (state.currentGen + 1) % state.simulationData.length;
+    }
+
+    // update display
+    document.getElementById("gen").textContent = `${state.currentGen}`;
+  });
+
+  updateStepButtonVisibility();
+
+  const directionButton = document.getElementById("directionButton");
+  
+  // const directionIcon = document.getElementById("directionIcon");
+  // updateDirectionIcon();
+
+  // document.getElementById("reverseButton").addEventListener("click", () => {
+  //   state.isReversing = !state.isReversing;
+  //   updateDirectionIcon();
+  // });
+
+
+}
+
+function updateStepButtonVisibility() {
+  // stepButton.style.display = state.isPlaying ? "none" : "inline-flex";
+  if (state.isPlaying) {
+    stepButton.classList.add('disabled')
+  } else {
+    stepButton.classList.remove('disabled')
   }
 }
+
+  // function updateDirectionIcon() {
+  //   if (state.isReversing) {
+  //     directionIcon.textContent = "⏪"; // backwards
+  //   } else {
+  //     directionIcon.textContent = "⏩"; // forwards
+  //   }
+  // }
 
 function updateTriStateVisibility() {
   const activeSection = dualStateButton.querySelector('.state-section.active');
