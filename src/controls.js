@@ -102,7 +102,7 @@ export function initControls() {
       leftArrow.classList.remove("active");
       rightArrow.classList.add("active");
     }
-    updateDirectionIcon();
+    // updateDirectionIcon();
   }
 
   // Buttons
@@ -133,9 +133,9 @@ export function initControls() {
   updateStepButtonVisibility();
 
   const directionButton = document.getElementById("directionButton");
-  const directionIcon = document.getElementById("directionIcon");
-
-  updateDirectionIcon();
+  
+  // const directionIcon = document.getElementById("directionIcon");
+  // updateDirectionIcon();
 
   // document.getElementById("reverseButton").addEventListener("click", () => {
   //   state.isReversing = !state.isReversing;
@@ -146,16 +146,21 @@ export function initControls() {
 }
 
 function updateStepButtonVisibility() {
-  stepButton.style.display = state.isPlaying ? "none" : "inline-flex";
+  // stepButton.style.display = state.isPlaying ? "none" : "inline-flex";
+  if (state.isPlaying) {
+    stepButton.classList.add('disabled')
+  } else {
+    stepButton.classList.remove('disabled')
+  }
 }
 
-  function updateDirectionIcon() {
-    if (state.isReversing) {
-      directionIcon.textContent = "⏪"; // backwards
-    } else {
-      directionIcon.textContent = "⏩"; // forwards
-    }
-  }
+  // function updateDirectionIcon() {
+  //   if (state.isReversing) {
+  //     directionIcon.textContent = "⏪"; // backwards
+  //   } else {
+  //     directionIcon.textContent = "⏩"; // forwards
+  //   }
+  // }
 
 function updateTriStateVisibility() {
   const activeSection = dualStateButton.querySelector('.state-section.active');

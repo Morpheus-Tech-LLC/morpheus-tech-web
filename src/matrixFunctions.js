@@ -16,7 +16,6 @@ export async function generateSimulation(size, generations, shapeFn) {
   }
 
   const timeHistory = await generateClockHistory(128, generations);
-
   console.log("Generated frames:", timeHistory.length);
 
   console.log(history)

@@ -3,7 +3,12 @@
 import { initSimulation } from './simulationModel.js';
 import { animate } from './time.js';
 
-initSimulation();
+(async () => {
+    await initSimulation();
+    animate();
+})();
 
-// Start animation loop
-animate();
+// initSimulation();
+
+// // Start animation loop
+// animate();

@@ -35,12 +35,14 @@ export async function initSimulation() {
   const points = new THREE.Points(geometry, material);
 
   updatePoints();
-  drawClock();
+  // drawClock();
   scene.add(points);
 }
 
 // Point Cloud
 async function buildSimulationModel(simSize) {
+
+  console.log("LIGMA DOG")
 
     const matrixSize = simSize;
     const cellSize = 0.4;
@@ -68,6 +70,9 @@ async function buildSimulationModel(simSize) {
 }
 
 export function updatePoints() {
+
+  console.log("Update POints")
+
   const baseColor = new THREE.Color("rgba(0, 180, 200, 1)");
   const targetColor = new THREE.Color("rgb(200,20,0)");
   const geometry = state.simulationModel.geometry;
@@ -105,7 +110,7 @@ export function updatePoints() {
 
     i++;
 
-    drawClock();
+    // drawClock();
   }
 
   geometry.setDrawRange(0, i);
@@ -116,9 +121,9 @@ export function updatePoints() {
   document.getElementById("slice-value").textContent = `${state.sliceAxis}-${state.sliceIndex}`;
 }
 
-function drawClock() {
-  const ctx = document.getElementById("clockCanvas").getContext("2d");
-  const frame = state.clockData[state.currentGen % state.clockData.length];
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.drawImage(frame, 0, 0, ctx.canvas.width, ctx.canvas.height);
-}
+// function drawClock() {
+//   const ctx = document.getElementById("clockCanvas").getContext("2d");
+//   const frame = state.clockData[state.currentGen % state.clockData.length];
+//   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+//   ctx.drawImage(frame, 0, 0, ctx.canvas.width, ctx.canvas.height);
+// }
