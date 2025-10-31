@@ -17,11 +17,24 @@ export const state = {
   simulationData: null,
   simulationModel: null,
   clockData: null,
+  controlsInitialized: false,
   shapeKey: "cube",
   shapes: {
-    random: randomShape(0.3),
+    random: randomShape(10, 0.3),
     cube: cubeShape(5, 1),
     tetrahedron: tetrahedronShape(13)
+  },
+  // Simulation rules (neighbor counts)
+  rules: {
+    birth: [9, 10],
+    survival: Array.from({ length: 11 }, (_, i) => i + 5), // 5-15
+    isolation: [0, 1, 2, 3, 4],
+    overcrowding: Array.from({ length: 11 }, (_, i) => i + 16), // 16-26
+  },
+  shapeParams: {
+    random: { size: 10, density: 0.3 },
+    cube: { size: 10, density: 1 },
+    tetrahedron: { size: 13, density: 1 }
   },
   get shapeFn() {
     return this.shapes[this.shapeKey];

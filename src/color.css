@@ -1,6 +1,6 @@
 :root {
   --color-background: #141414;
-  --color-control-font: #d0e6ff;
+  --color-control-font: #b7d4f5;
   --color-control-active-background: #96b4ff33;
   --color-control-active-shadow: #78b4ff4d;
   --color-control-active-icon: #4da3ff;
@@ -12,4 +12,10 @@
 
   --color-info-display-border: #b4c8ff26;
   --color-info-display-text: #d8e2f0;
+
+  /* Added for maintainability */
+  --color-text-contrast: #ffffff;      /* pure white for high-contrast text */
+  --color-title: #ffb7c5;             /* soft red for titles */
+  --color-state-title: #4c94ec;       /* unique title color for State box */
+  --color-state-value: #8cc6ff;       /* unique value color for State box */
 }

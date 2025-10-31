@@ -1,8 +1,18 @@
-export function randomShape(prob = 0.3) {
+export function randomShape(regionSize, prob = 0.3) {
   return (grid, size) => {
-    for (let x = 0; x < size; x++) {
-      for (let y = 0; y < size; y++) {
-        for (let z = 0; z < size; z++) {
+    const half = Math.floor(regionSize / 2);
+    const center = Math.floor(size / 2);
+
+    const minX = Math.max(0, center - half);
+    const maxX = Math.min(size - 1, center + half);
+    const minY = Math.max(0, center - half);
+    const maxY = Math.min(size - 1, center + half);
+    const minZ = Math.max(0, center - half);
+    const maxZ = Math.min(size - 1, center + half);
+
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
+        for (let z = minZ; z <= maxZ; z++) {
           if (Math.random() < prob) grid.set(x, y, z, 1);
         }
       }
@@ -10,12 +20,12 @@ export function randomShape(prob = 0.3) {
   };
 }
 
-export function cubeShape(halfSize = 3, prob = 0.5) {
+export function cubeShape(halfSize = 5, prob = 1) {
   return (grid, size) => {
     const center = Math.floor(size / 2);
-    for (let x = center - halfSize; x <= center + halfSize; x++) {
-      for (let y = center - halfSize; y <= center + halfSize; y++) {
-        for (let z = center - halfSize; z <= center + halfSize; z++) {
+    for (let x = center - halfSize; x <= center + halfSize -1; x++) {
+      for (let y = center - halfSize; y <= center + halfSize -1; y++) {
+        for (let z = center - halfSize; z <= center + halfSize -1; z++) {
           if (Math.random() < prob) grid.set(x, y, z, 1);
         }
       }
@@ -23,7 +33,7 @@ export function cubeShape(halfSize = 3, prob = 0.5) {
   };
 }
 
-export function tetrahedronShape(height = 7) {
+export function tetrahedronShape(height = 7, prob = 1.0) {
   return (grid, size) => {
     const center = Math.floor(size / 2);
     for (let y = 0; y < height; y++) {
@@ -32,7 +42,7 @@ export function tetrahedronShape(height = 7) {
           const px = center - Math.floor(height / 2) + x;
           const py = center - Math.floor(height / 2) + y;
           const pz = center - Math.floor(height / 2) + z;
-          grid.set(px, py, pz, 1);
+          if (Math.random() < prob) grid.set(px, py, pz, 1);
         }
       }
     }

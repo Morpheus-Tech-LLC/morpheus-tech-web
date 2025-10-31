@@ -5,38 +5,56 @@ import { initControls } from './controls.js';
 import { initSpace } from './space.js';
 
 export async function initSimulation() {
+  // Show loading overlay
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) overlay.classList.remove('hidden');
 
-  state.reset();
-  // Initialize subsystems
-  initControls();
-  initSpace();
+  try {
+    // Yield to the browser so the overlay can paint before heavy work
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    await new Promise(resolve => setTimeout(resolve, 0));
 
-  // Getters (from state)
-  const scene = state.scene;
-  const simSize = state.sim_size
-  const simGenerations = state.sim_generations
-  const simSeed = state.shapeFn
+    state.reset();
+    // Initialize subsystems
+    initControls();
+    initSpace();
 
-  // Setters (to state) - Initial View Settings
-  state.viewMode = 'full';
-  state.sliceAxis = 'x';
-  state.sliceIndex = Math.floor(simSize/2);
-  // state.simulationData =    // Generate Simulation Data - History (Game of Life)
-  const [simulationData, clockData] = await generateSimulation(simSize, simGenerations, simSeed);
-  state.simulationData = simulationData;
-  state.clockData = clockData;
+    // Getters (from state)
+    const scene = state.scene;
+    const simSize = state.sim_size
+    const simGenerations = state.sim_generations
+    const simSeed = state.shapeFn
 
-  state.simulationModel =  await buildSimulationModel(simSize);  // Simulation Model
-  // state.simulationModel = simulationModel;
-  
-  // Model Data to build scene
-  const geometry = state.simulationModel.geometry;
-  const material = state.simulationModel.material;
-  const points = new THREE.Points(geometry, material);
+    // Setters (to state) - Initial View Settings
+    state.viewMode = 'full';
+    state.sliceAxis = 'x';
+    state.sliceIndex = Math.floor(simSize/2);
+    // Generate Simulation Data - History (Game of Life)
+    const [simulationData, clockData] = await generateSimulation(simSize, simGenerations, simSeed);
+    state.simulationData = simulationData;
+    state.clockData = clockData;
 
-  updatePoints();
-  // drawClock();
-  scene.add(points);
+    state.simulationModel =  await buildSimulationModel(simSize);  // Simulation Model
+    
+    // Model Data to build scene
+    const geometry = state.simulationModel.geometry;
+    const material = state.simulationModel.material;
+    const points = new THREE.Points(geometry, material);
+
+    updatePoints();
+    // drawClock();
+    scene.add(points);
+
+    // Hide overlay on next frame to ensure DOM/styles applied
+    const overlayNode = document.getElementById('loading-overlay');
+    if (overlayNode) {
+      requestAnimationFrame(() => overlayNode.classList.add('hidden'));
+    }
+  } catch (err) {
+    console.error('Failed to initialize simulation:', err);
+  } finally {
+    if (overlay) overlay.classList.add('hidden');
+  }
 }
 
 // Point Cloud

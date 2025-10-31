@@ -20,7 +20,7 @@ const speedDisplay = document.getElementById('speed-value');
 const speedControl = document.getElementById('speed-control');
 
 function updateSpeedDisplay() {
-  const gensPerSecond = (1000 / (baseInterval / simSpeed)).toFixed(1);
+  const gensPerSecond = (1000 / (baseInterval / simSpeed)).toFixed(0);
   speedDisplay.textContent = `${gensPerSecond}`;
 }
 
@@ -49,7 +49,7 @@ export function animate(currentTime) {
       measuredFps = frameCount;
       frameCount = 0;
       lastFpsUpdate = now;
-      fpsDisplay.textContent = measuredFps.toFixed(0);
+      if (fpsDisplay) fpsDisplay.textContent = measuredFps.toFixed(0);
     }
 
     // === Simulation Timing ===
@@ -71,6 +71,12 @@ export function animate(currentTime) {
 
     // Always render the scene
     state.renderer.render(state.scene, state.camera);
+
+    // Safety: hide loading overlay once we are rendering with data
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay && !overlay.classList.contains('hidden') && state.simulationData && state.simulationModel) {
+      overlay.classList.add('hidden');
+    }
   }
 }
 
