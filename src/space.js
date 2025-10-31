@@ -19,24 +19,31 @@ export function initSpace() {
 
     // setScene(scene);
 
-    // Rendering
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    // Rendering (reuse existing renderer/canvas if available)
+    let renderer = state.renderer;
+    if (!renderer) {
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        document.body.appendChild(renderer.domElement);
+        state.renderer = renderer;
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+    // Always size to full window; overlayed UI floats above
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    state.renderer = renderer;
+    const canvas = renderer.domElement;
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0px';
+    canvas.style.left = '0px';
+    canvas.style.zIndex = '0';
 
     // Camera Setup
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(simSize * 1.2, simSize * 1.2, simSize * 1.2);
 
-    // Resize
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-    
     // Camera Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     

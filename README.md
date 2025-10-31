@@ -1,6 +1,6 @@
 <p align="center">
   <a href="www.google.com">
-    <img src="src/assets/images/cube-visualization-1.png" alt="Logo" width="200" height="200">
+    <img src="src/assets/images/game-of-life-screenshot-readme.png" alt="Logo" width="200" height="200">
   </a>
 </p>
 
@@ -72,28 +72,20 @@ The original idea began on pen-and-paper, starting with a 3D drawing representin
 ## 4. Status
 
 ### Current State
-The project is currently building a 50x50x50 matrix & calculating 100 generations of the game of life 3D. The starting seed is a "living" cube in the center of this matrix with side length 10, where 100% of the cells in that space are alive.
+The project is currently set to build a 50x50x50 matrix & calculating 100 generations of the game of life 3D. The starting seed is a "living" cube in the center of this matrix with side length 10, where 100% of the cells in that space are alive.
 
 ### Intended Final State
-The original goal was to have a 100x100x100 simulation (1 million cells), which proved to be a challenge, as the hardware used to create this project hit >100% CPU utilization when running under those conditions.
+The original goal was to have a 100x100x100 simulation (1 million cells), which proved to be a challenge, as the hardware used to create this project hits >100% CPU utilization when generating > 100 generations at that scale.
 
 ## 5. Next Steps
-There are four major features that need to be added in order to get the software to match the original vision. 
-
-### Need-to-have features
-
-| # | Feature | Description |
-|---|----------|-------------|
-| 1 | **Rules Modification** | User can modify the rules of the game and regenerate the simulation. |
-| 2 | **Seed Generation** | User can select from a given list of starting seeds and configure them based on size and density. |
-| 3 | **Size & Generations** | User can modify the size of the simulation & number of generations to simulate. Ideally there will be some loading bar, as anything past the current state will likely require the user to wait |
-| 4 | **Clock Visualization** | Implement a graphical clock tied directly to the simulation. |
+Collecting user feedback is the next phase of the project, so please reach out or tag me in your content.
 
 ### Nice-to-have feature
 
 | # | Feature | Description |
 |---|----------|-------------|
-| 1 | **Upload Starting Seed** | User can upload a starting seed -- likely some csv of a matrix or some 3D file type converted to matrix format |
+| 1 | **Upload Starting Seed** | User can upload a starting seed -- likely some csv of a matrix, voxel, or some 3D file type converted into a usable format |
+| 2 | **Clock Visualization** | Implement a graphical clock tied directly to the simulation. |
 
 ## 6. Run Locally
 
@@ -106,10 +98,6 @@ There are four major features that need to be added in order to get the software
 ## 7. License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
-[language-shield]: https://img.shields.io/github/languages/top/wmauz677/MarchMadness2023?style=for-the-badge
-[license-shield]: https://img.shields.io/github/license/wmauz677/marchmadness2023?style=for-the-badge
-[license-url]: https://github.com/wmauz677/personalWeb/blob/gh-pages/LICENSE
 
 ## 8. Attributions
 

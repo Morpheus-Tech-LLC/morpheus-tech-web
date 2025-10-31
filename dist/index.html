@@ -3,19 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>3D Cellular Automaton</title>
-  <script type="module" crossorigin src="/assets/index-CTZV2kwt.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-XKdoiHxN.css">
+  <script type="module" crossorigin src="/assets/index-D_Cer6Jf.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-D0Ae8aSk.css">
 </head>
 <body>
   <div id="controls-wrapper">
-    <div id="controls">
+    <div id="right-controls">
+      <div id="controls">
       <div class="center-controls">
-        <!-- <label for="shape-select">Starting Shape:</label>
-        <select id="shape-select">
-          <option value="random">Random</option>
-          <option value="cube">Cube</option>
-          <option value="tetrahedron">Tetrahedron</option>
-        </select> -->
         <div class="button-group">
           <div id="controls-time" class="control-group">
             <div class="top-row">
@@ -64,35 +59,110 @@
               id="speed-control"
               class="glass-slider"
               min=".1"
-              max="20"
+              max="10"
               step="0.1"
               value=".1"
             />
           </label>
         </div>
       </div>
+      </div>
+      <!-- New Seed Config Box below controls -->
+      <div id="shape-box" class="control-panel">
+        <div class="info-line">
+          <span class="label">Configure</span>
+          <span class="value">
+            <button id="seedConfigButton" class="glass-button" aria-label="Configure seed" style="pointer-events:auto;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-.94,7.43,7.43,0,0,0-.05-.94l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.63-.94l-.38-2.65A.5.5,0,0,0,13.64,2H10.36a.5.5,0,0,0-.5.42L9.48,5.07a7.28,7.28,0,0,0-1.63.94l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.91,11.06a7.43,7.43,0,0,0-.05.94,7.43,7.43,0,0,0,.05.94L2.8,14.59a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.63.94l.38,2.65a.5.5,0,0,0,.5.42h3.28a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.63-.94l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
+              </svg>
+            </button>
+          </span>
+        </div>
+      </div>
     </div>
   </div>
   <!-- <canvas id="clockCanvas" width="150" height="150"></canvas> -->
-  <div class="glass-display-container">
-    <div class="glass-display">
-      <h3 id="gen-display">Generation</h3>
-      <h1 id="gen">0</h3>
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="hidden">
+    <div class="loading-panel glass-panel">
+      <div class="loading-text">Generating simulation…</div>
+      <div class="loading-bar">
+        <div class="loading-bar-fill"></div>
+      </div>
     </div>
-    <div id="sliceViewer" class="glass-display">
-      <h3 id="slice-display">Slice</h3>
-      <h1 id="slice-value">#</h1>
-    </div>
-    <div class="glass-display">
-      <h3 id="fps-display">FPS</h3>
-      <h1 id="fps-value">60</h1>
-    </div>
-    <div class="glass-display">
-      <h3>Speed</h3>
-        <div id="speed-display">
-          <span id="speed-value" class="speed-number">1</span>
-          <span class="speed-unit">gens/s</span>
+  </div>
+  <!-- Shape Settings Modal -->
+  <div id="shapeModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content glass-panel">
+      <h3 class="modal-title">Configuration</h3>
+      <div class="modal-body modal-grid">
+        <div class="sim-col">
+          <div class="rules-title">Simulation</div>
+          <label class="modal-label" for="sim-size">Size</label>
+          <input type="number" id="sim-size" class="glass-input" min="1" step="1" />
+          <label class="modal-label" for="sim-generations">Generations</label>
+          <input type="number" id="sim-generations" class="glass-input" min="1" step="1" />
         </div>
+
+        <div class="seed-col">
+          <div class="rules-title">Seed</div>
+          <label class="modal-label" for="modal-shape-select">Shape</label>
+          <select id="modal-shape-select" class="glass-select">
+            <option value="random">Random</option>
+            <option value="cube">Cube</option>
+            <option value="tetrahedron">Tetrahedron</option>
+          </select>
+          <label id="shape-size-label" class="modal-label" for="shape-size">Size</label>
+          <input type="number" id="shape-size" class="glass-input" min="1" step="1" />
+          <label class="modal-label" for="shape-density">Density (0 - 1)</label>
+          <input type="number" id="shape-density" class="glass-input" min="0" max="1" step="0.01" />
+        </div>
+
+        <div class="rules-col">
+          <div class="rules-title">Rules</div>
+          <label class="modal-label" for="rule-birth">Birth</label>
+          <input type="text" id="rule-birth" class="glass-input" placeholder="" />
+          <label class="modal-label" for="rule-survival">Survival</label>
+          <input type="text" id="rule-survival" class="glass-input" placeholder="" />
+          <label class="modal-label" for="rule-isolation">Death by isolation</label>
+          <input type="text" id="rule-isolation" class="glass-input" placeholder="" />
+          <label class="modal-label" for="rule-overcrowd">Death by overcrowding</label>
+          <input type="text" id="rule-overcrowd" class="glass-input" placeholder="" />
+          <div class="rules-hint">Enter values as list or range (e.g., 9,10 or 5-15)</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="shapeCancel" class="glass-button">Cancel</button>
+        <button id="shapeConfirm" class="glass-button">Apply</button>
+      </div>
+    </div>
+  </div>
+  <div class="glass-display-container">
+    <div id="glass-info" class="glass-display glass-display--compact">
+      <div class="box-title">State</div>
+      <div class="info-line"><span class="label">Generation</span><span id="gen" class="value">0</span></div>
+      <div class="info-line"><span class="label">Rate <span class="unit">(gen/s)</span></span><span class="value"><span id="speed-value" class="speed-number">1</span></span></div>
+      <div id="sliceViewer" class="info-line"><span class="label">Slice</span><span id="slice-value" class="value">#</span></div>
+    </div>
+    <div id="glass-info-sim" class="glass-display glass-display--compact">
+      <div class="box-title">Simulation</div>
+      <div class="info-line"><span class="label">Generations</span><span id="sim-generations-value" class="value">0</span></div>
+      <div class="info-line"><span class="label">Size</span><span id="sim-size-value" class="value">0</span></div>
+    </div>
+    <div id="glass-info-shape" class="glass-display glass-display--compact">
+      <div class="box-title">Seed</div>
+      <div class="info-line"><span class="label">Shape</span><span id="shape-name-value" class="value">cube</span></div>
+      <div class="info-line"><span class="label">Density</span><span id="shape-density-value" class="value">1</span></div>
+      <div class="info-line"><span class="label">Size</span><span id="shape-size-value" class="value">10</span></div>
+    </div>
+    <div id="glass-info-rules" class="glass-display glass-display--compact">
+      <div class="box-title">Rules</div>
+      <div class="info-line"><span class="label">Birth</span><span id="rules-birth" class="value">9,10</span></div>
+      <div class="info-line"><span class="label">Survival</span><span id="rules-survival" class="value">5-15</span></div>
+      <div class="info-line"><span class="label">Isolation</span><span id="rules-isolation" class="value">0-4</span></div>
+      <div class="info-line"><span class="label">Overcrowding</span><span id="rules-overcrowd" class="value">16-26</span></div>
     </div>
   </div>
   <!-- === FOOTER ICONS === -->
@@ -118,16 +188,9 @@
 
     <!-- Company (bottom-right) -->
     <div id="company-brand">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 64 64"
-        fill="currentColor"
-        class="footer-icon"
-      >
-        <!-- Placeholder company logo — replace with your SVG path -->
-        <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="none" />
-        <text x="32" y="38" text-anchor="middle" font-size="18" font-family="sans-serif" fill="currentColor">M</text>
-      </svg>
+      <a href="https://github.com/Morpheus-Tech-LLC/morpheus-tech-web" target="_blank" aria-label="Morpheus Tech GitHub">
+        <img src="/assets/morpheus-tech-4UhQpwQO.png" alt="Morpheus Tech" class="footer-icon" />
+      </a>
       <span id="company-name">Morpheus Tech LLC</span>
     </div>
   </div>
@@ -162,14 +225,53 @@
   }
 
   #controls {
-    position: absolute;
-    top: 10px;
-    right: 10px; /* <-- move to right side */
+    position: static; /* allow stacking inside right-controls */
     z-index: 10;
     background: var(--color-controls-background);
     padding: 12px;
     border-radius: 8px;
     min-width: 200px;
+    color: var(--color-text-contrast); /* ensure controls text/icons are white */
+  }
+
+  /* Right-side stacked controls column */
+  #right-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  /* Control-style panel (matches #controls) */
+  .control-panel {
+    background: var(--color-controls-background);
+    border: 1px solid var(--color-control-border);
+    border-radius: 8px;
+    padding: 12px;
+    pointer-events: auto; /* ensure interactive */
+  }
+
+  /* Shape panel layout */
+  #shape-box .info-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  #shape-box .label { font-weight: 600; color: var(--color-info-display-text); }
+  #shape-box .value { flex: 1; display: flex; justify-content: flex-end; }
+
+  #shape-select-wrapper .shape-label::before {
+    content: "Starting Shape";
+    display: block;
+    text-align: center;
+    color: var(--color-info-display-text);
+    font-weight: 600;
+    margin-bottom: 6px;
   }
 
   #speed-slider .slice-label::before {
@@ -262,15 +364,44 @@
     box-shadow: 0 6px 14px var(--color-control-hover);
   }
 
+  #glass-info.glass-display--compact {
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin: 10px;
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  #glass-info .info-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    min-width: 220px;
+    margin: 4px 0;
+  }
+
+  #glass-info .label {
+    color: var(--color-info-display-text);
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  #glass-info .value {
+    font-size: 16px;
+    color: #fff;
+  }
+
+  /* Container for compact info box */
   .glass-display-container {
     position: fixed;
-    flex-direction: row;
-    display: flex;            /* put children side by side */
     top: 10px;
     left: 10px;
-    gap: 12px;                /* space between displays */
-    z-index: 20;  /* center horizontally (optional) */
-    width: auto;      /* align vertically (optional) */
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;   /* stack boxes vertically */
+    gap: 2px;                 /* even tighter space between displays */
+    align-items: flex-start;  /* align boxes to the left */
   }
 
   .glass-display {
@@ -291,6 +422,91 @@
     pointer-events: none;
     transition: opacity 0.3s ease;
   } 
+
+  /* Compact single info box overrides */
+  #glass-info.glass-display--compact,
+  #glass-info-shape.glass-display--compact,
+  #glass-info-rules.glass-display--compact,
+  #glass-info-sim.glass-display--compact {
+    padding: 10px 12px;
+    border-radius: 12px;
+    margin: 5px;
+    font-size: 14px;
+    line-height: 1.3;
+    width: auto;           /* override fixed width */
+    height: auto;          /* override fixed height */
+    text-align: left;      /* labels/values left-aligned */
+  }
+
+  /* State box - unique style (now aligned with others at top) */
+  #glass-info {
+    position: static;
+    transform: none;
+    margin: 5px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.2;
+    text-align: left;
+  }
+
+  #glass-info .box-title {
+    color: var(--color-state-title);
+    font-size: 13px;
+    margin-bottom: 6px;
+    padding-bottom: 3px;
+  }
+
+  #glass-info .info-line { gap: 4px; }
+  #glass-info .value { color: var(--color-state-value); font-size: 15px; font-weight: 700; }
+
+  #glass-info .info-line,
+  #glass-info-shape .info-line,
+  #glass-info-rules .info-line,
+  #glass-info-sim .info-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px;              /* tighter gap for compactness */
+    min-width: 180px;
+    margin: 4px 0;
+  }
+
+  #glass-info .label,
+  #glass-info-shape .label,
+  #glass-info-rules .label,
+  #glass-info-sim .label {
+    color: var(--color-info-display-text);
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  #glass-info .value,
+  #glass-info-shape .value,
+  #glass-info-rules .value,
+  #glass-info-sim .value {
+    font-size: 16px;
+    color: var(--color-control-font); /* blue-ish theme accent */
+    font-weight: 600;
+  }
+
+  /* Titles and subtle units */
+  .box-title {
+    margin-bottom: 8px;
+    color: #ffb7c5;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--color-info-display-border);
+    padding-bottom: 4px;
+  }
+
+  .unit {
+    font-size: 0.85em;
+    color: var(--color-info-display-text);
+    opacity: 0.8;
+  }
 
   .glass-display h3 {
     margin: 0 0 8px;
@@ -513,7 +729,7 @@
 #speed-display .speed-number {
   font-size: 1.8rem;  /* same emphasis as before */
   font-weight: 600;
-  color: #fff;        /* main highlight */
+  color: var(--color-text-contrast);        /* main highlight */
 }
 
 #speed-display .speed-unit {
@@ -572,6 +788,11 @@
   gap: 8px;
 }
 
+#company-brand .footer-icon {
+  width: 54px;
+  height: 54px;
+}
+
 #company-name {
   font-size: 0.95rem;
   color: var(--color-info-display-text);
@@ -579,4 +800,95 @@
   font-weight: 500;
 }
 
+</style>
+<style>
+  .hidden { display: none; }
+  /* Ensure overlay can be hidden despite ID selector specificity */
+  #loading-overlay.hidden { display: none; }
+
+  /* Loading overlay styled to match theme */
+  #loading-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 200;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .loading-panel {
+    padding: 18px 22px;
+    border: 1px solid var(--color-control-border);
+    border-radius: 12px;
+    background: var(--color-controls-background);
+    min-width: 320px;
+  }
+
+  .loading-text {
+    color: var(--color-info-display-text);
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .loading-bar {
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--color-control-inactive-background);
+    overflow: hidden;
+    border: 1px solid var(--color-control-border);
+  }
+
+  .loading-bar-fill {
+    height: 100%;
+    width: 30%;
+    border-radius: 999px;
+    background: var(--color-control-active-background);
+    box-shadow: inset 0 0 10px var(--color-control-active-shadow);
+    animation: indeterminate 1.2s ease-in-out infinite;
+  }
+
+  @keyframes indeterminate {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(50%); }
+    100% { transform: translateX(200%); }
+  }
+  /* Themed select */
+  .glass-select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--color-control-border);
+    background: var(--color-control-inactive-background);
+    color: var(--color-control-font);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    appearance: none;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+  }
+  .glass-select:hover { box-shadow: 0 6px 14px var(--color-control-hover); }
+
+  /* Modal */
+  .modal.hidden { display: none; }
+  .modal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; }
+  .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
+  .glass-panel { background: var(--color-controls-background); border: 1px solid var(--color-control-border); border-radius: 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .modal-content { position: relative; padding: 16px 18px; width: 520px; font-size: 15px; }
+  .modal-title { margin: 0 0 12px; color: var(--color-text-contrast); border-bottom: 1px solid var(--color-info-display-border); padding-bottom: 6px; }
+  .modal-body { display: flex; flex-direction: column; gap: 10px; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 18px; align-items: start; position: relative; }
+  .modal-grid .sim-col { grid-column: 1; display: flex; flex-direction: column; gap: 8px; }
+  .modal-grid .seed-col { grid-column: 2; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid var(--color-info-display-border); padding-left: 16px; }
+  .modal-grid .rules-col { grid-column: 3; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid var(--color-info-display-border); padding-left: 16px; }
+  .rules-hint { color: var(--color-info-display-text); font-size: 12px; opacity: .85; margin: -2px 0 4px; }
+  .rules-title { color: #ffb7c5; font-weight: 700; text-transform: uppercase; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid var(--color-info-display-border); padding-bottom: 4px; }
+  .modal-label { color: var(--color-info-display-text); font-weight: 600; }
+  .glass-input { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--color-control-border); background: var(--color-control-inactive-background); color: var(--color-control-font); outline: none; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
 </style>

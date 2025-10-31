@@ -1,5 +1,6 @@
 import { Grid3D } from './grid3D.js';
 import { generateClockHistory } from './time.js';
+import { state } from './state.js';
 
 // ---------------------------
 // Matrix evolution
@@ -71,6 +72,10 @@ export function convolve3D(grid) {
     }
   }
 
+  // Prepare rule sets for quick lookup
+  const birthSet = new Set(state.rules?.birth ?? [9, 10]);
+  const survivalSet = new Set(state.rules?.survival ?? []);
+
   // Apply rules only on candidates
   for (const [x, y, z] of candidates.values()) {
     let neighbors = 0;
@@ -88,11 +93,12 @@ export function convolve3D(grid) {
     }
 
     const alive = grid.get(x, y, z) === 1;
-    const newVal =
-      (!alive && (neighbors === 9 || neighbors === 10)) ||
-      (alive && neighbors >= 5 && neighbors <= 15)
-        ? 1
-        : 0;
+    let newVal;
+    if (alive) {
+      newVal = survivalSet.size > 0 ? (survivalSet.has(neighbors) ? 1 : 0) : (neighbors >= 5 && neighbors <= 15 ? 1 : 0);
+    } else {
+      newVal = birthSet.has(neighbors) ? 1 : 0;
+    }
 
     if (newVal === 1) {
       newGrid.set(x, y, z, 1);
