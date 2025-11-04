@@ -211,6 +211,27 @@ export function initControls() {
   // Ensure slice/controls visibility reflects current mode on load
   updateTriStateVisibility();
 
+  // Wireframe grid toggle
+  const wireframeGridToggle = document.getElementById('wireframeGridToggle');
+  const wireframeGridIcon = document.getElementById('wireframeGridIcon');
+  if (wireframeGridToggle) {
+    wireframeGridToggle.addEventListener('click', () => {
+      state.showWireframeGrid = !state.showWireframeGrid;
+      // Update icon color - blue when active, white/gray when inactive
+      if (wireframeGridIcon) {
+        wireframeGridIcon.style.fill = state.showWireframeGrid ? '#4da3ff' : 'currentColor';
+      }
+      // Toggle visibility of wireframe grid
+      if (state.simulationModel && state.simulationModel.wireframeGridHelper) {
+        state.simulationModel.wireframeGridHelper.visible = state.showWireframeGrid;
+      }
+    });
+    // Initialize icon state
+    if (wireframeGridIcon) {
+      wireframeGridIcon.style.fill = state.showWireframeGrid ? '#4da3ff' : 'currentColor';
+    }
+  }
+
   // Mark controls as initialized to prevent duplicate bindings on re-init
   state.controlsInitialized = true;
 }
@@ -251,6 +272,8 @@ function openShapeModal() {
   const sizeInput = document.getElementById('shape-size');
   const sizeLabel = document.getElementById('shape-size-label');
   const densityInput = document.getElementById('shape-density');
+  const regionSizeInput = document.getElementById('shape-region-size');
+  const regionSizeLabel = document.getElementById('shape-region-size-label');
   const modalShapeSelect = document.getElementById('modal-shape-select');
   const confirmBtn = document.getElementById('shapeConfirm');
   const cancelBtn = document.getElementById('shapeCancel');
@@ -260,28 +283,81 @@ function openShapeModal() {
   const ruleOvercrowd = document.getElementById('rule-overcrowd');
   const simSizeInput = document.getElementById('sim-size');
   const simGenerationsInput = document.getElementById('sim-generations');
+  const gridWrappingCheckbox = document.getElementById('grid-wrapping-checkbox');
 
   if (!modal || !sizeInput || !densityInput || !confirmBtn || !cancelBtn) return;
 
   // Initialize simulation inputs from state
   if (simSizeInput) simSizeInput.value = `${state.sim_size}`;
   if (simGenerationsInput) simGenerationsInput.value = `${state.sim_generations}`;
+  if (gridWrappingCheckbox) gridWrappingCheckbox.checked = state.gridWrapping ?? true;
+
+  const key = pendingShapeKey || state.shapeKey;
+  
+  // Function to update labels based on selected shape
+  function updateShapeLabels(shapeKey) {
+    const densityLabel = document.getElementById('shape-density-label');
+    const maxSim = simSizeInput ? Math.max(1, parseInt(simSizeInput.value) || state.sim_size) : state.sim_size;
+    
+    if (shapeKey === 'perlin') {
+      if (sizeLabel) {
+        sizeLabel.textContent = `Scale (max ${maxSim})`;
+      }
+      if (densityLabel) densityLabel.textContent = 'Threshold (0 - 1)';
+      // Hide region size input
+      if (regionSizeLabel) regionSizeLabel.classList.add('hidden');
+      if (regionSizeInput) regionSizeInput.classList.add('hidden');
+    } else if (shapeKey === 'worley') {
+      if (sizeLabel) {
+        sizeLabel.textContent = `Cell Count (max ${maxSim})`;
+      }
+      if (densityLabel) densityLabel.textContent = 'Distance Threshold (0 - 1)';
+      // Show region size input
+      if (regionSizeLabel) {
+        regionSizeLabel.classList.remove('hidden');
+        regionSizeLabel.textContent = `Region Size (max ${maxSim})`;
+      }
+      if (regionSizeInput) {
+        regionSizeInput.classList.remove('hidden');
+        regionSizeInput.max = `${maxSim}`;
+      }
+    } else {
+      if (sizeLabel) {
+        sizeLabel.textContent = `Size (max ${maxSim})`;
+      }
+      if (densityLabel) densityLabel.textContent = 'Density (0 - 1)';
+      // Hide region size input
+      if (regionSizeLabel) regionSizeLabel.classList.add('hidden');
+      if (regionSizeInput) regionSizeInput.classList.add('hidden');
+    }
+  }
 
   // Keep shape size max synced to modal Simulation Size
   function updateShapeSizeMax() {
     const maxSim = simSizeInput ? Math.max(1, parseInt(simSizeInput.value) || state.sim_size) : state.sim_size;
     sizeInput.max = `${maxSim}`;
-    if (sizeLabel) sizeLabel.textContent = `Size (max ${maxSim})`;
+    if (regionSizeInput) {
+      regionSizeInput.max = `${maxSim}`;
+      const currRegionSize = Math.max(1, parseInt(regionSizeInput.value || '1'));
+      if (currRegionSize > maxSim) regionSizeInput.value = `${maxSim}`;
+    }
+    const currKey = pendingShapeKey || state.shapeKey;
+    // Update labels with current max
+    updateShapeLabels(currKey);
     const curr = Math.max(1, parseInt(sizeInput.value || '1'));
     if (curr > maxSim) sizeInput.value = `${maxSim}`;
   }
   updateShapeSizeMax();
-  const key = pendingShapeKey || state.shapeKey;
+  
   if (modalShapeSelect) {
     modalShapeSelect.value = key;
+    updateShapeLabels(key);
     modalShapeSelect.onchange = (e) => {
       pendingShapeKey = e.target.value;
+      updateShapeLabels(e.target.value);
     };
+  } else {
+    updateShapeLabels(key);
   }
   // Initialize rules inputs
   if (ruleBirth) ruleBirth.value = stringifyRule(state.rules?.birth ?? [9,10]);
@@ -304,6 +380,14 @@ function openShapeModal() {
   const initDensity = Math.min(1, Math.max(0, parseFloat(params.density)));
   sizeInput.value = `${initSize}`;
   densityInput.value = `${initDensity.toFixed(2)}`;
+  
+  // Initialize region size input for Worley
+  if (key === 'worley' && regionSizeInput) {
+    const initRegionSize = params.regionSize 
+      ? Math.min(initMaxSim, Math.max(1, parseInt(params.regionSize)))
+      : Math.min(initMaxSim, Math.floor(state.sim_size * 0.4)); // Default to 40% of sim size
+    regionSizeInput.value = `${initRegionSize}`;
+  }
 
   if (simSizeInput) simSizeInput.addEventListener('input', updateShapeSizeMax);
 
@@ -322,6 +406,7 @@ function openShapeModal() {
     // Compute proposed sim size/gens first so clamping uses new size
     const newSimSize = simSizeInput ? Math.max(1, parseInt(simSizeInput.value)) : state.sim_size;
     const newSimGenerations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
+    const newGridWrapping = gridWrappingCheckbox ? gridWrappingCheckbox.checked : state.gridWrapping ?? true;
     const size = Math.min(newSimSize, Math.max(1, parseInt(sizeInput.value)));
     const density = Math.min(1, Math.max(0, parseFloat(densityInput.value)));
     if (newSimSize !== state.sim_size) {
@@ -330,22 +415,35 @@ function openShapeModal() {
     if (newSimGenerations !== state.sim_generations) {
       state.sim_generations = newSimGenerations;
     }
+    if (newGridWrapping !== state.gridWrapping) {
+      state.gridWrapping = newGridWrapping;
+    }
 
     // Update shape functions with chosen params
-    if (pendingShapeKey === 'random') {
-      state.shapes.random = (await import('./shapeGenerators.js')).randomShape(size, density);
+    if (pendingShapeKey === 'perlin') {
+      state.shapes.perlin = (await import('./shapeGenerators.js')).perlinShape(size, density);
+    } else if (pendingShapeKey === 'worley') {
+      const regionSize = regionSizeInput ? Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value))) : null;
+      state.shapes.worley = (await import('./shapeGenerators.js')).worleyShape(size, density, regionSize);
     } else if (pendingShapeKey === 'cube') {
       const half = Math.max(1, Math.floor(size / 2));
       state.shapes.cube = (await import('./shapeGenerators.js')).cubeShape(half, density);
     } else if (pendingShapeKey === 'tetrahedron') {
       state.shapes.tetrahedron = (await import('./shapeGenerators.js')).tetrahedronShape(size, density);
+    } else if (pendingShapeKey === 'octahedron') {
+      state.shapes.octahedron = (await import('./shapeGenerators.js')).octahedronShape(size, density);
     }
 
     state.reset();
     state.shapeKey = pendingShapeKey || state.shapeKey;
     // Persist chosen params
     if (!state.shapeParams) state.shapeParams = {};
-    state.shapeParams[state.shapeKey] = { size, density };
+    if (pendingShapeKey === 'worley' && regionSizeInput) {
+      const regionSize = Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value)));
+      state.shapeParams[state.shapeKey] = { size, density, regionSize };
+    } else {
+      state.shapeParams[state.shapeKey] = { size, density };
+    }
     // Parse and persist rules
     const birth = parseRule(ruleBirth?.value);
     const survival = parseRule(ruleSurvival?.value);
