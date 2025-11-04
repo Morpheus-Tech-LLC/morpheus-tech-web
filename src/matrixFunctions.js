@@ -51,6 +51,18 @@ export function initMatrix(size, shapeFn) {
 export function convolve3D(grid) {
   const size = grid.size;
   const newGrid = new Grid3D(size, 0);
+  const wrapping = state.gridWrapping ?? true;
+
+  // Helper function to get neighbor coordinates (wrap or clamp)
+  const getNeighborCoord = (coord, delta) => {
+    const newCoord = coord + delta;
+    if (wrapping) {
+      return grid._wrap(newCoord);
+    } else {
+      // Clamp to bounds when wrapping is off
+      return Math.max(0, Math.min(size - 1, newCoord));
+    }
+  };
 
   // Use a map to avoid duplicate neighbor checks
   const candidates = new Map();
@@ -63,9 +75,9 @@ export function convolve3D(grid) {
     for (let dx = -1; dx <= 1; dx++) {
       for (let dy = -1; dy <= 1; dy++) {
         for (let dz = -1; dz <= 1; dz++) {
-          const nx = grid._wrap(x + dx);
-          const ny = grid._wrap(y + dy);
-          const nz = grid._wrap(z + dz);
+          const nx = getNeighborCoord(x, dx);
+          const ny = getNeighborCoord(y, dy);
+          const nz = getNeighborCoord(z, dz);
           candidates.set(`${nx},${ny},${nz}`, [nx, ny, nz]);
         }
       }
@@ -84,9 +96,9 @@ export function convolve3D(grid) {
       for (let dy = -1; dy <= 1; dy++) {
         for (let dz = -1; dz <= 1; dz++) {
           if (dx === 0 && dy === 0 && dz === 0) continue;
-          const nx = grid._wrap(x + dx);
-          const ny = grid._wrap(y + dy);
-          const nz = grid._wrap(z + dz);
+          const nx = getNeighborCoord(x, dx);
+          const ny = getNeighborCoord(y, dy);
+          const nz = getNeighborCoord(z, dz);
           neighbors += grid.get(nx, ny, nz);
         }
       }

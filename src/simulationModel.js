@@ -41,6 +41,21 @@ export async function initSimulation() {
     const material = state.simulationModel.material;
     const points = new THREE.Points(geometry, material);
 
+    // Create wireframe grid helper to show simulation bounds
+    // Remove existing wireframe grid if it exists
+    if (state.simulationModel.wireframeGridHelper) {
+      scene.remove(state.simulationModel.wireframeGridHelper);
+      // Dispose of geometries and materials
+      state.simulationModel.wireframeGridHelper.traverse((child) => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
+      });
+    }
+    const wireframeGridHelper = createWireframeGrid(simSize);
+    state.simulationModel.wireframeGridHelper = wireframeGridHelper;
+    wireframeGridHelper.visible = state.showWireframeGrid ?? false;
+    scene.add(wireframeGridHelper);
+
     updatePoints();
     // drawClock();
     scene.add(points);
@@ -137,6 +152,54 @@ export function updatePoints() {
 
   document.getElementById("gen").textContent = `${gen}`;
   document.getElementById("slice-value").textContent = `${state.sliceAxis}-${state.sliceIndex}`;
+}
+
+function createWireframeGrid(size) {
+  const group = new THREE.Group();
+  const halfSize = size / 2;
+  const color = new THREE.Color(0xffffff);
+  const opacity = 0.3;
+  
+  // Create a wireframe box representing the simulation bounds
+  const boxGeometry = new THREE.BoxGeometry(size, size, size);
+  const edges = new THREE.EdgesGeometry(boxGeometry);
+  const lineMaterial = new THREE.LineBasicMaterial({ 
+    color: color,
+    transparent: true,
+    opacity: opacity
+  });
+  const wireframeBox = new THREE.LineSegments(edges, lineMaterial);
+  wireframeBox.position.set(0, 0, 0); // Centered at origin
+  
+  group.add(wireframeBox);
+  
+  // Add grid lines to show the grid structure (optional - can be removed if too cluttered)
+  const divisions = Math.min(size, 20); // Limit divisions for performance
+  const gridHelperXY = new THREE.GridHelper(size, divisions, color, color);
+  gridHelperXY.position.z = 0;
+  gridHelperXY.material.transparent = true;
+  gridHelperXY.material.opacity = opacity * 0.5;
+  
+  const gridHelperXZ = new THREE.GridHelper(size, divisions, color, color);
+  gridHelperXZ.rotation.x = Math.PI / 2;
+  gridHelperXZ.position.y = 0;
+  gridHelperXZ.material.transparent = true;
+  gridHelperXZ.material.opacity = opacity * 0.5;
+  
+  const gridHelperYZ = new THREE.GridHelper(size, divisions, color, color);
+  gridHelperYZ.rotation.z = Math.PI / 2;
+  gridHelperYZ.position.x = 0;
+  gridHelperYZ.material.transparent = true;
+  gridHelperYZ.material.opacity = opacity * 0.5;
+  
+  group.add(gridHelperXY);
+  group.add(gridHelperXZ);
+  group.add(gridHelperYZ);
+  
+  // Dispose of box geometry
+  boxGeometry.dispose();
+  
+  return group;
 }
 
 // function drawClock() {
