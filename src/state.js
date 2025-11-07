@@ -13,6 +13,8 @@ export const state = {
   isReversing: false,
   gridWrapping: true,
   showWireframeGrid: false,
+  showCellWireframe: false,
+  cellSize: 1.2, // Size of cells (points and wireframe cubes)
   scene: null,
   renderer: null,
   camera: null,
@@ -22,7 +24,7 @@ export const state = {
   controlsInitialized: false,
   shapeKey: "cube",
   shapes: {
-    perlin: perlinShape(10, 0.3),
+    perlin: perlinShape(10, 0.3, 30),
     cube: cubeShape(5, 1),
     tetrahedron: tetrahedronShape(13),
     octahedron: octahedronShape(8, 1),
@@ -36,11 +38,11 @@ export const state = {
     overcrowding: Array.from({ length: 11 }, (_, i) => i + 16), // 16-26
   },
   shapeParams: {
-    perlin: { size: 10, density: 0.3 },
+    perlin: { size: 10, density: 0.3, regionSize: 25 },
     cube: { size: 10, density: 1 },
     tetrahedron: { size: 13, density: 1 },
     octahedron: { size: 8, density: 1 },
-    worley: { size: 8, density: 0.5, regionSize: 20 }
+    worley: { size: 8, density: 0.3, regionSize: 25 }
   },
   get shapeFn() {
     return this.shapes[this.shapeKey];

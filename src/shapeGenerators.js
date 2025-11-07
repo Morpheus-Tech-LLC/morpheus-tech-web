@@ -89,9 +89,21 @@ class PerlinNoise3D {
   }
 }
 
-export function perlinShape(scale, threshold = 0.3) {
+export function perlinShape(scale, threshold = 0.3, regionSize = null) {
   return (grid, size) => {
     const center = Math.floor(size / 2);
+    
+    // Use regionSize if provided, otherwise use full simulation size
+    const actualRegionSize = regionSize || size;
+    const half = Math.floor(actualRegionSize / 2);
+    
+    // Calculate bounds for central region
+    const minX = Math.max(0, center - half);
+    const maxX = Math.min(size - 1, center + half);
+    const minY = Math.max(0, center - half);
+    const maxY = Math.min(size - 1, center + half);
+    const minZ = Math.max(0, center - half);
+    const maxZ = Math.min(size - 1, center + half);
 
     // Create Perlin noise instance with seed based on current time
     const noise = new PerlinNoise3D(Date.now() % 10000);
@@ -107,12 +119,13 @@ export function perlinShape(scale, threshold = 0.3) {
     // Higher threshold value = lower threshold = more cells alive
     const noiseThreshold = 1 - 2 * threshold;
 
-    // Generate Perlin noise for entire simulation space
-    for (let x = 0; x < size; x++) {
-      for (let y = 0; y < size; y++) {
-        for (let z = 0; z < size; z++) {
+    // Generate Perlin noise only within the specified region
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
+        for (let z = minZ; z <= maxZ; z++) {
           // Sample Perlin noise at this position
           // Scale coordinates by noiseScale to control frequency
+          // Use relative position from region center for consistent noise
           const noiseValue = noise.noise(
             (x - center) * noiseScale,
             (y - center) * noiseScale,
@@ -183,19 +196,20 @@ export function octahedronShape(radius = 8, prob = 1.0) {
 // Worley (Cellular) Noise implementation
 export function worleyShape(cellCount = 8, threshold = 0.5, regionSize = null) {
   return (grid, size) => {
-    const center = Math.floor(size / 2);
+    // Calculate center of simulation space (use exact center for proper centering)
+    const center = (size - 1) / 2;
     
     // Use regionSize if provided, otherwise use full simulation size
     const actualRegionSize = regionSize || size;
-    const half = Math.floor(actualRegionSize / 2);
+    const half = actualRegionSize / 2;
     
-    // Calculate bounds for central region
-    const minX = Math.max(0, center - half);
-    const maxX = Math.min(size - 1, center + half);
-    const minY = Math.max(0, center - half);
-    const maxY = Math.min(size - 1, center + half);
-    const minZ = Math.max(0, center - half);
-    const maxZ = Math.min(size - 1, center + half);
+    // Calculate bounds for central region (centered at exact center)
+    const minX = Math.max(0, Math.floor(center - half));
+    const maxX = Math.min(size - 1, Math.floor(center + half));
+    const minY = Math.max(0, Math.floor(center - half));
+    const maxY = Math.min(size - 1, Math.floor(center + half));
+    const minZ = Math.max(0, Math.floor(center - half));
+    const maxZ = Math.min(size - 1, Math.floor(center + half));
     
     // Generate random feature points (cell centers)
     const seed = Date.now() % 10000;
@@ -208,20 +222,26 @@ export function worleyShape(cellCount = 8, threshold = 0.5, regionSize = null) {
     const cellsPerDim = Math.max(2, Math.floor(Math.cbrt(cellCount)));
     const cellSize = actualRegionSize / cellsPerDim;
     
+    // Calculate the region start position (centered in simulation space)
+    // Use exact center minus half to properly center the region
+    const regionStartX = center - half;
+    const regionStartY = center - half;
+    const regionStartZ = center - half;
+    
     // Generate feature points for each cell (relative to region center)
     const featurePoints = [];
     for (let cx = 0; cx < cellsPerDim; cx++) {
       for (let cy = 0; cy < cellsPerDim; cy++) {
         for (let cz = 0; cz < cellsPerDim; cz++) {
-          // Generate random point within this cell (relative to region center)
+          // Generate random point within this cell (0 to cellSize range)
           const offsetX = rng(cx, cy, cz) * cellSize;
           const offsetY = rng(cx + 1, cy, cz) * cellSize;
           const offsetZ = rng(cx, cy + 1, cz) * cellSize;
-          // Position feature point relative to region center
+          // Position feature point relative to region start (centered in simulation)
           featurePoints.push({
-            x: center - half + cx * cellSize + offsetX,
-            y: center - half + cy * cellSize + offsetY,
-            z: center - half + cz * cellSize + offsetZ
+            x: regionStartX + cx * cellSize + offsetX,
+            y: regionStartY + cy * cellSize + offsetY,
+            z: regionStartZ + cz * cellSize + offsetZ
           });
         }
       }
