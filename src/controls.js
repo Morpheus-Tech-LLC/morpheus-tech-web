@@ -1,6 +1,6 @@
 import { state } from "./state.js";
-import { initSimulation } from "./simulationModel.js";
-import { updatePoints } from "./simulationModel.js";
+import { initSimulation, updatePoints } from "./simulationModel.js";
+import * as THREE from 'three';
 
 let pendingShapeKey = null;
 let shapeDropdownPrevValue = null;
@@ -13,7 +13,7 @@ export function initControls() {
   if (state.controlsInitialized) {
     const sliceIndexSliderExisting = document.getElementById('slice-index');
     if (sliceIndexSliderExisting) {
-      sliceIndexSliderExisting.max = state.sim_size;
+      sliceIndexSliderExisting.max = state.sim_size - 1;
     }
     // Always refresh simulation info displays
     const simSizeEl = document.getElementById('sim-size-value');
@@ -139,8 +139,13 @@ export function initControls() {
   });
 
   if (sliceIndexSlider) {
-    const sliceMax = state.sim_size;
-    sliceIndexSlider.max= sliceMax;
+    const sliceMax = state.sim_size - 1; // Grid indices are 0 to sim_size - 1
+    sliceIndexSlider.max = sliceMax;
+    // Ensure current value is within valid range
+    if (parseInt(sliceIndexSlider.value) > sliceMax) {
+      sliceIndexSlider.value = sliceMax;
+      state.sliceIndex = sliceMax;
+    }
   }
 
 
@@ -232,6 +237,67 @@ export function initControls() {
     }
   }
 
+  // Wireframe cells toggle
+  const wireframeCellsToggle = document.getElementById('wireframeCellsToggle');
+  const wireframeCellsIcon = document.getElementById('wireframeCellsIcon');
+  if (wireframeCellsToggle) {
+    wireframeCellsToggle.addEventListener('click', () => {
+      state.showCellWireframe = !state.showCellWireframe;
+      // Update icon color - blue when active, white/gray when inactive
+      if (wireframeCellsIcon) {
+        wireframeCellsIcon.style.fill = state.showCellWireframe ? '#4da3ff' : 'currentColor';
+      }
+      // Toggle visibility of wireframe cells and points
+      if (state.simulationModel) {
+        const points = state.simulationModel.points;
+        const wireframeCellsGroup = state.simulationModel.wireframeCellsGroup;
+        if (points) {
+          points.visible = !state.showCellWireframe;
+        }
+        if (wireframeCellsGroup) {
+          wireframeCellsGroup.visible = state.showCellWireframe;
+        }
+        // Always update wireframe cells when toggling (to ensure they're generated/updated)
+        if (state.simulationData) {
+          updatePoints();
+        }
+      }
+    });
+    // Initialize icon state
+    if (wireframeCellsIcon) {
+      wireframeCellsIcon.style.fill = state.showCellWireframe ? '#4da3ff' : 'currentColor';
+    }
+  }
+
+  // Cell size slider
+  const cellSizeSlider = document.getElementById('cellSizeSlider');
+  if (cellSizeSlider) {
+    // Initialize slider value from state
+    cellSizeSlider.value = state.cellSize ?? 1.2;
+    
+    cellSizeSlider.addEventListener('input', () => {
+      const newSize = parseFloat(cellSizeSlider.value);
+      state.cellSize = newSize;
+      
+      // Update points material size
+      if (state.simulationModel && state.simulationModel.material) {
+        const material = state.simulationModel.material;
+        if (material instanceof THREE.PointsMaterial) {
+          material.size = newSize;
+          material.needsUpdate = true;
+        } else if (material.uniforms && material.uniforms.uPointSize) {
+          // Shader material (dithering enabled)
+          material.uniforms.uPointSize.value = newSize;
+        }
+      }
+      
+      // Update wireframe cells if visible
+      if (state.simulationData && state.showCellWireframe) {
+        updatePoints();
+      }
+    });
+  }
+
   // Mark controls as initialized to prevent duplicate bindings on re-init
   state.controlsInitialized = true;
 }
@@ -297,35 +363,84 @@ function openShapeModal() {
   // Function to update labels based on selected shape
   function updateShapeLabels(shapeKey) {
     const densityLabel = document.getElementById('shape-density-label');
+    const densityLabelText = document.getElementById('shape-density-label-text');
+    const sizeLabelText = document.getElementById('shape-size-label-text');
+    const regionSizeLabelText = document.getElementById('shape-region-size-label-text');
+    const sizeInfoIcon = sizeLabel?.querySelector('.info-icon');
+    const densityInfoIcon = densityLabel?.querySelector('.info-icon');
+    const regionSizeInfoIcon = regionSizeLabel?.querySelector('.info-icon');
     const maxSim = simSizeInput ? Math.max(1, parseInt(simSizeInput.value) || state.sim_size) : state.sim_size;
     
     if (shapeKey === 'perlin') {
-      if (sizeLabel) {
-        sizeLabel.textContent = `Scale (max ${maxSim})`;
+      // Perlin noise labels
+      if (sizeLabelText) {
+        sizeLabelText.textContent = `Noise Detail (1 - 100)`;
       }
-      if (densityLabel) densityLabel.textContent = 'Threshold (0 - 1)';
-      // Hide region size input
-      if (regionSizeLabel) regionSizeLabel.classList.add('hidden');
-      if (regionSizeInput) regionSizeInput.classList.add('hidden');
-    } else if (shapeKey === 'worley') {
-      if (sizeLabel) {
-        sizeLabel.textContent = `Cell Count (max ${maxSim})`;
+      if (sizeInfoIcon) {
+        sizeInfoIcon.setAttribute('data-tooltip', 'Controls noise frequency detail. Lower values (1-10) create smoother, larger patterns. Medium values (10-30) create moderate detail. Higher values (30-100) create fine-grained, detailed patterns.');
       }
-      if (densityLabel) densityLabel.textContent = 'Distance Threshold (0 - 1)';
-      // Show region size input
+      if (densityLabelText) {
+        densityLabelText.textContent = `Fill Amount (0 - 1)`;
+      }
+      if (densityInfoIcon) {
+        densityInfoIcon.setAttribute('data-tooltip', 'Controls how many cells are alive. 0 = few cells, 1 = many cells. Higher values create denser patterns.');
+      }
+      // Show region size input for Perlin
       if (regionSizeLabel) {
         regionSizeLabel.classList.remove('hidden');
-        regionSizeLabel.textContent = `Region Size (max ${maxSim})`;
+        if (regionSizeLabelText) {
+          regionSizeLabelText.textContent = `Region Size (max ${maxSim})`;
+        }
+        if (regionSizeInfoIcon) {
+          regionSizeInfoIcon.setAttribute('data-tooltip', 'Size of the centered region where noise is generated. Smaller values create patterns in the center only.');
+        }
+      }
+      if (regionSizeInput) {
+        regionSizeInput.classList.remove('hidden');
+        regionSizeInput.max = `${maxSim}`;
+      }
+    } else if (shapeKey === 'worley') {
+      // Worley noise labels
+      if (sizeLabelText) {
+        sizeLabelText.textContent = `Feature Points (1 - 50)`;
+      }
+      if (sizeInfoIcon) {
+        sizeInfoIcon.setAttribute('data-tooltip', 'Approximate number of feature points (cell centers) that generate the pattern. Uses cube root, so values like 8 or 27 work best. More points create more complex cellular structures.');
+      }
+      if (densityLabelText) {
+        densityLabelText.textContent = `Activation Distance (0 - 1)`;
+      }
+      if (densityInfoIcon) {
+        densityInfoIcon.setAttribute('data-tooltip', 'How far from feature points cells become alive. Lower values = cells only near feature points. Higher values = cells fill more space.');
+      }
+      // Show region size input for Worley
+      if (regionSizeLabel) {
+        regionSizeLabel.classList.remove('hidden');
+        if (regionSizeLabelText) {
+          regionSizeLabelText.textContent = `Region Size (max ${maxSim})`;
+        }
+        if (regionSizeInfoIcon) {
+          regionSizeInfoIcon.setAttribute('data-tooltip', 'Size of the centered region where noise is generated. Smaller values create patterns in the center only.');
+        }
       }
       if (regionSizeInput) {
         regionSizeInput.classList.remove('hidden');
         regionSizeInput.max = `${maxSim}`;
       }
     } else {
-      if (sizeLabel) {
-        sizeLabel.textContent = `Size (max ${maxSim})`;
+      // Standard shape labels (cube, tetrahedron, octahedron)
+      if (sizeLabelText) {
+        sizeLabelText.textContent = `Size (max ${maxSim})`;
       }
-      if (densityLabel) densityLabel.textContent = 'Density (0 - 1)';
+      if (sizeInfoIcon) {
+        sizeInfoIcon.setAttribute('data-tooltip', 'Size of the shape in grid cells.');
+      }
+      if (densityLabelText) {
+        densityLabelText.textContent = 'Density (0 - 1)';
+      }
+      if (densityInfoIcon) {
+        densityInfoIcon.setAttribute('data-tooltip', 'Probability that each cell in the shape is alive. 1 = all cells filled, 0 = no cells.');
+      }
       // Hide region size input
       if (regionSizeLabel) regionSizeLabel.classList.add('hidden');
       if (regionSizeInput) regionSizeInput.classList.add('hidden');
@@ -335,30 +450,40 @@ function openShapeModal() {
   // Keep shape size max synced to modal Simulation Size
   function updateShapeSizeMax() {
     const maxSim = simSizeInput ? Math.max(1, parseInt(simSizeInput.value) || state.sim_size) : state.sim_size;
-    sizeInput.max = `${maxSim}`;
+    const currKey = pendingShapeKey || state.shapeKey;
+    
+    // Perlin noise detail has a fixed max of 100 (maps to noiseScale 0.5)
+    // Worley feature points has a fixed max of 50 (creates 3-4 cells per dimension)
+    // Other shapes use maxSim
+    if (currKey === 'perlin') {
+      sizeInput.max = '100';
+    } else if (currKey === 'worley') {
+      sizeInput.max = '50';
+    } else {
+      sizeInput.max = `${maxSim}`;
+    }
+    
     if (regionSizeInput) {
       regionSizeInput.max = `${maxSim}`;
       const currRegionSize = Math.max(1, parseInt(regionSizeInput.value || '1'));
       if (currRegionSize > maxSim) regionSizeInput.value = `${maxSim}`;
     }
-    const currKey = pendingShapeKey || state.shapeKey;
+    
     // Update labels with current max
     updateShapeLabels(currKey);
     const curr = Math.max(1, parseInt(sizeInput.value || '1'));
-    if (curr > maxSim) sizeInput.value = `${maxSim}`;
+    let maxVal;
+    if (currKey === 'perlin') {
+      maxVal = 100;
+    } else if (currKey === 'worley') {
+      maxVal = 50;
+    } else {
+      maxVal = maxSim;
+    }
+    if (curr > maxVal) sizeInput.value = `${maxVal}`;
   }
   updateShapeSizeMax();
   
-  if (modalShapeSelect) {
-    modalShapeSelect.value = key;
-    updateShapeLabels(key);
-    modalShapeSelect.onchange = (e) => {
-      pendingShapeKey = e.target.value;
-      updateShapeLabels(e.target.value);
-    };
-  } else {
-    updateShapeLabels(key);
-  }
   // Initialize rules inputs
   if (ruleBirth) ruleBirth.value = stringifyRule(state.rules?.birth ?? [9,10]);
   if (ruleSurvival) ruleSurvival.value = stringifyRule(state.rules?.survival ?? []);
@@ -369,23 +494,112 @@ function openShapeModal() {
   const densityDisplayEl = document.getElementById('shape-density-value');
   const displaySize = sizeDisplayEl ? parseInt(sizeDisplayEl.textContent) : NaN;
   const displayDensity = densityDisplayEl ? parseFloat(densityDisplayEl.textContent) : NaN;
+  
+  // For Perlin and Worley, ignore display density (always use 0.3 in modal)
+  // For other shapes, use display density if available
   const params = state.shapeParams?.[key]
     || (
-      Number.isFinite(displaySize) && Number.isFinite(displayDensity)
+      (key !== 'perlin' && key !== 'worley') && Number.isFinite(displaySize) && Number.isFinite(displayDensity)
         ? { size: displaySize, density: displayDensity }
         : { size: Math.floor(state.sim_size / 2), density: 0.3 }
     );
   const initMaxSim = simSizeInput ? Math.max(1, parseInt(simSizeInput.value) || state.sim_size) : state.sim_size;
-  const initSize = Math.min(initMaxSim, Math.max(1, parseInt(params.size)));
-  const initDensity = Math.min(1, Math.max(0, parseFloat(params.density)));
+  // Perlin noise detail has a max of 100, Worley feature points has max of 50, other shapes use maxSim
+  let maxForShape;
+  if (key === 'perlin') {
+    maxForShape = 100;
+  } else if (key === 'worley') {
+    maxForShape = 50;
+  } else {
+    maxForShape = initMaxSim;
+  }
+  const initSize = Math.min(maxForShape, Math.max(1, parseInt(params.size)));
+  
+  // Set density - use saved value if available, otherwise default to 0.3
+  let initDensity;
+  if (key === 'perlin' || key === 'worley') {
+    // For Perlin and Worley, use saved value from state.shapeParams if it exists, otherwise default to 0.3
+    if (params && params.density !== undefined && params.density !== null) {
+      const parsedDensity = parseFloat(params.density);
+      if (!isNaN(parsedDensity) && parsedDensity >= 0 && parsedDensity <= 1) {
+        initDensity = parsedDensity;
+      } else {
+        initDensity = 0.3;
+      }
+    } else {
+      initDensity = 0.3;
+    }
+  } else {
+    // For other shapes, use saved value or default to 0.3
+    initDensity = Math.min(1, Math.max(0, parseFloat(params.density || 0.3)));
+  }
+  
   sizeInput.value = `${initSize}`;
   densityInput.value = `${initDensity.toFixed(2)}`;
   
-  // Initialize region size input for Worley
-  if (key === 'worley' && regionSizeInput) {
-    const initRegionSize = params.regionSize 
-      ? Math.min(initMaxSim, Math.max(1, parseInt(params.regionSize)))
-      : Math.min(initMaxSim, Math.floor(state.sim_size * 0.4)); // Default to 40% of sim size
+  // Update labels first to ensure inputs are visible
+  if (modalShapeSelect) {
+    modalShapeSelect.value = key;
+    updateShapeLabels(key);
+    modalShapeSelect.onchange = (e) => {
+      pendingShapeKey = e.target.value;
+      updateShapeLabels(e.target.value);
+      // Update density when switching shapes - use saved value or default to 0.3
+      if (densityInput) {
+        const newKey = e.target.value;
+        const newParams = state.shapeParams?.[newKey] || {};
+        let newDensity;
+        if (newKey === 'perlin' || newKey === 'worley') {
+          // For Perlin and Worley, use saved value or default to 0.3
+          if (newParams.density !== undefined && newParams.density !== null) {
+            const parsedDensity = parseFloat(newParams.density);
+            if (!isNaN(parsedDensity) && parsedDensity >= 0 && parsedDensity <= 1) {
+              newDensity = parsedDensity;
+            } else {
+              newDensity = 0.3;
+            }
+          } else {
+            newDensity = 0.3;
+          }
+        } else {
+          // For other shapes, use saved value or default to 0.3
+          newDensity = Math.min(1, Math.max(0, parseFloat(newParams.density || 0.3)));
+        }
+        densityInput.value = `${newDensity.toFixed(2)}`;
+      }
+      // Also update region size when switching shapes
+      if ((e.target.value === 'perlin' || e.target.value === 'worley') && regionSizeInput) {
+        const maxSim = simSizeInput ? Math.max(1, parseInt(simSizeInput.value) || state.sim_size) : state.sim_size;
+        const newParams = state.shapeParams?.[e.target.value] || {};
+        let initRegionSize = 25; // Default to 25
+        if (newParams.regionSize !== undefined && newParams.regionSize !== null) {
+          const parsedRegionSize = parseInt(newParams.regionSize);
+          if (!isNaN(parsedRegionSize) && parsedRegionSize > 0) {
+            initRegionSize = Math.min(maxSim, Math.max(1, parsedRegionSize));
+          }
+        }
+        initRegionSize = Math.min(maxSim, Math.max(1, initRegionSize));
+        regionSizeInput.value = `${initRegionSize}`;
+      }
+    };
+  } else {
+    updateShapeLabels(key);
+  }
+  
+  // Initialize region size input for Perlin and Worley
+  // This must happen after updateShapeLabels to ensure the input is visible
+  if ((key === 'perlin' || key === 'worley') && regionSizeInput) {
+    // Use params.regionSize if it exists and is valid, otherwise default to 25
+    let initRegionSize = 25; // Default to 25
+    if (params && params.regionSize !== undefined && params.regionSize !== null) {
+      const parsedRegionSize = parseInt(params.regionSize);
+      if (!isNaN(parsedRegionSize) && parsedRegionSize > 0) {
+        initRegionSize = Math.min(initMaxSim, Math.max(1, parsedRegionSize));
+      }
+    }
+    // Ensure it doesn't exceed max and is at least 1
+    initRegionSize = Math.min(initMaxSim, Math.max(1, initRegionSize));
+    // Set the value - this should work now that labels are updated and input is visible
     regionSizeInput.value = `${initRegionSize}`;
   }
 
@@ -420,11 +634,12 @@ function openShapeModal() {
     }
 
     // Update shape functions with chosen params
-    if (pendingShapeKey === 'perlin') {
-      state.shapes.perlin = (await import('./shapeGenerators.js')).perlinShape(size, density);
-    } else if (pendingShapeKey === 'worley') {
-      const regionSize = regionSizeInput ? Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value))) : null;
-      state.shapes.worley = (await import('./shapeGenerators.js')).worleyShape(size, density, regionSize);
+        if (pendingShapeKey === 'perlin') {
+          const regionSize = regionSizeInput ? Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value))) : null;
+          state.shapes.perlin = (await import('./shapeGenerators.js')).perlinShape(size, density, regionSize);
+        } else if (pendingShapeKey === 'worley') {
+          const regionSize = regionSizeInput ? Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value))) : null;
+          state.shapes.worley = (await import('./shapeGenerators.js')).worleyShape(size, density, regionSize);
     } else if (pendingShapeKey === 'cube') {
       const half = Math.max(1, Math.floor(size / 2));
       state.shapes.cube = (await import('./shapeGenerators.js')).cubeShape(half, density);
@@ -438,7 +653,7 @@ function openShapeModal() {
     state.shapeKey = pendingShapeKey || state.shapeKey;
     // Persist chosen params
     if (!state.shapeParams) state.shapeParams = {};
-    if (pendingShapeKey === 'worley' && regionSizeInput) {
+    if ((pendingShapeKey === 'perlin' || pendingShapeKey === 'worley') && regionSizeInput) {
       const regionSize = Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value)));
       state.shapeParams[state.shapeKey] = { size, density, regionSize };
     } else {

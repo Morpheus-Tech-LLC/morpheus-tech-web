@@ -28,7 +28,7 @@ export async function initSimulation() {
     // Setters (to state) - Initial View Settings
     state.viewMode = 'full';
     state.sliceAxis = 'x';
-    state.sliceIndex = Math.floor(simSize/2);
+    state.sliceIndex = Math.floor((simSize - 1) / 2); // Ensure valid index (0 to simSize - 1)
     // Generate Simulation Data - History (Game of Life)
     const [simulationData, clockData] = await generateSimulation(simSize, simGenerations, simSeed);
     state.simulationData = simulationData;
@@ -40,6 +40,7 @@ export async function initSimulation() {
     const geometry = state.simulationModel.geometry;
     const material = state.simulationModel.material;
     const points = new THREE.Points(geometry, material);
+    state.simulationModel.points = points; // Store points for easy access
 
     // Create wireframe grid helper to show simulation bounds
     // Remove existing wireframe grid if it exists
@@ -55,6 +56,24 @@ export async function initSimulation() {
     state.simulationModel.wireframeGridHelper = wireframeGridHelper;
     wireframeGridHelper.visible = state.showWireframeGrid ?? false;
     scene.add(wireframeGridHelper);
+
+    // Create wireframe cells group for cell wireframe display
+    // Remove existing wireframe cells group if it exists
+    if (state.simulationModel.wireframeCellsGroup) {
+      scene.remove(state.simulationModel.wireframeCellsGroup);
+      // Dispose of geometries and materials
+      state.simulationModel.wireframeCellsGroup.traverse((child) => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
+      });
+    }
+    const wireframeCellsGroup = new THREE.Group();
+    state.simulationModel.wireframeCellsGroup = wireframeCellsGroup;
+    wireframeCellsGroup.visible = state.showCellWireframe ?? false;
+    scene.add(wireframeCellsGroup);
+
+    // Set initial visibility of points based on cell wireframe state
+    points.visible = !state.showCellWireframe;
 
     updatePoints();
     // drawClock();
@@ -72,13 +91,12 @@ export async function initSimulation() {
   }
 }
 
+
 // Point Cloud
 async function buildSimulationModel(simSize) {
 
-  console.log("LIGMA DOG")
-
     const matrixSize = simSize;
-    const cellSize = 0.4;
+    const cellSize = state.cellSize ?? 1.2; // Use state cell size or default
     const geometry = new THREE.BufferGeometry();
     const maxParticles = matrixSize * matrixSize * matrixSize;
     const positions = new Float32Array(maxParticles * 3);
@@ -88,9 +106,12 @@ async function buildSimulationModel(simSize) {
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geometry.setDrawRange(0, 0);
 
+    // Size attribute not needed for shader material (using uniform instead)
+
     const material = new THREE.PointsMaterial({
-        size: cellSize,
-        vertexColors: true
+      size: cellSize,
+      vertexColors: true,
+      sizeAttenuation: true
     });
 
     return {
@@ -116,6 +137,7 @@ export function updatePoints() {
   const grid = simulationData[gen];
   
   let i = 0;
+  const activeCells = [];
 
   for (const [x, y, z] of grid.active) {
     // Slice filtering
@@ -128,14 +150,22 @@ export function updatePoints() {
       continue;
     }
 
+    // World position of this cell
+    const worldX = x - matrixSize / 2;
+    const worldY = y - matrixSize / 2;
+    const worldZ = z - matrixSize / 2;
+    const worldPos = new THREE.Vector3(worldX, worldY, worldZ);
+    
     const normX = x / (matrixSize - 1);
     const normZ = z / (matrixSize - 1);
     const color = baseColor.clone().lerp(targetColor, normX);
     color.offsetHSL(0, 0, normZ * 0.5);
 
-    state.simulationModel.positions[3 * i]     = x - matrixSize / 2;
-    state.simulationModel.positions[3 * i + 1] = y - matrixSize / 2;
-    state.simulationModel.positions[3 * i + 2] = z - matrixSize / 2;
+    activeCells.push([x, y, z]);
+
+    state.simulationModel.positions[3 * i]     = worldX;
+    state.simulationModel.positions[3 * i + 1] = worldY;
+    state.simulationModel.positions[3 * i + 2] = worldZ;
 
     state.simulationModel.colors[3 * i]     = color.r;
     state.simulationModel.colors[3 * i + 1] = color.g;
@@ -150,8 +180,56 @@ export function updatePoints() {
   geometry.attributes.position.needsUpdate = true;
   geometry.attributes.color.needsUpdate = true;
 
+  // Update wireframe cells if enabled
+  updateWireframeCells(activeCells, matrixSize);
+
   document.getElementById("gen").textContent = `${gen}`;
   document.getElementById("slice-value").textContent = `${state.sliceAxis}-${state.sliceIndex}`;
+}
+
+function updateWireframeCells(activeCells, matrixSize) {
+  const wireframeCellsGroup = state.simulationModel.wireframeCellsGroup;
+  if (!wireframeCellsGroup) return;
+
+  // Clear existing wireframe cell objects
+  while (wireframeCellsGroup.children.length > 0) {
+    const child = wireframeCellsGroup.children[0];
+    child.geometry.dispose();
+    child.material.dispose();
+    wireframeCellsGroup.remove(child);
+  }
+
+  if (!state.showCellWireframe) return;
+
+  const cellSize = state.cellSize ?? 1.0; // Use state cell size or default
+  const baseColor = new THREE.Color("rgba(0, 180, 200, 1)");
+  const targetColor = new THREE.Color("rgb(200,20,0)");
+  
+  // Create wireframe boxes for each active cell
+  for (const [x, y, z] of activeCells) {
+    // Create a new box geometry for each cell (EdgesGeometry needs its own geometry)
+    const boxGeometry = new THREE.BoxGeometry(cellSize, cellSize, cellSize);
+    const edges = new THREE.EdgesGeometry(boxGeometry);
+    
+    const normX = x / (matrixSize - 1);
+    const normZ = z / (matrixSize - 1);
+    const color = baseColor.clone().lerp(targetColor, normX);
+    color.offsetHSL(0, 0, normZ * 0.5);
+    
+    const lineMaterial = new THREE.LineBasicMaterial({ color: color });
+    const line = new THREE.LineSegments(edges, lineMaterial);
+    
+    line.position.set(
+      x - matrixSize / 2,
+      y - matrixSize / 2,
+      z - matrixSize / 2
+    );
+    
+    wireframeCellsGroup.add(line);
+    
+    // Dispose of boxGeometry (EdgesGeometry keeps its own reference)
+    boxGeometry.dispose();
+  }
 }
 
 function createWireframeGrid(size) {
