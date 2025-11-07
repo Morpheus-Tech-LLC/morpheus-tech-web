@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>3D Cellular Automaton</title>
-  <script type="module" crossorigin src="/morpheus-tech-web/assets/index-BmLsRMU_.js"></script>
+  <script type="module" crossorigin src="/morpheus-tech-web/assets/index-8l7x2k1r.js"></script>
   <link rel="stylesheet" crossorigin href="/morpheus-tech-web/assets/index-D0Ae8aSk.css">
 </head>
 <body>
@@ -80,16 +80,44 @@
           </span>
         </div>
       </div>
-      <!-- Wireframe Grid Toggle -->
+      <!-- Wireframe Toggles -->
       <div class="control-panel">
         <div class="info-line">
-          <span class="label">Wireframe</span>
+          <span class="label">Grid</span>
           <span class="value">
-            <button id="wireframeGridToggle" class="glass-button" aria-label="Toggle wireframe grid" style="pointer-events:auto;">
-              <svg id="wireframeGridIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
+            <button id="wireframeGridToggle" class="glass-button" aria-label="Toggle wireframe grid" style="pointer-events:auto; padding: 4px;">
+              <svg id="wireframeGridIcon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <!-- Isometric 3D grid cube -->
+                <!-- Top face -->
+                <path d="M3 8 L12 3 L21 8 L12 13 Z" />
+                <!-- Bottom face -->
+                <path d="M3 16 L12 11 L21 16 L12 21 Z" />
+                <!-- Vertical edges connecting top to bottom -->
+                <line x1="3" y1="8" x2="3" y2="16" />
+                <line x1="12" y1="3" x2="12" y2="11" />
+                <line x1="21" y1="8" x2="21" y2="16" />
+                <line x1="12" y1="13" x2="12" y2="21" />
+                <!-- Grid divisions on top face -->
+                <line x1="7.5" y1="5.5" x2="7.5" y2="10.5" />
+                <line x1="16.5" y1="5.5" x2="16.5" y2="10.5" />
+                <line x1="3" y1="8" x2="21" y2="8" />
+                <!-- Grid divisions on bottom face -->
+                <line x1="7.5" y1="13.5" x2="7.5" y2="18.5" />
+                <line x1="16.5" y1="13.5" x2="16.5" y2="18.5" />
+                <line x1="3" y1="16" x2="21" y2="16" />
               </svg>
             </button>
+            <!-- <button id="wireframeCellsToggle" class="glass-button" aria-label="Toggle wireframe cells" style="pointer-events:auto; margin-left: 8px;">
+              <svg id="wireframeCellsIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 3h18v18H3V3z"/>
+              </svg>
+            </button> -->
+          </span>
+        </div>
+        <div class="info-line" style="margin-top: 8px;">
+          <span class="label">Cell Size</span>
+          <span class="value">
+            <input type="range" id="cellSizeSlider" class="glass-slider" min="0.1" max="2" step="0.01" value="1.2" style="width: 150px;" />
           </span>
         </div>
       </div>
@@ -133,11 +161,35 @@
             <option value="tetrahedron">Tetrahedron</option>
             <option value="octahedron">Octahedron</option>
           </select>
-          <label id="shape-size-label" class="modal-label" for="shape-size">Size</label>
+          <label id="shape-size-label" class="modal-label" for="shape-size">
+            <span id="shape-size-label-text">Size</span>
+            <span class="info-icon" data-tooltip="Tooltip text">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </label>
           <input type="number" id="shape-size" class="glass-input" min="1" step="1" />
-          <label id="shape-density-label" class="modal-label" for="shape-density">Density (0 - 1)</label>
+          <label id="shape-density-label" class="modal-label" for="shape-density">
+            <span id="shape-density-label-text">Density (0 - 1)</span>
+            <span class="info-icon" data-tooltip="Tooltip text">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </label>
           <input type="number" id="shape-density" class="glass-input" min="0" max="1" step="0.01" />
-          <label id="shape-region-size-label" class="modal-label hidden" for="shape-region-size">Region Size</label>
+          <label id="shape-region-size-label" class="modal-label hidden" for="shape-region-size">
+            <span id="shape-region-size-label-text">Region Size</span>
+            <span class="info-icon" data-tooltip="Tooltip text">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </label>
           <input type="number" id="shape-region-size" class="glass-input hidden" min="1" step="1" />
         </div>
 
@@ -930,7 +982,57 @@
   .modal-grid .rules-col { grid-column: 3; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid var(--color-info-display-border); padding-left: 16px; }
   .rules-hint { color: var(--color-info-display-text); font-size: 12px; opacity: .85; margin: -2px 0 4px; }
   .rules-title { color: #ffb7c5; font-weight: 700; text-transform: uppercase; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid var(--color-info-display-border); padding-bottom: 4px; }
-  .modal-label { color: var(--color-info-display-text); font-weight: 600; }
+  .modal-label { 
+    color: var(--color-info-display-text); 
+    font-weight: 600; 
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .info-icon {
+    font-size: 14px;
+    cursor: help;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    position: relative;
+  }
+  .info-icon:hover {
+    opacity: 1;
+  }
+  .info-icon[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: normal;
+    width: 280px;
+    min-width: 200px;
+    text-align: left;
+    line-height: 1.5;
+    z-index: 1000;
+    margin-bottom: 8px;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    word-wrap: break-word;
+  }
+  .info-icon[data-tooltip]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.9);
+    margin-bottom: -5px;
+    z-index: 1000;
+    pointer-events: none;
+  }
   .glass-input { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--color-control-border); background: var(--color-control-inactive-background); color: var(--color-control-font); outline: none; }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
 </style>
