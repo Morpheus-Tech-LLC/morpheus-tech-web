@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>3D Cellular Automaton</title>
-  <script type="module" crossorigin src="/morpheus-tech-web/assets/index-BBXEbRue.js"></script>
+  <script type="module" crossorigin src="/morpheus-tech-web/assets/index-8l7x2k1r.js"></script>
   <link rel="stylesheet" crossorigin href="/morpheus-tech-web/assets/index-D0Ae8aSk.css">
 </head>
 <body>
@@ -83,18 +83,35 @@
       <!-- Wireframe Toggles -->
       <div class="control-panel">
         <div class="info-line">
-          <span class="label">Wireframe</span>
+          <span class="label">Grid</span>
           <span class="value">
-            <button id="wireframeGridToggle" class="glass-button" aria-label="Toggle wireframe grid" style="pointer-events:auto;">
-              <svg id="wireframeGridIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
+            <button id="wireframeGridToggle" class="glass-button" aria-label="Toggle wireframe grid" style="pointer-events:auto; padding: 4px;">
+              <svg id="wireframeGridIcon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <!-- Isometric 3D grid cube -->
+                <!-- Top face -->
+                <path d="M3 8 L12 3 L21 8 L12 13 Z" />
+                <!-- Bottom face -->
+                <path d="M3 16 L12 11 L21 16 L12 21 Z" />
+                <!-- Vertical edges connecting top to bottom -->
+                <line x1="3" y1="8" x2="3" y2="16" />
+                <line x1="12" y1="3" x2="12" y2="11" />
+                <line x1="21" y1="8" x2="21" y2="16" />
+                <line x1="12" y1="13" x2="12" y2="21" />
+                <!-- Grid divisions on top face -->
+                <line x1="7.5" y1="5.5" x2="7.5" y2="10.5" />
+                <line x1="16.5" y1="5.5" x2="16.5" y2="10.5" />
+                <line x1="3" y1="8" x2="21" y2="8" />
+                <!-- Grid divisions on bottom face -->
+                <line x1="7.5" y1="13.5" x2="7.5" y2="18.5" />
+                <line x1="16.5" y1="13.5" x2="16.5" y2="18.5" />
+                <line x1="3" y1="16" x2="21" y2="16" />
               </svg>
             </button>
-            <button id="wireframeCellsToggle" class="glass-button" aria-label="Toggle wireframe cells" style="pointer-events:auto; margin-left: 8px;">
+            <!-- <button id="wireframeCellsToggle" class="glass-button" aria-label="Toggle wireframe cells" style="pointer-events:auto; margin-left: 8px;">
               <svg id="wireframeCellsIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 3h18v18H3V3z"/>
               </svg>
-            </button>
+            </button> -->
           </span>
         </div>
         <div class="info-line" style="margin-top: 8px;">

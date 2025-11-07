@@ -125,7 +125,7 @@ async function buildSimulationModel(simSize) {
 
 export function updatePoints() {
 
-  console.log("Update POints")
+  console.log("Update Points")
 
   const baseColor = new THREE.Color("rgba(0, 180, 200, 1)");
   const targetColor = new THREE.Color("rgb(200,20,0)");
