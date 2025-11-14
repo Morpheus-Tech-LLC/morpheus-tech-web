@@ -298,6 +298,27 @@ export function initControls() {
     });
   }
 
+  // Flip orientation toggle (applies to all simulations)
+  const flipOrientationToggle = document.getElementById('flipOrientationToggle');
+  const flipOrientationIcon = document.getElementById('flipOrientationIcon');
+  if (flipOrientationToggle) {
+    flipOrientationToggle.addEventListener('click', () => {
+      state.flipOrientation = !state.flipOrientation;
+      // Update icon color - blue when active (flipped), white/gray when inactive
+      if (flipOrientationIcon) {
+        flipOrientationIcon.style.fill = state.flipOrientation ? '#4da3ff' : 'currentColor';
+      }
+      // Update rendering to reflect the flip
+      if (state.simulationData) {
+        updatePoints();
+      }
+    });
+    // Initialize icon state
+    if (flipOrientationIcon) {
+      flipOrientationIcon.style.fill = state.flipOrientation ? '#4da3ff' : 'currentColor';
+    }
+  }
+
   // Mark controls as initialized to prevent duplicate bindings on re-init
   state.controlsInitialized = true;
 }
@@ -343,6 +364,11 @@ function openShapeModal() {
   const modalShapeSelect = document.getElementById('modal-shape-select');
   const confirmBtn = document.getElementById('shapeConfirm');
   const cancelBtn = document.getElementById('shapeCancel');
+  const simulationModeSelect = document.getElementById('simulation-mode-select');
+  const rulesSection = document.getElementById('rules-section');
+  const seedSection = document.getElementById('seed-section');
+  const simSizeLabel = document.getElementById('sim-size-label');
+  const gridWrappingLabel = document.getElementById('grid-wrapping-label');
   const ruleBirth = document.getElementById('rule-birth');
   const ruleSurvival = document.getElementById('rule-survival');
   const ruleIsolation = document.getElementById('rule-isolation');
@@ -358,7 +384,119 @@ function openShapeModal() {
   if (simGenerationsInput) simGenerationsInput.value = `${state.sim_generations}`;
   if (gridWrappingCheckbox) gridWrappingCheckbox.checked = state.gridWrapping ?? true;
 
+  // Initialize simulation mode dropdown
+  if (simulationModeSelect) {
+    simulationModeSelect.value = state.simulationMode || 'gameOfLife';
+  }
+
   const key = pendingShapeKey || state.shapeKey;
+
+  // Function to calculate required size for Rule 30 based on generations
+  function calculateRule30Size(generations, mode) {
+    if (mode === 'rule30') {
+      // Rule 30 (1D): grows in a triangular pattern
+      // Maximum width = 2 * generations + 1 (with padding for asymmetric growth)
+      // Height = generations + 1 (initial layer + all generations)
+      // Depth = 1 (only one z slice)
+      // Use the maximum of width and height, with some padding
+      const maxWidth = 2 * generations + 1;
+      const padding = Math.ceil(generations * 0.1); // 10% padding for safety
+      return Math.max(maxWidth + padding, generations + 1 + padding);
+    } else if (mode === 'rule30_2D') {
+      // Rule 30 (3D): grows in 2D, spreading in both x and z directions
+      // Similar calculation but needs to account for 2D spread
+      const maxWidth = 2 * generations + 1;
+      const padding = Math.ceil(generations * 0.15); // 15% padding for 2D spread
+      return Math.max(maxWidth + padding, generations + 1 + padding);
+    }
+    return 50; // Default fallback
+  }
+
+  // Function to update UI based on selected mode
+  const boundaryRulesSection = document.getElementById('boundary-rules-section');
+  function updateModeUI(mode) {
+    if (mode === 'gameOfLife') {
+      // Show rules section
+      if (rulesSection) rulesSection.style.display = '';
+      // Show boundary rules section
+      if (boundaryRulesSection) boundaryRulesSection.style.display = '';
+      // Show seed section
+      if (seedSection) seedSection.style.display = '';
+      // Show size controls
+      if (simSizeLabel) simSizeLabel.style.display = '';
+      if (simSizeInput) simSizeInput.style.display = '';
+      // Grid wrapping is now in boundary rules column, so it's handled there
+      // Show all shape options
+      if (modalShapeSelect) {
+        Array.from(modalShapeSelect.options).forEach(opt => {
+          opt.style.display = '';
+        });
+      }
+    } else {
+      // Hide rules section for Rule 30 modes
+      if (rulesSection) rulesSection.style.display = 'none';
+      // Hide boundary rules section for Rule 30 modes
+      if (boundaryRulesSection) boundaryRulesSection.style.display = 'none';
+      // Hide seed section for Rule 30 modes
+      if (seedSection) seedSection.style.display = 'none';
+      // Hide size controls for Rule 30 modes
+      if (simSizeLabel) simSizeLabel.style.display = 'none';
+      if (simSizeInput) simSizeInput.style.display = 'none';
+      // Hide grid wrapping controls for Rule 30 modes
+      if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
+      if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = 'none';
+      // Only show rule30 shape option (though seed section is hidden anyway)
+      if (modalShapeSelect) {
+        Array.from(modalShapeSelect.options).forEach(opt => {
+          if (opt.value === 'rule30') {
+            opt.style.display = '';
+          } else {
+            opt.style.display = 'none';
+          }
+        });
+        // Force selection to rule30
+        if (modalShapeSelect.value !== 'rule30') {
+          modalShapeSelect.value = 'rule30';
+          pendingShapeKey = 'rule30';
+        }
+      }
+      
+      // Auto-calculate and update size based on generations
+      if (simGenerationsInput && simSizeInput) {
+        const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
+        const calculatedSize = calculateRule30Size(generations, mode);
+        simSizeInput.value = calculatedSize;
+      }
+    }
+  }
+  
+  // Listen for generations input changes when Rule 30 is selected
+  if (simGenerationsInput) {
+    const generationsChangeHandler = () => {
+      const selectedMode = simulationModeSelect ? simulationModeSelect.value : 'gameOfLife';
+      if (selectedMode === 'rule30' || selectedMode === 'rule30_2D') {
+        const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
+        const calculatedSize = calculateRule30Size(generations, selectedMode);
+        if (simSizeInput) {
+          simSizeInput.value = calculatedSize;
+        }
+      }
+    };
+    simGenerationsInput.addEventListener('input', generationsChangeHandler);
+    simGenerationsInput.addEventListener('change', generationsChangeHandler);
+  }
+
+  // Set initial UI state
+  let modeChangeHandler = null;
+  if (simulationModeSelect) {
+    updateModeUI(simulationModeSelect.value);
+    
+    // Listen for mode changes
+    modeChangeHandler = (e) => {
+      updateModeUI(e.target.value);
+    };
+    simulationModeSelect.addEventListener('change', modeChangeHandler);
+  }
   
   // Function to update labels based on selected shape
   function updateShapeLabels(shapeKey) {
@@ -487,8 +625,51 @@ function openShapeModal() {
   // Initialize rules inputs
   if (ruleBirth) ruleBirth.value = stringifyRule(state.rules?.birth ?? [9,10]);
   if (ruleSurvival) ruleSurvival.value = stringifyRule(state.rules?.survival ?? []);
-  if (ruleIsolation) ruleIsolation.value = stringifyRule(state.rules?.isolation ?? []);
-  if (ruleOvercrowd) ruleOvercrowd.value = stringifyRule(state.rules?.overcrowding ?? []);
+  
+  // Initialize boundary rules inputs
+  const boundaryCornerBirth = document.getElementById('boundary-corner-birth');
+  const boundaryCornerSurvival = document.getElementById('boundary-corner-survival');
+  const boundaryEdgeBirth = document.getElementById('boundary-edge-birth');
+  const boundaryEdgeSurvival = document.getElementById('boundary-edge-survival');
+  const boundaryFaceBirth = document.getElementById('boundary-face-birth');
+  const boundaryFaceSurvival = document.getElementById('boundary-face-survival');
+  
+  if (boundaryCornerBirth) {
+    boundaryCornerBirth.value = stringifyRule(state.boundaryRules?.corner?.birth ?? [2, 3]);
+  }
+  if (boundaryCornerSurvival) {
+    boundaryCornerSurvival.value = stringifyRule(state.boundaryRules?.corner?.survival ?? [2, 3, 4]);
+  }
+  if (boundaryEdgeBirth) {
+    boundaryEdgeBirth.value = stringifyRule(state.boundaryRules?.edgeTwoFaces?.birth ?? [4]);
+  }
+  if (boundaryEdgeSurvival) {
+    boundaryEdgeSurvival.value = stringifyRule(state.boundaryRules?.edgeTwoFaces?.survival ?? [2, 3, 4, 5, 6]);
+  }
+  if (boundaryFaceBirth) {
+    boundaryFaceBirth.value = stringifyRule(state.boundaryRules?.face?.birth ?? [6]);
+  }
+  if (boundaryFaceSurvival) {
+    boundaryFaceSurvival.value = stringifyRule(state.boundaryRules?.face?.survival ?? [3, 4, 5, 6, 7, 8, 9]);
+  }
+  
+  // Add handler for grid wrapping checkbox to show/hide boundary rules
+  const boundaryRulesInputs = document.getElementById('boundary-rules-inputs');
+  
+  function updateBoundaryRulesVisibility() {
+    if (boundaryRulesInputs && gridWrappingCheckbox) {
+      // Show boundary rules when wrapping is OFF (checkbox unchecked)
+      boundaryRulesInputs.style.display = gridWrappingCheckbox.checked ? 'none' : 'block';
+    }
+  }
+  
+  if (gridWrappingCheckbox) {
+    // Initialize visibility based on current state
+    updateBoundaryRulesVisibility();
+    // Update visibility when checkbox changes
+    gridWrappingCheckbox.addEventListener('change', updateBoundaryRulesVisibility);
+  }
+  
   // Prefer params from state; fall back to current displays if present; else final default
   const sizeDisplayEl = document.getElementById('shape-size-value');
   const densityDisplayEl = document.getElementById('shape-density-value');
@@ -617,6 +798,36 @@ function openShapeModal() {
   };
 
   const onConfirm = async () => {
+    // Get selected simulation mode
+    const selectedMode = simulationModeSelect ? simulationModeSelect.value : 'gameOfLife';
+    state.simulationMode = selectedMode;
+
+    // Set Rule 30 flags based on mode
+    if (selectedMode === 'rule30') {
+      state.useRule30 = true;
+      state.useRule30_2D = false;
+      state.shapeKey = 'rule30';
+      // Auto-calculate size for Rule 30 based on generations
+      const generations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
+      const calculatedSize = calculateRule30Size(generations, 'rule30');
+      if (simSizeInput) {
+        simSizeInput.value = calculatedSize;
+      }
+    } else if (selectedMode === 'rule30_2D') {
+      state.useRule30 = false;
+      state.useRule30_2D = true;
+      state.shapeKey = 'rule30';
+      // Auto-calculate size for Rule 30 (3D) based on generations
+      const generations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
+      const calculatedSize = calculateRule30Size(generations, 'rule30_2D');
+      if (simSizeInput) {
+        simSizeInput.value = calculatedSize;
+      }
+    } else {
+      state.useRule30 = false;
+      state.useRule30_2D = false;
+    }
+    
     // Compute proposed sim size/gens first so clamping uses new size
     const newSimSize = simSizeInput ? Math.max(1, parseInt(simSizeInput.value)) : state.sim_size;
     const newSimGenerations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
@@ -633,80 +844,181 @@ function openShapeModal() {
       state.gridWrapping = newGridWrapping;
     }
 
-    // Update shape functions with chosen params
-        if (pendingShapeKey === 'perlin') {
-          const regionSize = regionSizeInput ? Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value))) : null;
-          state.shapes.perlin = (await import('./shapeGenerators.js')).perlinShape(size, density, regionSize);
-        } else if (pendingShapeKey === 'worley') {
-          const regionSize = regionSizeInput ? Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value))) : null;
-          state.shapes.worley = (await import('./shapeGenerators.js')).worleyShape(size, density, regionSize);
-    } else if (pendingShapeKey === 'cube') {
-      const half = Math.max(1, Math.floor(size / 2));
-      state.shapes.cube = (await import('./shapeGenerators.js')).cubeShape(half, density);
-    } else if (pendingShapeKey === 'tetrahedron') {
-      state.shapes.tetrahedron = (await import('./shapeGenerators.js')).tetrahedronShape(size, density);
-    } else if (pendingShapeKey === 'octahedron') {
-      state.shapes.octahedron = (await import('./shapeGenerators.js')).octahedronShape(size, density);
+    // Update shape functions with chosen params (only for Game of Life mode)
+    if (selectedMode === 'gameOfLife') {
+      if (pendingShapeKey === 'perlin') {
+        const regionSize = regionSizeInput ? Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value))) : null;
+        state.shapes.perlin = (await import('./shapeGenerators.js')).perlinShape(size, density, regionSize);
+      } else if (pendingShapeKey === 'worley') {
+        const regionSize = regionSizeInput ? Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value))) : null;
+        state.shapes.worley = (await import('./shapeGenerators.js')).worleyShape(size, density, regionSize);
+      } else if (pendingShapeKey === 'cube') {
+        const half = Math.max(1, Math.floor(size / 2));
+        state.shapes.cube = (await import('./shapeGenerators.js')).cubeShape(half, density);
+      } else if (pendingShapeKey === 'tetrahedron') {
+        state.shapes.tetrahedron = (await import('./shapeGenerators.js')).tetrahedronShape(size, density);
+      } else if (pendingShapeKey === 'octahedron') {
+        state.shapes.octahedron = (await import('./shapeGenerators.js')).octahedronShape(size, density);
+      }
+      state.shapeKey = pendingShapeKey || state.shapeKey;
     }
 
     state.reset();
-    state.shapeKey = pendingShapeKey || state.shapeKey;
-    // Persist chosen params
-    if (!state.shapeParams) state.shapeParams = {};
-    if ((pendingShapeKey === 'perlin' || pendingShapeKey === 'worley') && regionSizeInput) {
-      const regionSize = Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value)));
-      state.shapeParams[state.shapeKey] = { size, density, regionSize };
-    } else {
-      state.shapeParams[state.shapeKey] = { size, density };
+    
+    // Persist chosen params (only for Game of Life)
+    if (selectedMode === 'gameOfLife') {
+      if (!state.shapeParams) state.shapeParams = {};
+      if ((pendingShapeKey === 'perlin' || pendingShapeKey === 'worley') && regionSizeInput) {
+        const regionSize = Math.min(newSimSize, Math.max(1, parseInt(regionSizeInput.value)));
+        state.shapeParams[state.shapeKey] = { size, density, regionSize };
+      } else {
+        state.shapeParams[state.shapeKey] = { size, density };
+      }
     }
-    // Parse and persist rules
-    const birth = parseRule(ruleBirth?.value);
-    const survival = parseRule(ruleSurvival?.value);
-    const isolation = parseRule(ruleIsolation?.value);
-    const overcrowding = parseRule(ruleOvercrowd?.value);
-    state.rules = {
-      birth: birth.length ? birth : state.rules.birth,
-      survival: survival.length ? survival : state.rules.survival,
-      isolation: isolation.length ? isolation : state.rules.isolation,
-      overcrowding: overcrowding.length ? overcrowding : state.rules.overcrowding,
-    };
+    
+    // Parse and persist rules (only for Game of Life mode)
+    if (selectedMode === 'gameOfLife') {
+      const birth = parseRule(ruleBirth?.value);
+      const survival = parseRule(ruleSurvival?.value);
+      
+      // Calculate isolation and overcrowding automatically from survival
+      const finalSurvival = survival.length ? survival : (state.rules?.survival ?? []);
+      const { isolation, overcrowding } = calculateDeathRules(finalSurvival, 26);
+      
+      state.rules = {
+        birth: birth.length ? birth : state.rules.birth,
+        survival: finalSurvival,
+        isolation: isolation,
+        overcrowding: overcrowding,
+      };
+      
+      // Parse and persist boundary rules
+      const boundaryCornerBirth = document.getElementById('boundary-corner-birth');
+      const boundaryCornerSurvival = document.getElementById('boundary-corner-survival');
+      const boundaryEdgeBirth = document.getElementById('boundary-edge-birth');
+      const boundaryEdgeSurvival = document.getElementById('boundary-edge-survival');
+      const boundaryFaceBirth = document.getElementById('boundary-face-birth');
+      const boundaryFaceSurvival = document.getElementById('boundary-face-survival');
+      
+      const cornerBirth = parseRule(boundaryCornerBirth?.value);
+      const cornerSurvival = parseRule(boundaryCornerSurvival?.value);
+      const edgeBirth = parseRule(boundaryEdgeBirth?.value);
+      const edgeSurvival = parseRule(boundaryEdgeSurvival?.value);
+      const faceBirth = parseRule(boundaryFaceBirth?.value);
+      const faceSurvival = parseRule(boundaryFaceSurvival?.value);
+      
+      // Calculate boundary death rules automatically
+      const finalCornerSurvival = cornerSurvival.length ? cornerSurvival : (state.boundaryRules?.corner?.survival ?? [2, 3, 4]);
+      const finalEdgeSurvival = edgeSurvival.length ? edgeSurvival : (state.boundaryRules?.edgeTwoFaces?.survival ?? [2, 3, 4, 5, 6]);
+      const finalFaceSurvival = faceSurvival.length ? faceSurvival : (state.boundaryRules?.face?.survival ?? [3, 4, 5, 6, 7, 8, 9]);
+      
+      const cornerDeath = calculateDeathRules(finalCornerSurvival, 7);
+      const edgeDeath = calculateDeathRules(finalEdgeSurvival, 11);
+      const faceDeath = calculateDeathRules(finalFaceSurvival, 17);
+      
+      if (!state.boundaryRules) state.boundaryRules = {};
+      state.boundaryRules.corner = {
+        birth: cornerBirth.length ? cornerBirth : state.boundaryRules.corner?.birth ?? [2, 3],
+        survival: finalCornerSurvival,
+        isolation: cornerDeath.isolation,
+        overcrowding: cornerDeath.overcrowding,
+      };
+      state.boundaryRules.edgeTwoFaces = {
+        birth: edgeBirth.length ? edgeBirth : state.boundaryRules.edgeTwoFaces?.birth ?? [4],
+        survival: finalEdgeSurvival,
+        isolation: edgeDeath.isolation,
+        overcrowding: edgeDeath.overcrowding,
+      };
+      state.boundaryRules.face = {
+        birth: faceBirth.length ? faceBirth : state.boundaryRules.face?.birth ?? [6],
+        survival: finalFaceSurvival,
+        isolation: faceDeath.isolation,
+        overcrowding: faceDeath.overcrowding,
+      };
+    }
+    
     resetControlsUI();
 
     modal.classList.add('hidden');
     cleanup();
     pendingShapeKey = null;
-    initSimulation();
+    await initSimulation();
 
     // Update displays
     const sizeOut = document.getElementById('shape-size-value');
     const densityOut = document.getElementById('shape-density-value');
     const shapeOut = document.getElementById('shape-name-value');
-    if (sizeOut) sizeOut.textContent = `${size}`;
-    if (densityOut) densityOut.textContent = `${density.toFixed(2)}`;
-    if (shapeOut) shapeOut.textContent = state.shapeKey;
+    if (sizeOut && selectedMode === 'gameOfLife') sizeOut.textContent = `${size}`;
+    if (densityOut && selectedMode === 'gameOfLife') densityOut.textContent = `${density.toFixed(2)}`;
+    if (shapeOut) {
+      if (selectedMode === 'rule30') {
+        shapeOut.textContent = 'rule30';
+      } else if (selectedMode === 'rule30_2D') {
+        shapeOut.textContent = 'rule30 (2D)';
+      } else {
+        shapeOut.textContent = state.shapeKey;
+      }
+    }
     // Update simulation display
     const simSizeOut = document.getElementById('sim-size-value');
     const simGensOut = document.getElementById('sim-generations-value');
     if (simSizeOut) simSizeOut.textContent = `${state.sim_size}`;
     if (simGensOut) simGensOut.textContent = `${state.sim_generations}`;
-    // Update rules display
-    const rb = document.getElementById('rules-birth');
-    const rs = document.getElementById('rules-survival');
-    const ri = document.getElementById('rules-isolation');
-    const ro = document.getElementById('rules-overcrowd');
-    if (rb) rb.textContent = stringifyRule(state.rules.birth);
-    if (rs) rs.textContent = stringifyRule(state.rules.survival);
-    if (ri) ri.textContent = stringifyRule(state.rules.isolation);
-    if (ro) ro.textContent = stringifyRule(state.rules.overcrowding);
+    // Update rules display (only for Game of Life)
+    if (selectedMode === 'gameOfLife') {
+      const rb = document.getElementById('rules-birth');
+      const rs = document.getElementById('rules-survival');
+      const ri = document.getElementById('rules-isolation');
+      const ro = document.getElementById('rules-overcrowd');
+      if (rb) rb.textContent = stringifyRule(state.rules.birth);
+      if (rs) rs.textContent = stringifyRule(state.rules.survival);
+      if (ri) ri.textContent = stringifyRule(state.rules.isolation);
+      if (ro) ro.textContent = stringifyRule(state.rules.overcrowding);
+    }
   };
 
   function cleanup() {
     confirmBtn.removeEventListener('click', onConfirm);
     cancelBtn.removeEventListener('click', onCancel);
+    if (simulationModeSelect && modeChangeHandler) {
+      simulationModeSelect.removeEventListener('change', modeChangeHandler);
+    }
   }
 
   confirmBtn.addEventListener('click', onConfirm);
   cancelBtn.addEventListener('click', onCancel);
+}
+
+/**
+ * Calculate isolation and overcrowding rules from survival values
+ * @param {number[]} survival - Array of survival neighbor counts
+ * @param {number} maxNeighbors - Maximum number of neighbors (26 for interior, 7 for corner, 11 for edge, 17 for face)
+ * @returns {Object} Object with isolation and overcrowding arrays
+ */
+function calculateDeathRules(survival, maxNeighbors) {
+  if (!survival || survival.length === 0) {
+    return {
+      isolation: [],
+      overcrowding: []
+    };
+  }
+  
+  const minSurvival = Math.min(...survival);
+  const maxSurvival = Math.max(...survival);
+  
+  // Isolation: all values from 0 to (minSurvival - 1)
+  const isolation = [];
+  for (let i = 0; i < minSurvival; i++) {
+    isolation.push(i);
+  }
+  
+  // Overcrowding: all values from (maxSurvival + 1) to maxNeighbors
+  const overcrowding = [];
+  for (let i = maxSurvival + 1; i <= maxNeighbors; i++) {
+    overcrowding.push(i);
+  }
+  
+  return { isolation, overcrowding };
 }
 
 function parseRule(str) {
