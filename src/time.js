@@ -12,7 +12,7 @@ let frameCount = 0;
 let lastFpsUpdate = 0;
 let measuredFps = 0;
 
-let simSpeed = 0.1;        // user multiplier
+let simSpeed = 2.6;        // user multiplier (1/4 of the way up: 0.1 + (10-0.1)*0.25 = 2.575, rounded to 2.6)
 const baseInterval = 100;  // ms per generation at normal speed → 10 gens/s base rate
 
 const fpsDisplay = document.getElementById('fps-value');
@@ -25,6 +25,8 @@ function updateSpeedDisplay() {
 }
 
 if (speedControl) {
+  // Initialize slider value to match simSpeed
+  speedControl.value = simSpeed;
   speedControl.addEventListener('input', (e) => {
     simSpeed = parseFloat(e.target.value);
     updateSpeedDisplay();
