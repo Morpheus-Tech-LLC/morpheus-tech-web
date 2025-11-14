@@ -29,12 +29,22 @@ export async function initSimulation() {
     state.viewMode = 'full';
     state.sliceAxis = 'x';
     state.sliceIndex = Math.floor((simSize - 1) / 2); // Ensure valid index (0 to simSize - 1)
-    // Generate Simulation Data - History (Game of Life)
-    const [simulationData, clockData] = await generateSimulation(simSize, simGenerations, simSeed);
+    // Generate Simulation Data - History (Game of Life or Rule 30)
+    console.log(`initSimulation: About to call generateSimulation with useRule30=${state.useRule30}, useRule30_2D=${state.useRule30_2D}`);
+    const [simulationData, clockData] = await generateSimulation(
+      simSize,
+      simGenerations,
+      simSeed,
+      state.useRule30,
+      state.useRule30_2D,
+      state.useRule30Encoded
+    );
+    console.log(`initSimulation: generateSimulation completed, history length: ${simulationData.length}`);
     state.simulationData = simulationData;
     state.clockData = clockData;
 
-    state.simulationModel =  await buildSimulationModel(simSize);  // Simulation Model
+    const depth = state.useRule30 ? 1 : simSize;
+    state.simulationModel =  await buildSimulationModel(simSize, depth);  // Simulation Model
     
     // Model Data to build scene
     const geometry = state.simulationModel.geometry;
@@ -52,7 +62,7 @@ export async function initSimulation() {
         if (child.material) child.material.dispose();
       });
     }
-    const wireframeGridHelper = createWireframeGrid(simSize);
+    const wireframeGridHelper = createWireframeGrid(simSize, depth);
     state.simulationModel.wireframeGridHelper = wireframeGridHelper;
     wireframeGridHelper.visible = state.showWireframeGrid ?? false;
     scene.add(wireframeGridHelper);
@@ -93,12 +103,13 @@ export async function initSimulation() {
 
 
 // Point Cloud
-async function buildSimulationModel(simSize) {
+async function buildSimulationModel(simSize, depth) {
 
     const matrixSize = simSize;
+    const matrixDepth = depth;
     const cellSize = state.cellSize ?? 1.2; // Use state cell size or default
     const geometry = new THREE.BufferGeometry();
-    const maxParticles = matrixSize * matrixSize * matrixSize;
+    const maxParticles = matrixSize * matrixSize * matrixDepth;
     const positions = new Float32Array(maxParticles * 3);
     const colors = new Float32Array(maxParticles * 3);
 
@@ -119,7 +130,8 @@ async function buildSimulationModel(simSize) {
         material: material,
         positions: positions,
         colors: colors,
-        matrixSize: matrixSize
+        matrixSize: matrixSize,
+        matrixDepth: matrixDepth
     }
 }
 
@@ -131,13 +143,23 @@ export function updatePoints() {
   const targetColor = new THREE.Color("rgb(200,20,0)");
   const geometry = state.simulationModel.geometry;
   const matrixSize = state.simulationModel.matrixSize;
+  const matrixDepth = state.simulationModel.matrixDepth ?? matrixSize;
 
   const simulationData = state.simulationData;
   const gen = state.currentGen;
   const grid = simulationData[gen];
   
+  console.log(`updatePoints: gen=${gen}, grid.active.length=${grid.active.length}`);
+  
+  if (grid.active.length > 0) {
+    console.log(`updatePoints: First few cells:`, grid.active.slice(0, 5));
+  }
+  
   let i = 0;
   const activeCells = [];
+  const halfSpanXY = (matrixSize - 1) / 2;
+  const spanZ = matrixDepth > 1 ? matrixDepth - 1 : 0;
+  const halfSpanZ = spanZ / 2;
 
   for (const [x, y, z] of grid.active) {
     // Slice filtering
@@ -151,9 +173,15 @@ export function updatePoints() {
     }
 
     // World position of this cell
-    const worldX = x - matrixSize / 2;
-    const worldY = y - matrixSize / 2;
-    const worldZ = z - matrixSize / 2;
+    const worldX = x - halfSpanXY;
+    const worldY = y - halfSpanXY;
+    let worldZ;
+    if (matrixDepth <= 1) {
+      worldZ = 0;
+    } else {
+      const normalizedZ = z / (matrixSize - 1);
+      worldZ = normalizedZ * spanZ - halfSpanZ;
+    }
     const worldPos = new THREE.Vector3(worldX, worldY, worldZ);
     
     const normX = x / (matrixSize - 1);
@@ -181,13 +209,13 @@ export function updatePoints() {
   geometry.attributes.color.needsUpdate = true;
 
   // Update wireframe cells if enabled
-  updateWireframeCells(activeCells, matrixSize);
+  updateWireframeCells(activeCells, matrixSize, matrixDepth);
 
   document.getElementById("gen").textContent = `${gen}`;
   document.getElementById("slice-value").textContent = `${state.sliceAxis}-${state.sliceIndex}`;
 }
 
-function updateWireframeCells(activeCells, matrixSize) {
+function updateWireframeCells(activeCells, matrixSize, matrixDepth) {
   const wireframeCellsGroup = state.simulationModel.wireframeCellsGroup;
   if (!wireframeCellsGroup) return;
 
@@ -204,6 +232,9 @@ function updateWireframeCells(activeCells, matrixSize) {
   const cellSize = state.cellSize ?? 1.0; // Use state cell size or default
   const baseColor = new THREE.Color("rgba(0, 180, 200, 1)");
   const targetColor = new THREE.Color("rgb(200,20,0)");
+  const halfSpanXY = (matrixSize - 1) / 2;
+  const spanZ = matrixDepth > 1 ? matrixDepth - 1 : 0;
+  const halfSpanZ = spanZ / 2;
   
   // Create wireframe boxes for each active cell
   for (const [x, y, z] of activeCells) {
@@ -219,10 +250,18 @@ function updateWireframeCells(activeCells, matrixSize) {
     const lineMaterial = new THREE.LineBasicMaterial({ color: color });
     const line = new THREE.LineSegments(edges, lineMaterial);
     
+    let worldZ;
+    if (matrixDepth <= 1) {
+      worldZ = 0;
+    } else {
+      const normalizedZ = z / (matrixSize - 1);
+      worldZ = normalizedZ * spanZ - halfSpanZ;
+    }
+
     line.position.set(
-      x - matrixSize / 2,
-      y - matrixSize / 2,
-      z - matrixSize / 2
+      x - halfSpanXY,
+      y - halfSpanXY,
+      worldZ
     );
     
     wireframeCellsGroup.add(line);
@@ -232,14 +271,15 @@ function updateWireframeCells(activeCells, matrixSize) {
   }
 }
 
-function createWireframeGrid(size) {
+function createWireframeGrid(cellCount, depth) {
   const group = new THREE.Group();
-  const halfSize = size / 2;
+  const spanXY = Math.max(cellCount, 1);
+  const spanZ = depth > 1 ? Math.max(depth - 1, 1) : 1;
   const color = new THREE.Color(0xffffff);
   const opacity = 0.3;
   
   // Create a wireframe box representing the simulation bounds
-  const boxGeometry = new THREE.BoxGeometry(size, size, size);
+  const boxGeometry = new THREE.BoxGeometry(spanXY, spanXY, spanZ);
   const edges = new THREE.EdgesGeometry(boxGeometry);
   const lineMaterial = new THREE.LineBasicMaterial({ 
     color: color,
@@ -252,19 +292,19 @@ function createWireframeGrid(size) {
   group.add(wireframeBox);
   
   // Add grid lines to show the grid structure (optional - can be removed if too cluttered)
-  const divisions = Math.min(size, 20); // Limit divisions for performance
-  const gridHelperXY = new THREE.GridHelper(size, divisions, color, color);
+  const divisions = Math.max(Math.min(cellCount, 50), 1);
+  const gridHelperXY = new THREE.GridHelper(spanXY, divisions, color, color);
   gridHelperXY.position.z = 0;
   gridHelperXY.material.transparent = true;
   gridHelperXY.material.opacity = opacity * 0.5;
   
-  const gridHelperXZ = new THREE.GridHelper(size, divisions, color, color);
+  const gridHelperXZ = new THREE.GridHelper(spanXY, divisions, color, color);
   gridHelperXZ.rotation.x = Math.PI / 2;
   gridHelperXZ.position.y = 0;
   gridHelperXZ.material.transparent = true;
   gridHelperXZ.material.opacity = opacity * 0.5;
   
-  const gridHelperYZ = new THREE.GridHelper(size, divisions, color, color);
+  const gridHelperYZ = new THREE.GridHelper(spanZ, Math.max(Math.min(depth, 50), 1), color, color);
   gridHelperYZ.rotation.z = Math.PI / 2;
   gridHelperYZ.position.x = 0;
   gridHelperYZ.material.transparent = true;

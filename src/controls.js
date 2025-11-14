@@ -343,6 +343,9 @@ function openShapeModal() {
   const modalShapeSelect = document.getElementById('modal-shape-select');
   const confirmBtn = document.getElementById('shapeConfirm');
   const cancelBtn = document.getElementById('shapeCancel');
+  const rule30Btn = document.getElementById('rule30Button');
+  const rule30_2DBtn = document.getElementById('rule30_2DButton');
+  console.log(`Modal opened: rule30Btn=${!!rule30Btn}, rule30_2DBtn=${!!rule30_2DBtn}`);
   const ruleBirth = document.getElementById('rule-birth');
   const ruleSurvival = document.getElementById('rule-survival');
   const ruleIsolation = document.getElementById('rule-isolation');
@@ -617,6 +620,10 @@ function openShapeModal() {
   };
 
   const onConfirm = async () => {
+    // Disable Rule 30 modes when using regular simulation
+    state.useRule30 = false;
+    state.useRule30_2D = false;
+    
     // Compute proposed sim size/gens first so clamping uses new size
     const newSimSize = simSizeInput ? Math.max(1, parseInt(simSizeInput.value)) : state.sim_size;
     const newSimGenerations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
@@ -700,13 +707,110 @@ function openShapeModal() {
     if (ro) ro.textContent = stringifyRule(state.rules.overcrowding);
   };
 
+  const onRule30 = async () => {
+    // Read simulation size and generations from modal inputs
+    const newSimSize = simSizeInput ? Math.max(1, parseInt(simSizeInput.value)) : state.sim_size;
+    const newSimGenerations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
+    const newGridWrapping = gridWrappingCheckbox ? gridWrappingCheckbox.checked : state.gridWrapping ?? true;
+    
+    // Update state with new values
+    if (newSimSize !== state.sim_size) {
+      state.sim_size = newSimSize;
+    }
+    if (newSimGenerations !== state.sim_generations) {
+      state.sim_generations = newSimGenerations;
+    }
+    if (newGridWrapping !== state.gridWrapping) {
+      state.gridWrapping = newGridWrapping;
+    }
+    
+    // Set Rule 30 1D mode
+    state.useRule30 = true;
+    state.useRule30_2D = false;
+    state.shapeKey = 'rule30';
+    
+    // Close modal and initialize simulation
+    modal.classList.add('hidden');
+    cleanup();
+    pendingShapeKey = null;
+    
+    // Initialize simulation with Rule 30
+    await initSimulation();
+    
+    // Update displays
+    const shapeOut = document.getElementById('shape-name-value');
+    const simSizeOut = document.getElementById('sim-size-value');
+    const simGensOut = document.getElementById('sim-generations-value');
+    if (shapeOut) shapeOut.textContent = 'rule30';
+    if (simSizeOut) simSizeOut.textContent = `${state.sim_size}`;
+    if (simGensOut) simGensOut.textContent = `${state.sim_generations}`;
+  };
+
+  const onRule30_2D = async () => {
+    console.log('Rule 30 2D button clicked!');
+    // Read simulation size and generations from modal inputs
+    const newSimSize = simSizeInput ? Math.max(1, parseInt(simSizeInput.value)) : state.sim_size;
+    const newSimGenerations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
+    const newGridWrapping = gridWrappingCheckbox ? gridWrappingCheckbox.checked : state.gridWrapping ?? true;
+    
+    // Update state with new values
+    if (newSimSize !== state.sim_size) {
+      state.sim_size = newSimSize;
+    }
+    if (newSimGenerations !== state.sim_generations) {
+      state.sim_generations = newSimGenerations;
+    }
+    if (newGridWrapping !== state.gridWrapping) {
+      state.gridWrapping = newGridWrapping;
+    }
+    
+    // Set Rule 30 2D mode
+    state.useRule30 = false;
+    state.useRule30_2D = true;
+    state.shapeKey = 'rule30';
+    
+    console.log(`Rule 30 2D: Setting state - useRule30=${state.useRule30}, useRule30_2D=${state.useRule30_2D}, simSize=${state.sim_size}, simGenerations=${state.sim_generations}`);
+    
+    // Close modal and initialize simulation
+    modal.classList.add('hidden');
+    cleanup();
+    pendingShapeKey = null;
+    
+    // Initialize simulation with Rule 30 2D
+    console.log('Rule 30 2D: About to call initSimulation()');
+    await initSimulation();
+    console.log('Rule 30 2D: initSimulation() completed');
+    
+    // Update displays
+    const shapeOut = document.getElementById('shape-name-value');
+    const simSizeOut = document.getElementById('sim-size-value');
+    const simGensOut = document.getElementById('sim-generations-value');
+    if (shapeOut) shapeOut.textContent = 'rule30 (2D)';
+    if (simSizeOut) simSizeOut.textContent = `${state.sim_size}`;
+    if (simGensOut) simGensOut.textContent = `${state.sim_generations}`;
+  };
+
   function cleanup() {
     confirmBtn.removeEventListener('click', onConfirm);
     cancelBtn.removeEventListener('click', onCancel);
+    if (rule30Btn) rule30Btn.removeEventListener('click', onRule30);
+    if (rule30_2DBtn) rule30_2DBtn.removeEventListener('click', onRule30_2D);
   }
 
   confirmBtn.addEventListener('click', onConfirm);
   cancelBtn.addEventListener('click', onCancel);
+  if (rule30Btn) {
+    rule30Btn.addEventListener('click', onRule30);
+    console.log('Rule 30 (1D) button event listener attached');
+  } else {
+    console.warn('Rule 30 (1D) button not found!');
+  }
+  if (rule30_2DBtn) {
+    rule30_2DBtn.addEventListener('click', onRule30_2D);
+    console.log('Rule 30 (2D) button event listener attached');
+  } else {
+    console.warn('Rule 30 (2D) button not found!');
+  }
 }
 
 function parseRule(str) {

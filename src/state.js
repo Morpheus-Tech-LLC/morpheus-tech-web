@@ -1,5 +1,5 @@
 // state.js
-import { perlinShape, cubeShape, tetrahedronShape, octahedronShape, worleyShape } from './shapeGenerators.js';
+import { perlinShape, cubeShape, tetrahedronShape, octahedronShape, worleyShape, rule30Shape } from './shapeGenerators.js';
 
 // Mutable state
 export const state = {
@@ -23,12 +23,15 @@ export const state = {
   clockData: null,
   controlsInitialized: false,
   shapeKey: "cube",
+  useRule30: false,
+  useRule30_2D: false,
   shapes: {
     perlin: perlinShape(10, 0.3, 30),
     cube: cubeShape(5, 1),
     tetrahedron: tetrahedronShape(13),
     octahedron: octahedronShape(8, 1),
-    worley: worleyShape(8, 0.5, 20)
+    worley: worleyShape(8, 0.5, 20),
+    rule30: rule30Shape()
   },
   // Simulation rules (neighbor counts)
   rules: {
@@ -62,5 +65,6 @@ export const state = {
     this.simulationData = null;
     this.simulationModel = null;
     // this.shapeKey = "cube";
+    // Don't reset useRule30 - it persists until explicitly changed
   }
 };
