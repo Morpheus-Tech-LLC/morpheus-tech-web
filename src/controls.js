@@ -625,8 +625,6 @@ function openShapeModal() {
   // Initialize rules inputs
   if (ruleBirth) ruleBirth.value = stringifyRule(state.rules?.birth ?? [9,10]);
   if (ruleSurvival) ruleSurvival.value = stringifyRule(state.rules?.survival ?? []);
-  if (ruleIsolation) ruleIsolation.value = stringifyRule(state.rules?.isolation ?? []);
-  if (ruleOvercrowd) ruleOvercrowd.value = stringifyRule(state.rules?.overcrowding ?? []);
   
   // Initialize boundary rules inputs
   const boundaryCornerBirth = document.getElementById('boundary-corner-birth');
@@ -643,16 +641,16 @@ function openShapeModal() {
     boundaryCornerSurvival.value = stringifyRule(state.boundaryRules?.corner?.survival ?? [2, 3, 4]);
   }
   if (boundaryEdgeBirth) {
-    boundaryEdgeBirth.value = stringifyRule(state.boundaryRules?.edgeTwoFaces?.birth ?? [6]);
+    boundaryEdgeBirth.value = stringifyRule(state.boundaryRules?.edgeTwoFaces?.birth ?? [4]);
   }
   if (boundaryEdgeSurvival) {
-    boundaryEdgeSurvival.value = stringifyRule(state.boundaryRules?.edgeTwoFaces?.survival ?? [3, 4, 5, 6, 7, 8, 9]);
+    boundaryEdgeSurvival.value = stringifyRule(state.boundaryRules?.edgeTwoFaces?.survival ?? [2, 3, 4, 5, 6]);
   }
   if (boundaryFaceBirth) {
-    boundaryFaceBirth.value = stringifyRule(state.boundaryRules?.face?.birth ?? [7]);
+    boundaryFaceBirth.value = stringifyRule(state.boundaryRules?.face?.birth ?? [6]);
   }
   if (boundaryFaceSurvival) {
-    boundaryFaceSurvival.value = stringifyRule(state.boundaryRules?.face?.survival ?? [4, 5, 6, 7, 8, 9, 10, 11]);
+    boundaryFaceSurvival.value = stringifyRule(state.boundaryRules?.face?.survival ?? [3, 4, 5, 6, 7, 8, 9]);
   }
   
   // Add handler for grid wrapping checkbox to show/hide boundary rules
@@ -882,13 +880,16 @@ function openShapeModal() {
     if (selectedMode === 'gameOfLife') {
       const birth = parseRule(ruleBirth?.value);
       const survival = parseRule(ruleSurvival?.value);
-      const isolation = parseRule(ruleIsolation?.value);
-      const overcrowding = parseRule(ruleOvercrowd?.value);
+      
+      // Calculate isolation and overcrowding automatically from survival
+      const finalSurvival = survival.length ? survival : (state.rules?.survival ?? []);
+      const { isolation, overcrowding } = calculateDeathRules(finalSurvival, 26);
+      
       state.rules = {
         birth: birth.length ? birth : state.rules.birth,
-        survival: survival.length ? survival : state.rules.survival,
-        isolation: isolation.length ? isolation : state.rules.isolation,
-        overcrowding: overcrowding.length ? overcrowding : state.rules.overcrowding,
+        survival: finalSurvival,
+        isolation: isolation,
+        overcrowding: overcrowding,
       };
       
       // Parse and persist boundary rules
@@ -906,18 +907,33 @@ function openShapeModal() {
       const faceBirth = parseRule(boundaryFaceBirth?.value);
       const faceSurvival = parseRule(boundaryFaceSurvival?.value);
       
+      // Calculate boundary death rules automatically
+      const finalCornerSurvival = cornerSurvival.length ? cornerSurvival : (state.boundaryRules?.corner?.survival ?? [2, 3, 4]);
+      const finalEdgeSurvival = edgeSurvival.length ? edgeSurvival : (state.boundaryRules?.edgeTwoFaces?.survival ?? [2, 3, 4, 5, 6]);
+      const finalFaceSurvival = faceSurvival.length ? faceSurvival : (state.boundaryRules?.face?.survival ?? [3, 4, 5, 6, 7, 8, 9]);
+      
+      const cornerDeath = calculateDeathRules(finalCornerSurvival, 7);
+      const edgeDeath = calculateDeathRules(finalEdgeSurvival, 11);
+      const faceDeath = calculateDeathRules(finalFaceSurvival, 17);
+      
       if (!state.boundaryRules) state.boundaryRules = {};
       state.boundaryRules.corner = {
         birth: cornerBirth.length ? cornerBirth : state.boundaryRules.corner?.birth ?? [2, 3],
-        survival: cornerSurvival.length ? cornerSurvival : state.boundaryRules.corner?.survival ?? [2, 3, 4],
+        survival: finalCornerSurvival,
+        isolation: cornerDeath.isolation,
+        overcrowding: cornerDeath.overcrowding,
       };
       state.boundaryRules.edgeTwoFaces = {
-        birth: edgeBirth.length ? edgeBirth : state.boundaryRules.edgeTwoFaces?.birth ?? [6],
-        survival: edgeSurvival.length ? edgeSurvival : state.boundaryRules.edgeTwoFaces?.survival ?? [3, 4, 5, 6, 7, 8, 9],
+        birth: edgeBirth.length ? edgeBirth : state.boundaryRules.edgeTwoFaces?.birth ?? [4],
+        survival: finalEdgeSurvival,
+        isolation: edgeDeath.isolation,
+        overcrowding: edgeDeath.overcrowding,
       };
       state.boundaryRules.face = {
-        birth: faceBirth.length ? faceBirth : state.boundaryRules.face?.birth ?? [7],
-        survival: faceSurvival.length ? faceSurvival : state.boundaryRules.face?.survival ?? [4, 5, 6, 7, 8, 9, 10, 11],
+        birth: faceBirth.length ? faceBirth : state.boundaryRules.face?.birth ?? [6],
+        survival: finalFaceSurvival,
+        isolation: faceDeath.isolation,
+        overcrowding: faceDeath.overcrowding,
       };
     }
     
@@ -971,6 +987,38 @@ function openShapeModal() {
 
   confirmBtn.addEventListener('click', onConfirm);
   cancelBtn.addEventListener('click', onCancel);
+}
+
+/**
+ * Calculate isolation and overcrowding rules from survival values
+ * @param {number[]} survival - Array of survival neighbor counts
+ * @param {number} maxNeighbors - Maximum number of neighbors (26 for interior, 7 for corner, 11 for edge, 17 for face)
+ * @returns {Object} Object with isolation and overcrowding arrays
+ */
+function calculateDeathRules(survival, maxNeighbors) {
+  if (!survival || survival.length === 0) {
+    return {
+      isolation: [],
+      overcrowding: []
+    };
+  }
+  
+  const minSurvival = Math.min(...survival);
+  const maxSurvival = Math.max(...survival);
+  
+  // Isolation: all values from 0 to (minSurvival - 1)
+  const isolation = [];
+  for (let i = 0; i < minSurvival; i++) {
+    isolation.push(i);
+  }
+  
+  // Overcrowding: all values from (maxSurvival + 1) to maxNeighbors
+  const overcrowding = [];
+  for (let i = maxSurvival + 1; i <= maxNeighbors; i++) {
+    overcrowding.push(i);
+  }
+  
+  return { isolation, overcrowding };
 }
 
 function parseRule(str) {

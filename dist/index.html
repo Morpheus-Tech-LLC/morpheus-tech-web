@@ -215,11 +215,7 @@
           <input type="text" id="rule-birth" class="glass-input" placeholder="" />
           <label class="modal-label" for="rule-survival">Survival</label>
           <input type="text" id="rule-survival" class="glass-input" placeholder="" />
-          <label class="modal-label" for="rule-isolation">Death by isolation</label>
-          <input type="text" id="rule-isolation" class="glass-input" placeholder="" />
-          <label class="modal-label" for="rule-overcrowd">Death by overcrowding</label>
-          <input type="text" id="rule-overcrowd" class="glass-input" placeholder="" />
-          <div class="rules-hint">Enter values as list or range (e.g., 9,10 or 5-15)</div>
+          <div class="rules-hint">Enter values as list or range (e.g., 9,10 or 5-15). Isolation and overcrowding are calculated automatically.</div>
         </div>
 
         <div id="boundary-rules-section" class="boundary-col">
@@ -237,18 +233,18 @@
               <input type="text" id="boundary-corner-survival" class="glass-input" placeholder="2-4" />
             </div>
             <div style="margin-bottom: 15px;">
-              <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Edge (17 neighbors)</div>
+              <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Edge (11 neighbors)</div>
               <label class="modal-label" for="boundary-edge-birth">Birth</label>
-              <input type="text" id="boundary-edge-birth" class="glass-input" placeholder="6" />
+              <input type="text" id="boundary-edge-birth" class="glass-input" placeholder="4" />
               <label class="modal-label" for="boundary-edge-survival">Survival</label>
-              <input type="text" id="boundary-edge-survival" class="glass-input" placeholder="3-9" />
+              <input type="text" id="boundary-edge-survival" class="glass-input" placeholder="2-6" />
             </div>
             <div style="margin-bottom: 15px;">
-              <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Face (19 neighbors)</div>
+              <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Face (17 neighbors)</div>
               <label class="modal-label" for="boundary-face-birth">Birth</label>
-              <input type="text" id="boundary-face-birth" class="glass-input" placeholder="7" />
+              <input type="text" id="boundary-face-birth" class="glass-input" placeholder="6" />
               <label class="modal-label" for="boundary-face-survival">Survival</label>
-              <input type="text" id="boundary-face-survival" class="glass-input" placeholder="4-11" />
+              <input type="text" id="boundary-face-survival" class="glass-input" placeholder="3-9" />
             </div>
           </div>
         </div>
