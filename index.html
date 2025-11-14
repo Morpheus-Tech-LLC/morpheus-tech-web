@@ -163,10 +163,6 @@
           <input type="number" id="sim-size" class="glass-input" min="1" step="1" />
           <label class="modal-label" for="sim-generations">Generations</label>
           <input type="number" id="sim-generations" class="glass-input" min="1" step="1" />
-          <label id="grid-wrapping-label" class="modal-label" for="grid-wrapping-checkbox" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" id="grid-wrapping-checkbox" checked style="width: auto; cursor: pointer;" />
-            <span>Grid Wrapping</span>
-          </label>
         </div>
 
         <div id="seed-section" class="seed-col">
@@ -223,6 +219,37 @@
           <label class="modal-label" for="rule-overcrowd">Death by overcrowding</label>
           <input type="text" id="rule-overcrowd" class="glass-input" placeholder="" />
           <div class="rules-hint">Enter values as list or range (e.g., 9,10 or 5-15)</div>
+        </div>
+
+        <div id="boundary-rules-section" class="boundary-col">
+          <div class="rules-title">Boundary Rules</div>
+          <label id="grid-wrapping-label" class="modal-label" for="grid-wrapping-checkbox" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="grid-wrapping-checkbox" checked style="width: auto; cursor: pointer;" />
+            <span>Grid Wrapping</span>
+          </label>
+          <div id="boundary-rules-inputs" style="display: none;">
+            <div style="margin-bottom: 15px;">
+              <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Corner (7 neighbors)</div>
+              <label class="modal-label" for="boundary-corner-birth">Birth</label>
+              <input type="text" id="boundary-corner-birth" class="glass-input" placeholder="2,3" />
+              <label class="modal-label" for="boundary-corner-survival">Survival</label>
+              <input type="text" id="boundary-corner-survival" class="glass-input" placeholder="2-4" />
+            </div>
+            <div style="margin-bottom: 15px;">
+              <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Edge (17 neighbors)</div>
+              <label class="modal-label" for="boundary-edge-birth">Birth</label>
+              <input type="text" id="boundary-edge-birth" class="glass-input" placeholder="6" />
+              <label class="modal-label" for="boundary-edge-survival">Survival</label>
+              <input type="text" id="boundary-edge-survival" class="glass-input" placeholder="3-9" />
+            </div>
+            <div style="margin-bottom: 15px;">
+              <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Face (19 neighbors)</div>
+              <label class="modal-label" for="boundary-face-birth">Birth</label>
+              <input type="text" id="boundary-face-birth" class="glass-input" placeholder="7" />
+              <label class="modal-label" for="boundary-face-survival">Survival</label>
+              <input type="text" id="boundary-face-survival" class="glass-input" placeholder="4-11" />
+            </div>
+          </div>
         </div>
       </div>
       <div class="modal-actions">
@@ -1035,13 +1062,14 @@
     filter: grayscale(100%);
     transition: opacity 0.3s ease, filter 0.3s ease;
   }
-  .modal-content { position: relative; padding: 16px 18px; width: 520px; font-size: 15px; }
+  .modal-content { position: relative; padding: 16px 18px; width: 680px; font-size: 15px; }
   .modal-title { margin: 0 0 12px; color: var(--color-text-contrast); border-bottom: 1px solid var(--color-info-display-border); padding-bottom: 6px; }
   .modal-body { display: flex; flex-direction: column; gap: 10px; }
-  .modal-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 18px; align-items: start; position: relative; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px 18px; align-items: start; position: relative; }
   .modal-grid .sim-col { grid-column: 1; display: flex; flex-direction: column; gap: 8px; }
   .modal-grid .seed-col { grid-column: 2; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid var(--color-info-display-border); padding-left: 16px; }
   .modal-grid .rules-col { grid-column: 3; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid var(--color-info-display-border); padding-left: 16px; }
+  .modal-grid .boundary-col { grid-column: 4; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid var(--color-info-display-border); padding-left: 16px; }
   .rules-hint { color: var(--color-info-display-text); font-size: 12px; opacity: .85; margin: -2px 0 4px; }
   .rules-title { color: #ffb7c5; font-weight: 700; text-transform: uppercase; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid var(--color-info-display-border); padding-bottom: 4px; }
   .modal-label { 

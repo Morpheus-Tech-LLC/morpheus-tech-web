@@ -57,6 +57,29 @@ export function initMatrix(size, shapeFn) {
 // Game of Life logic
 // ---------------------------
 
+/**
+ * Determine the boundary type of a cell when wrapping is off
+ * @param {number} x - X coordinate
+ * @param {number} y - Y coordinate
+ * @param {number} z - Z coordinate
+ * @param {number} size - Grid size
+ * @returns {string|null} - Boundary type: 'corner', 'edgeTwoFaces', 'edgeOneFace', 'face', or null for interior
+ */
+function getBoundaryType(x, y, z, size) {
+  const onBoundary = (coord) => coord === 0 || coord === size - 1;
+  const xBound = onBoundary(x);
+  const yBound = onBoundary(y);
+  const zBound = onBoundary(z);
+  
+  const boundaryCount = (xBound ? 1 : 0) + (yBound ? 1 : 0) + (zBound ? 1 : 0);
+  
+  if (boundaryCount === 0) return null; // Interior
+  if (boundaryCount === 3) return 'corner'; // Corner (all 3 on boundary)
+  if (boundaryCount === 2) return 'edgeTwoFaces'; // Edge (2 faces on boundary)
+  if (boundaryCount === 1) return 'face'; // Face (1 face on boundary)
+  return null;
+}
+
 export function convolve3D(grid) {
   const size = grid.size;
   const newGrid = new Grid3D(size, 0);
@@ -93,9 +116,31 @@ export function convolve3D(grid) {
     }
   }
 
-  // Prepare rule sets for quick lookup
+  // Prepare rule sets for quick lookup (interior rules)
   const birthSet = new Set(state.rules?.birth ?? [9, 10]);
   const survivalSet = new Set(state.rules?.survival ?? []);
+
+  // Prepare boundary rule sets
+  const boundaryRules = state.boundaryRules ?? {};
+  const boundaryRuleSets = {};
+  if (boundaryRules.corner) {
+    boundaryRuleSets.corner = {
+      birth: new Set(boundaryRules.corner.birth),
+      survival: new Set(boundaryRules.corner.survival),
+    };
+  }
+  if (boundaryRules.edgeTwoFaces) {
+    boundaryRuleSets.edgeTwoFaces = {
+      birth: new Set(boundaryRules.edgeTwoFaces.birth),
+      survival: new Set(boundaryRules.edgeTwoFaces.survival),
+    };
+  }
+  if (boundaryRules.face) {
+    boundaryRuleSets.face = {
+      birth: new Set(boundaryRules.face.birth),
+      survival: new Set(boundaryRules.face.survival),
+    };
+  }
 
   // Apply rules only on candidates
   for (const [x, y, z] of candidates.values()) {
@@ -115,10 +160,30 @@ export function convolve3D(grid) {
 
     const alive = grid.get(x, y, z) === 1;
     let newVal;
-    if (alive) {
-      newVal = survivalSet.size > 0 ? (survivalSet.has(neighbors) ? 1 : 0) : (neighbors >= 5 && neighbors <= 15 ? 1 : 0);
+    
+    // Determine which rules to use
+    let useBoundaryRules = false;
+    let boundaryType = null;
+    if (!wrapping) {
+      boundaryType = getBoundaryType(x, y, z, size);
+      useBoundaryRules = boundaryType !== null && boundaryRuleSets[boundaryType];
+    }
+    
+    if (useBoundaryRules) {
+      // Use boundary rules
+      const ruleSet = boundaryRuleSets[boundaryType];
+      if (alive) {
+        newVal = ruleSet.survival.has(neighbors) ? 1 : 0;
+      } else {
+        newVal = ruleSet.birth.has(neighbors) ? 1 : 0;
+      }
     } else {
-      newVal = birthSet.has(neighbors) ? 1 : 0;
+      // Use interior rules
+      if (alive) {
+        newVal = survivalSet.size > 0 ? (survivalSet.has(neighbors) ? 1 : 0) : (neighbors >= 5 && neighbors <= 15 ? 1 : 0);
+      } else {
+        newVal = birthSet.has(neighbors) ? 1 : 0;
+      }
     }
 
     if (newVal === 1) {

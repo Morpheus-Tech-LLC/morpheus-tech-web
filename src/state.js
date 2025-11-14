@@ -42,6 +42,34 @@ export const state = {
     isolation: [0, 1, 2, 3, 4],
     overcrowding: Array.from({ length: 11 }, (_, i) => i + 16), // 16-26
   },
+  // Boundary rules for cells with fewer neighbors (proportional to interior rules)
+  // Only applied when grid wrapping is OFF
+  boundaryRules: {
+    // Corner cells: 7 neighbors (7/26 ≈ 0.269 of interior)
+    // All 3 coordinates are on boundary (0 or size-1)
+    corner: {
+      birth: [2, 3],
+      survival: [2, 3, 4],
+      isolation: [0, 1],
+      overcrowding: [5, 6, 7],
+    },
+    // Edge cells (two faces): 17 neighbors (17/26 ≈ 0.654 of interior)
+    // Exactly 2 coordinates are on boundary
+    edgeTwoFaces: {
+      birth: [6],
+      survival: [3, 4, 5, 6, 7, 8, 9],
+      isolation: [0, 1, 2],
+      overcrowding: [10, 11, 12, 13, 14, 15, 16, 17],
+    },
+    // Face cells (one face): 19 neighbors (19/26 ≈ 0.731 of interior)
+    // Exactly 1 coordinate is on boundary
+    face: {
+      birth: [7],
+      survival: [4, 5, 6, 7, 8, 9, 10, 11],
+      isolation: [0, 1, 2, 3],
+      overcrowding: [12, 13, 14, 15, 16, 17, 18, 19],
+    },
+  },
   shapeParams: {
     perlin: { size: 10, density: 0.3, regionSize: 25 },
     cube: { size: 10, density: 1 },

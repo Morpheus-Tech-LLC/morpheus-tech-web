@@ -413,17 +413,19 @@ function openShapeModal() {
   }
 
   // Function to update UI based on selected mode
+  const boundaryRulesSection = document.getElementById('boundary-rules-section');
   function updateModeUI(mode) {
     if (mode === 'gameOfLife') {
       // Show rules section
       if (rulesSection) rulesSection.style.display = '';
+      // Show boundary rules section
+      if (boundaryRulesSection) boundaryRulesSection.style.display = '';
       // Show seed section
       if (seedSection) seedSection.style.display = '';
-      // Show size and grid wrapping controls
+      // Show size controls
       if (simSizeLabel) simSizeLabel.style.display = '';
       if (simSizeInput) simSizeInput.style.display = '';
-      if (gridWrappingLabel) gridWrappingLabel.style.display = '';
-      if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = '';
+      // Grid wrapping is now in boundary rules column, so it's handled there
       // Show all shape options
       if (modalShapeSelect) {
         Array.from(modalShapeSelect.options).forEach(opt => {
@@ -433,11 +435,14 @@ function openShapeModal() {
     } else {
       // Hide rules section for Rule 30 modes
       if (rulesSection) rulesSection.style.display = 'none';
+      // Hide boundary rules section for Rule 30 modes
+      if (boundaryRulesSection) boundaryRulesSection.style.display = 'none';
       // Hide seed section for Rule 30 modes
       if (seedSection) seedSection.style.display = 'none';
-      // Hide size and grid wrapping controls for Rule 30 modes
+      // Hide size controls for Rule 30 modes
       if (simSizeLabel) simSizeLabel.style.display = 'none';
       if (simSizeInput) simSizeInput.style.display = 'none';
+      // Hide grid wrapping controls for Rule 30 modes
       if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
       if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = 'none';
       // Only show rule30 shape option (though seed section is hidden anyway)
@@ -622,6 +627,51 @@ function openShapeModal() {
   if (ruleSurvival) ruleSurvival.value = stringifyRule(state.rules?.survival ?? []);
   if (ruleIsolation) ruleIsolation.value = stringifyRule(state.rules?.isolation ?? []);
   if (ruleOvercrowd) ruleOvercrowd.value = stringifyRule(state.rules?.overcrowding ?? []);
+  
+  // Initialize boundary rules inputs
+  const boundaryCornerBirth = document.getElementById('boundary-corner-birth');
+  const boundaryCornerSurvival = document.getElementById('boundary-corner-survival');
+  const boundaryEdgeBirth = document.getElementById('boundary-edge-birth');
+  const boundaryEdgeSurvival = document.getElementById('boundary-edge-survival');
+  const boundaryFaceBirth = document.getElementById('boundary-face-birth');
+  const boundaryFaceSurvival = document.getElementById('boundary-face-survival');
+  
+  if (boundaryCornerBirth) {
+    boundaryCornerBirth.value = stringifyRule(state.boundaryRules?.corner?.birth ?? [2, 3]);
+  }
+  if (boundaryCornerSurvival) {
+    boundaryCornerSurvival.value = stringifyRule(state.boundaryRules?.corner?.survival ?? [2, 3, 4]);
+  }
+  if (boundaryEdgeBirth) {
+    boundaryEdgeBirth.value = stringifyRule(state.boundaryRules?.edgeTwoFaces?.birth ?? [6]);
+  }
+  if (boundaryEdgeSurvival) {
+    boundaryEdgeSurvival.value = stringifyRule(state.boundaryRules?.edgeTwoFaces?.survival ?? [3, 4, 5, 6, 7, 8, 9]);
+  }
+  if (boundaryFaceBirth) {
+    boundaryFaceBirth.value = stringifyRule(state.boundaryRules?.face?.birth ?? [7]);
+  }
+  if (boundaryFaceSurvival) {
+    boundaryFaceSurvival.value = stringifyRule(state.boundaryRules?.face?.survival ?? [4, 5, 6, 7, 8, 9, 10, 11]);
+  }
+  
+  // Add handler for grid wrapping checkbox to show/hide boundary rules
+  const boundaryRulesInputs = document.getElementById('boundary-rules-inputs');
+  
+  function updateBoundaryRulesVisibility() {
+    if (boundaryRulesInputs && gridWrappingCheckbox) {
+      // Show boundary rules when wrapping is OFF (checkbox unchecked)
+      boundaryRulesInputs.style.display = gridWrappingCheckbox.checked ? 'none' : 'block';
+    }
+  }
+  
+  if (gridWrappingCheckbox) {
+    // Initialize visibility based on current state
+    updateBoundaryRulesVisibility();
+    // Update visibility when checkbox changes
+    gridWrappingCheckbox.addEventListener('change', updateBoundaryRulesVisibility);
+  }
+  
   // Prefer params from state; fall back to current displays if present; else final default
   const sizeDisplayEl = document.getElementById('shape-size-value');
   const densityDisplayEl = document.getElementById('shape-density-value');
@@ -839,6 +889,35 @@ function openShapeModal() {
         survival: survival.length ? survival : state.rules.survival,
         isolation: isolation.length ? isolation : state.rules.isolation,
         overcrowding: overcrowding.length ? overcrowding : state.rules.overcrowding,
+      };
+      
+      // Parse and persist boundary rules
+      const boundaryCornerBirth = document.getElementById('boundary-corner-birth');
+      const boundaryCornerSurvival = document.getElementById('boundary-corner-survival');
+      const boundaryEdgeBirth = document.getElementById('boundary-edge-birth');
+      const boundaryEdgeSurvival = document.getElementById('boundary-edge-survival');
+      const boundaryFaceBirth = document.getElementById('boundary-face-birth');
+      const boundaryFaceSurvival = document.getElementById('boundary-face-survival');
+      
+      const cornerBirth = parseRule(boundaryCornerBirth?.value);
+      const cornerSurvival = parseRule(boundaryCornerSurvival?.value);
+      const edgeBirth = parseRule(boundaryEdgeBirth?.value);
+      const edgeSurvival = parseRule(boundaryEdgeSurvival?.value);
+      const faceBirth = parseRule(boundaryFaceBirth?.value);
+      const faceSurvival = parseRule(boundaryFaceSurvival?.value);
+      
+      if (!state.boundaryRules) state.boundaryRules = {};
+      state.boundaryRules.corner = {
+        birth: cornerBirth.length ? cornerBirth : state.boundaryRules.corner?.birth ?? [2, 3],
+        survival: cornerSurvival.length ? cornerSurvival : state.boundaryRules.corner?.survival ?? [2, 3, 4],
+      };
+      state.boundaryRules.edgeTwoFaces = {
+        birth: edgeBirth.length ? edgeBirth : state.boundaryRules.edgeTwoFaces?.birth ?? [6],
+        survival: edgeSurvival.length ? edgeSurvival : state.boundaryRules.edgeTwoFaces?.survival ?? [3, 4, 5, 6, 7, 8, 9],
+      };
+      state.boundaryRules.face = {
+        birth: faceBirth.length ? faceBirth : state.boundaryRules.face?.birth ?? [7],
+        survival: faceSurvival.length ? faceSurvival : state.boundaryRules.face?.survival ?? [4, 5, 6, 7, 8, 9, 10, 11],
       };
     }
     
