@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>3D Cellular Automaton</title>
-  <script type="module" crossorigin src="/morpheus-tech-web/assets/index-CHC7bK6B.js"></script>
+  <script type="module" crossorigin src="/morpheus-tech-web/assets/index-By9WP2zu.js"></script>
   <link rel="stylesheet" crossorigin href="/morpheus-tech-web/assets/index-D0Ae8aSk.css">
 </head>
 <body>
@@ -139,19 +139,28 @@
     <div class="modal-content glass-panel">
       <h3 class="modal-title">Configuration</h3>
       <div class="modal-body modal-grid">
+        <div class="sim-col" style="grid-column: 1 / -1; margin-bottom: 1rem;">
+          <div class="rules-title">Simulation Mode</div>
+          <label class="modal-label" for="simulation-mode-select">Mode</label>
+          <select id="simulation-mode-select" class="glass-select">
+            <option value="gameOfLife">Game of Life (3D)</option>
+            <option value="rule30">Rule 30</option>
+            <option value="rule30_2D">Rule 30 (3D)</option>
+          </select>
+        </div>
         <div class="sim-col">
           <div class="rules-title">Simulation</div>
-          <label class="modal-label" for="sim-size">Size</label>
+          <label id="sim-size-label" class="modal-label" for="sim-size">Size</label>
           <input type="number" id="sim-size" class="glass-input" min="1" step="1" />
           <label class="modal-label" for="sim-generations">Generations</label>
           <input type="number" id="sim-generations" class="glass-input" min="1" step="1" />
-          <label class="modal-label" for="grid-wrapping-checkbox" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <label id="grid-wrapping-label" class="modal-label" for="grid-wrapping-checkbox" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
             <input type="checkbox" id="grid-wrapping-checkbox" checked style="width: auto; cursor: pointer;" />
             <span>Grid Wrapping</span>
           </label>
         </div>
 
-        <div class="seed-col">
+        <div id="seed-section" class="seed-col">
           <div class="rules-title">Seed</div>
           <label class="modal-label" for="modal-shape-select">Shape</label>
           <select id="modal-shape-select" class="glass-select">
@@ -160,6 +169,7 @@
             <option value="cube">Cube</option>
             <option value="tetrahedron">Tetrahedron</option>
             <option value="octahedron">Octahedron</option>
+            <option value="rule30">Rule 30</option>
           </select>
           <label id="shape-size-label" class="modal-label" for="shape-size">
             <span id="shape-size-label-text">Size</span>
@@ -193,7 +203,7 @@
           <input type="number" id="shape-region-size" class="glass-input hidden" min="1" step="1" />
         </div>
 
-        <div class="rules-col">
+        <div id="rules-section" class="rules-col">
           <div class="rules-title">Rules</div>
           <label class="modal-label" for="rule-birth">Birth</label>
           <input type="text" id="rule-birth" class="glass-input" placeholder="" />
@@ -207,8 +217,6 @@
         </div>
       </div>
       <div class="modal-actions">
-        <button id="rule30Button" class="glass-button" style="background: var(--color-control-active-background);">Rule 30 (1D)</button>
-        <button id="rule30_2DButton" class="glass-button" style="background: var(--color-control-active-background);">Rule 30 (2D)</button>
         <button id="shapeCancel" class="glass-button">Cancel</button>
         <button id="shapeConfirm" class="glass-button">Apply</button>
       </div>
@@ -973,8 +981,50 @@
   /* Modal */
   .modal.hidden { display: none; }
   .modal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; }
-  .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
-  .glass-panel { background: var(--color-controls-background); border: 1px solid var(--color-control-border); border-radius: 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .modal-backdrop { 
+    position: absolute; 
+    inset: 0; 
+    background: rgba(0,0,0,0.95);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  .modal-backdrop::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, transparent 1px, transparent 2px, rgba(255,255,255,0.03) 3px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, transparent 1px, transparent 2px, rgba(255,255,255,0.03) 3px);
+    background-size: 4px 4px;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .modal-backdrop::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(255,255,255,0.02) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255,255,255,0.02) 0%, transparent 50%),
+      radial-gradient(circle at 40% 20%, rgba(255,255,255,0.02) 0%, transparent 50%);
+    opacity: 0.5;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+  .glass-panel { 
+    background: var(--color-controls-background); 
+    border: 1px solid var(--color-control-border); 
+    border-radius: 12px; 
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0.85;
+  }
+  /* Gray out glass displays when modal is active */
+  .modal:not(.hidden) ~ .glass-display-container .glass-display {
+    opacity: 0.3;
+    filter: grayscale(100%);
+    transition: opacity 0.3s ease, filter 0.3s ease;
+  }
   .modal-content { position: relative; padding: 16px 18px; width: 520px; font-size: 15px; }
   .modal-title { margin: 0 0 12px; color: var(--color-text-contrast); border-bottom: 1px solid var(--color-info-display-border); padding-bottom: 6px; }
   .modal-body { display: flex; flex-direction: column; gap: 10px; }

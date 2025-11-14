@@ -280,8 +280,8 @@ export function worleyShape(cellCount = 8, threshold = 0.5, regionSize = null) {
 // Rule 30 initial condition: single cell at center of top layer
 export function rule30Shape() {
   return (grid, size) => {
-    const centerX = Math.floor(size / 2);
-    const centerZ = Math.floor(size / 2);
+    const centerX = Math.floor(size / 2)-1;
+    const centerZ = Math.floor(size / 2)-1;
     const topY = 0; // Top layer
     
     // Set a single cell at the center of the top layer

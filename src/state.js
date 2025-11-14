@@ -23,6 +23,7 @@ export const state = {
   clockData: null,
   controlsInitialized: false,
   shapeKey: "cube",
+  simulationMode: "gameOfLife",
   useRule30: false,
   useRule30_2D: false,
   shapes: {
