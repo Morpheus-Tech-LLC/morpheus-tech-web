@@ -26,6 +26,7 @@ export const state = {
   simulationMode: "gameOfLife",
   useRule30: false,
   useRule30_2D: false,
+  flipOrientation: false,
   shapes: {
     perlin: perlinShape(10, 0.3, 30),
     cube: cubeShape(5, 1),

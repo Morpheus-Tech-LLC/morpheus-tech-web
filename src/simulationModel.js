@@ -174,7 +174,10 @@ export function updatePoints() {
 
     // World position of this cell
     const worldX = x - halfSpanXY;
-    const worldY = y - halfSpanXY;
+    // Flip Y-axis if toggle is enabled (applies to all simulations)
+    const worldY = state.flipOrientation
+      ? halfSpanXY - y  // Inverted
+      : y - halfSpanXY; // Normal
     let worldZ;
     if (matrixDepth <= 1) {
       worldZ = 0;
@@ -258,9 +261,14 @@ function updateWireframeCells(activeCells, matrixSize, matrixDepth) {
       worldZ = normalizedZ * spanZ - halfSpanZ;
     }
 
+    // Flip Y-axis if toggle is enabled (applies to all simulations)
+    const worldY = state.flipOrientation
+      ? halfSpanXY - y  // Inverted
+      : y - halfSpanXY; // Normal
+    
     line.position.set(
       x - halfSpanXY,
-      y - halfSpanXY,
+      worldY,
       worldZ
     );
     

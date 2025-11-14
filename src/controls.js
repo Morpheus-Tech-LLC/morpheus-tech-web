@@ -298,6 +298,27 @@ export function initControls() {
     });
   }
 
+  // Flip orientation toggle (applies to all simulations)
+  const flipOrientationToggle = document.getElementById('flipOrientationToggle');
+  const flipOrientationIcon = document.getElementById('flipOrientationIcon');
+  if (flipOrientationToggle) {
+    flipOrientationToggle.addEventListener('click', () => {
+      state.flipOrientation = !state.flipOrientation;
+      // Update icon color - blue when active (flipped), white/gray when inactive
+      if (flipOrientationIcon) {
+        flipOrientationIcon.style.fill = state.flipOrientation ? '#4da3ff' : 'currentColor';
+      }
+      // Update rendering to reflect the flip
+      if (state.simulationData) {
+        updatePoints();
+      }
+    });
+    // Initialize icon state
+    if (flipOrientationIcon) {
+      flipOrientationIcon.style.fill = state.flipOrientation ? '#4da3ff' : 'currentColor';
+    }
+  }
+
   // Mark controls as initialized to prevent duplicate bindings on re-init
   state.controlsInitialized = true;
 }
