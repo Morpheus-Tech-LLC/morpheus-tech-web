@@ -300,7 +300,7 @@ function createWireframeGrid(cellCount, depth) {
   group.add(wireframeBox);
   
   // Add grid lines to show the grid structure (optional - can be removed if too cluttered)
-  const divisions = Math.max(Math.min(cellCount, 50), 1);
+  const divisions = Math.max(cellCount, 1);
   const gridHelperXY = new THREE.GridHelper(spanXY, divisions, color, color);
   gridHelperXY.position.z = 0;
   gridHelperXY.material.transparent = true;
@@ -312,7 +312,7 @@ function createWireframeGrid(cellCount, depth) {
   gridHelperXZ.material.transparent = true;
   gridHelperXZ.material.opacity = opacity * 0.5;
   
-  const gridHelperYZ = new THREE.GridHelper(spanZ, Math.max(Math.min(depth, 50), 1), color, color);
+  const gridHelperYZ = new THREE.GridHelper(spanZ, Math.max(depth, 1), color, color);
   gridHelperYZ.rotation.z = Math.PI / 2;
   gridHelperYZ.position.x = 0;
   gridHelperYZ.material.transparent = true;
