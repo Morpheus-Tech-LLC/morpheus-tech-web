@@ -71,6 +71,7 @@ export const state = {
   simulationMode: "gameOfLife",
   useRule30: false,
   useRule30_2D: false,
+  useSineWave: false,
   flipOrientation: false,
   shapes: {
     perlin: perlinShape(10, 0.3, 30),

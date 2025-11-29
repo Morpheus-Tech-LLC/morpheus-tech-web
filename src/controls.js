@@ -432,6 +432,25 @@ function openShapeModal() {
           opt.style.display = '';
         });
       }
+    } else if (mode === 'sineWave') {
+      // Hide rules section for Sine Wave mode
+      if (rulesSection) rulesSection.style.display = 'none';
+      // Hide boundary rules section for Sine Wave mode
+      if (boundaryRulesSection) boundaryRulesSection.style.display = 'none';
+      // Hide seed section for Sine Wave mode
+      if (seedSection) seedSection.style.display = 'none';
+      // Show size controls for Sine Wave (size affects wave resolution)
+      if (simSizeLabel) simSizeLabel.style.display = '';
+      if (simSizeInput) simSizeInput.style.display = '';
+      // Hide grid wrapping controls for Sine Wave mode
+      if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
+      if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = 'none';
+      // Hide shape select for Sine Wave mode
+      if (modalShapeSelect) {
+        Array.from(modalShapeSelect.options).forEach(opt => {
+          opt.style.display = 'none';
+        });
+      }
     } else {
       // Hide rules section for Rule 30 modes
       if (rulesSection) rulesSection.style.display = 'none';
@@ -802,10 +821,11 @@ function openShapeModal() {
     const selectedMode = simulationModeSelect ? simulationModeSelect.value : 'gameOfLife';
     state.simulationMode = selectedMode;
 
-    // Set Rule 30 flags based on mode
+    // Set Rule 30 and Sine Wave flags based on mode
     if (selectedMode === 'rule30') {
       state.useRule30 = true;
       state.useRule30_2D = false;
+      state.useSineWave = false;
       state.shapeKey = 'rule30';
       // Auto-calculate size for Rule 30 based on generations
       const generations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
@@ -816,6 +836,7 @@ function openShapeModal() {
     } else if (selectedMode === 'rule30_2D') {
       state.useRule30 = false;
       state.useRule30_2D = true;
+      state.useSineWave = false;
       state.shapeKey = 'rule30';
       // Auto-calculate size for Rule 30 (3D) based on generations
       const generations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
@@ -823,9 +844,14 @@ function openShapeModal() {
       if (simSizeInput) {
         simSizeInput.value = calculatedSize;
       }
+    } else if (selectedMode === 'sineWave') {
+      state.useRule30 = false;
+      state.useRule30_2D = false;
+      state.useSineWave = true;
     } else {
       state.useRule30 = false;
       state.useRule30_2D = false;
+      state.useSineWave = false;
     }
     
     // Compute proposed sim size/gens first so clamping uses new size
@@ -955,6 +981,8 @@ function openShapeModal() {
         shapeOut.textContent = 'rule30';
       } else if (selectedMode === 'rule30_2D') {
         shapeOut.textContent = 'rule30 (2D)';
+      } else if (selectedMode === 'sineWave') {
+        shapeOut.textContent = 'sine wave';
       } else {
         shapeOut.textContent = state.shapeKey;
       }

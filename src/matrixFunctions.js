@@ -6,23 +6,33 @@ import { state } from './state.js';
 // Matrix evolution
 // ---------------------------
 
-export async function generateSimulation(size, generations, shapeFn, useRule30 = false, useRule30_2D = false) {
-  console.log(`generateSimulation: size=${size}, generations=${generations}, useRule30=${useRule30}, useRule30_2D=${useRule30_2D}`);
+export async function generateSimulation(size, generations, shapeFn, useRule30 = false, useRule30_2D = false, useSineWave = false) {
+  console.log(`generateSimulation: size=${size}, generations=${generations}, useRule30=${useRule30}, useRule30_2D=${useRule30_2D}, useSineWave=${useSineWave}`);
   const history = [];
-  let grid = initMatrix(size, shapeFn);
   
-  console.log(`Initial grid active cells: ${grid.active.length}`);
-  history.push(grid);
-  for (let i = 0; i < generations; i++) {
-    if (useRule30_2D) {
-      grid = evolveRule30_2D(grid);
-    } else if (useRule30) {
-      grid = evolveRule30(grid);
-    } else {
-      grid = convolve3D(grid);
+  if (useSineWave) {
+    // Generate sine wave simulation
+    for (let gen = 0; gen <= generations; gen++) {
+      const grid = generateSineWaveGrid(size, gen, generations);
+      history.push(grid);
+      console.log(`Sine Wave Generation ${gen}: ${grid.active.length} active cells`);
     }
+  } else {
+    let grid = initMatrix(size, shapeFn);
+    
+    console.log(`Initial grid active cells: ${grid.active.length}`);
     history.push(grid);
-    console.log(`Generation ${i + 1}: ${grid.active.length} active cells`);
+    for (let i = 0; i < generations; i++) {
+      if (useRule30_2D) {
+        grid = evolveRule30_2D(grid);
+      } else if (useRule30) {
+        grid = evolveRule30(grid);
+      } else {
+        grid = convolve3D(grid);
+      }
+      history.push(grid);
+      console.log(`Generation ${i + 1}: ${grid.active.length} active cells`);
+    }
   }
 
   const timeHistory = await generateClockHistory(128, generations);
@@ -398,4 +408,50 @@ export function evolveRule30_2D(grid) {
   console.log(`Rule 30 2D: Evolved from ${grid.active.length} to ${newGrid.active.length} cells, bottomLayer: ${bottomLayer}, newLayerY: ${newLayerY}`);
 
   return newGrid;
+}
+
+// ---------------------------
+// Sine Wave generation
+// ---------------------------
+
+/**
+ * Generate a sine wave grid for a specific generation/time step.
+ * Maps sin(x) to y coordinates, with the wave animating over time.
+ * @param {number} size - Size of the grid (NxNxN)
+ * @param {number} generation - Current generation (0 to generations)
+ * @param {number} totalGenerations - Total number of generations
+ * @returns {Grid3D} - Grid with sine wave pattern
+ */
+export function generateSineWaveGrid(size, generation, totalGenerations) {
+  const grid = new Grid3D(size, 0);
+  
+  // Parameters for the sine wave
+  const frequency = 2 * Math.PI / size; // Number of cycles across the grid
+  const amplitude = (size - 1) / 2; // Half the grid size (for scaling)
+  const center = (size - 1) / 2; // Center of the grid
+  
+  // Phase shift over time - makes the wave move/animate
+  const phaseShift = (generation / totalGenerations) * 2 * Math.PI;
+  
+  // For each x position, calculate the y position from sin(x)
+  for (let x = 0; x < size; x++) {
+    // Calculate sin value at this x position with phase shift
+    const sinValue = Math.sin(frequency * x + phaseShift);
+    
+    // Map sin value (-1 to 1) to y coordinate (0 to size-1)
+    // sinValue ranges from -1 to 1
+    // We want y to range from 0 to size-1
+    const y = Math.round(center + sinValue * amplitude);
+    
+    // Clamp y to valid range
+    const clampedY = Math.max(0, Math.min(size - 1, y));
+    
+    // Set cells along the z-axis to create a 3D wave surface
+    // This creates a wave that extends in the z direction
+    for (let z = 0; z < size; z++) {
+      grid.set(x, clampedY, z, 1);
+    }
+  }
+  
+  return grid;
 }
