@@ -361,10 +361,10 @@ function openShapeModal() {
   const densityInput = document.getElementById('shape-density');
   const regionSizeInput = document.getElementById('shape-region-size');
   const regionSizeLabel = document.getElementById('shape-region-size-label');
+  const regionSizeRow = document.getElementById('shape-region-size-row');
   const modalShapeSelect = document.getElementById('modal-shape-select');
   const confirmBtn = document.getElementById('shapeConfirm');
   const cancelBtn = document.getElementById('shapeCancel');
-  const simulationModeSelect = document.getElementById('simulation-mode-select');
   const rulesSection = document.getElementById('rules-section');
   const seedSection = document.getElementById('seed-section');
   const simSizeLabel = document.getElementById('sim-size-label');
@@ -384,10 +384,16 @@ function openShapeModal() {
   if (simGenerationsInput) simGenerationsInput.value = `${state.sim_generations}`;
   if (gridWrappingCheckbox) gridWrappingCheckbox.checked = state.gridWrapping ?? true;
 
-  // Initialize simulation mode dropdown
-  if (simulationModeSelect) {
-    simulationModeSelect.value = state.simulationMode || 'gameOfLife';
-  }
+  // Initialize simulation mode cards
+  const modeCards = document.querySelectorAll('.mode-card');
+  const currentMode = state.simulationMode || 'gameOfLife';
+  modeCards.forEach(card => {
+    if (card.dataset.mode === currentMode) {
+      card.classList.add('active');
+    } else {
+      card.classList.remove('active');
+    }
+  });
 
   const key = pendingShapeKey || state.shapeKey;
 
@@ -425,7 +431,9 @@ function openShapeModal() {
       // Show size controls
       if (simSizeLabel) simSizeLabel.style.display = '';
       if (simSizeInput) simSizeInput.style.display = '';
-      // Grid wrapping is now in boundary rules column, so it's handled there
+      // Show grid wrapping controls for Game of Life mode
+      if (gridWrappingLabel) gridWrappingLabel.style.display = '';
+      if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = '';
       // Show all shape options
       if (modalShapeSelect) {
         Array.from(modalShapeSelect.options).forEach(opt => {
@@ -492,7 +500,8 @@ function openShapeModal() {
   // Listen for generations input changes when Rule 30 is selected
   if (simGenerationsInput) {
     const generationsChangeHandler = () => {
-      const selectedMode = simulationModeSelect ? simulationModeSelect.value : 'gameOfLife';
+      const activeCard = document.querySelector('.mode-card.active');
+      const selectedMode = activeCard ? activeCard.dataset.mode : 'gameOfLife';
       if (selectedMode === 'rule30' || selectedMode === 'rule30_2D') {
         const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
         const calculatedSize = calculateRule30Size(generations, selectedMode);
@@ -507,15 +516,29 @@ function openShapeModal() {
 
   // Set initial UI state
   let modeChangeHandler = null;
-  if (simulationModeSelect) {
-    updateModeUI(simulationModeSelect.value);
-    
-    // Listen for mode changes
-    modeChangeHandler = (e) => {
-      updateModeUI(e.target.value);
-    };
-    simulationModeSelect.addEventListener('change', modeChangeHandler);
-  }
+  updateModeUI(currentMode);
+  
+  // Handle mode card clicks
+  modeCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const selectedMode = card.dataset.mode;
+      
+      // Update active state
+      modeCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      
+      // Update UI based on selected mode
+      updateModeUI(selectedMode);
+    });
+  });
+  
+  // Store mode change handler for cleanup (for compatibility)
+  modeChangeHandler = () => {
+    const activeCard = document.querySelector('.mode-card.active');
+    if (activeCard) {
+      updateModeUI(activeCard.dataset.mode);
+    }
+  };
   
   // Function to update labels based on selected shape
   function updateShapeLabels(shapeKey) {
@@ -543,17 +566,17 @@ function openShapeModal() {
         densityInfoIcon.setAttribute('data-tooltip', 'Controls how many cells are alive. 0 = few cells, 1 = many cells. Higher values create denser patterns.');
       }
       // Show region size input for Perlin
-      if (regionSizeLabel) {
-        regionSizeLabel.classList.remove('hidden');
-        if (regionSizeLabelText) {
-          regionSizeLabelText.textContent = `Region Size (max ${maxSim})`;
-        }
-        if (regionSizeInfoIcon) {
-          regionSizeInfoIcon.setAttribute('data-tooltip', 'Size of the centered region where noise is generated. Smaller values create patterns in the center only.');
-        }
+      if (regionSizeRow) {
+        regionSizeRow.classList.remove('hidden');
+        regionSizeRow.style.display = '';
+      }
+      if (regionSizeLabelText) {
+        regionSizeLabelText.textContent = `Region Size (max ${maxSim})`;
+      }
+      if (regionSizeInfoIcon) {
+        regionSizeInfoIcon.setAttribute('data-tooltip', 'Size of the centered region where noise is generated. Smaller values create patterns in the center only.');
       }
       if (regionSizeInput) {
-        regionSizeInput.classList.remove('hidden');
         regionSizeInput.max = `${maxSim}`;
       }
     } else if (shapeKey === 'worley') {
@@ -571,17 +594,17 @@ function openShapeModal() {
         densityInfoIcon.setAttribute('data-tooltip', 'How far from feature points cells become alive. Lower values = cells only near feature points. Higher values = cells fill more space.');
       }
       // Show region size input for Worley
-      if (regionSizeLabel) {
-        regionSizeLabel.classList.remove('hidden');
-        if (regionSizeLabelText) {
-          regionSizeLabelText.textContent = `Region Size (max ${maxSim})`;
-        }
-        if (regionSizeInfoIcon) {
-          regionSizeInfoIcon.setAttribute('data-tooltip', 'Size of the centered region where noise is generated. Smaller values create patterns in the center only.');
-        }
+      if (regionSizeRow) {
+        regionSizeRow.classList.remove('hidden');
+        regionSizeRow.style.display = '';
+      }
+      if (regionSizeLabelText) {
+        regionSizeLabelText.textContent = `Region Size (max ${maxSim})`;
+      }
+      if (regionSizeInfoIcon) {
+        regionSizeInfoIcon.setAttribute('data-tooltip', 'Size of the centered region where noise is generated. Smaller values create patterns in the center only.');
       }
       if (regionSizeInput) {
-        regionSizeInput.classList.remove('hidden');
         regionSizeInput.max = `${maxSim}`;
       }
     } else {
@@ -599,8 +622,10 @@ function openShapeModal() {
         densityInfoIcon.setAttribute('data-tooltip', 'Probability that each cell in the shape is alive. 1 = all cells filled, 0 = no cells.');
       }
       // Hide region size input
-      if (regionSizeLabel) regionSizeLabel.classList.add('hidden');
-      if (regionSizeInput) regionSizeInput.classList.add('hidden');
+      if (regionSizeRow) {
+        regionSizeRow.classList.add('hidden');
+        regionSizeRow.style.display = 'none';
+      }
     }
   }
 
@@ -678,7 +703,10 @@ function openShapeModal() {
   function updateBoundaryRulesVisibility() {
     if (boundaryRulesInputs && gridWrappingCheckbox) {
       // Show boundary rules when wrapping is OFF (checkbox unchecked)
-      boundaryRulesInputs.style.display = gridWrappingCheckbox.checked ? 'none' : 'block';
+      const shouldShow = !gridWrappingCheckbox.checked;
+      boundaryRulesInputs.style.display = shouldShow ? 'block' : 'none';
+      // Don't hide the entire section - it should always be visible in Game of Life mode
+      // The section visibility is controlled by updateModeUI
     }
   }
   
@@ -743,7 +771,14 @@ function openShapeModal() {
     updateShapeLabels(key);
     modalShapeSelect.onchange = (e) => {
       pendingShapeKey = e.target.value;
-      updateShapeLabels(e.target.value);
+      const newShapeKey = e.target.value;
+      updateShapeLabels(newShapeKey);
+      
+      // Hide region size if not Perlin or Worley
+      if (newShapeKey !== 'perlin' && newShapeKey !== 'worley' && regionSizeRow) {
+        regionSizeRow.classList.add('hidden');
+        regionSizeRow.style.display = 'none';
+      }
       // Update density when switching shapes - use saved value or default to 0.3
       if (densityInput) {
         const newKey = e.target.value;
@@ -788,19 +823,32 @@ function openShapeModal() {
   
   // Initialize region size input for Perlin and Worley
   // This must happen after updateShapeLabels to ensure the input is visible
-  if ((key === 'perlin' || key === 'worley') && regionSizeInput) {
-    // Use params.regionSize if it exists and is valid, otherwise default to 25
-    let initRegionSize = 25; // Default to 25
-    if (params && params.regionSize !== undefined && params.regionSize !== null) {
-      const parsedRegionSize = parseInt(params.regionSize);
-      if (!isNaN(parsedRegionSize) && parsedRegionSize > 0) {
-        initRegionSize = Math.min(initMaxSim, Math.max(1, parsedRegionSize));
-      }
+  // Only show and initialize if the current shape is Perlin or Worley
+  if (key === 'perlin' || key === 'worley') {
+    if (regionSizeRow) {
+      regionSizeRow.classList.remove('hidden');
+      regionSizeRow.style.display = '';
     }
-    // Ensure it doesn't exceed max and is at least 1
-    initRegionSize = Math.min(initMaxSim, Math.max(1, initRegionSize));
-    // Set the value - this should work now that labels are updated and input is visible
-    regionSizeInput.value = `${initRegionSize}`;
+    if (regionSizeInput) {
+      // Use params.regionSize if it exists and is valid, otherwise default to 25
+      let initRegionSize = 25; // Default to 25
+      if (params && params.regionSize !== undefined && params.regionSize !== null) {
+        const parsedRegionSize = parseInt(params.regionSize);
+        if (!isNaN(parsedRegionSize) && parsedRegionSize > 0) {
+          initRegionSize = Math.min(initMaxSim, Math.max(1, parsedRegionSize));
+        }
+      }
+      // Ensure it doesn't exceed max and is at least 1
+      initRegionSize = Math.min(initMaxSim, Math.max(1, initRegionSize));
+      // Set the value - this should work now that labels are updated and input is visible
+      regionSizeInput.value = `${initRegionSize}`;
+    }
+  } else {
+    // Hide region size for non-Perlin/Worley shapes
+    if (regionSizeRow) {
+      regionSizeRow.classList.add('hidden');
+      regionSizeRow.style.display = 'none';
+    }
   }
 
   if (simSizeInput) simSizeInput.addEventListener('input', updateShapeSizeMax);
@@ -817,8 +865,9 @@ function openShapeModal() {
   };
 
   const onConfirm = async () => {
-    // Get selected simulation mode
-    const selectedMode = simulationModeSelect ? simulationModeSelect.value : 'gameOfLife';
+    // Get selected simulation mode from active card
+    const activeCard = document.querySelector('.mode-card.active');
+    const selectedMode = activeCard ? activeCard.dataset.mode : 'gameOfLife';
     state.simulationMode = selectedMode;
 
     // Set Rule 30 and Sine Wave flags based on mode
@@ -1008,9 +1057,7 @@ function openShapeModal() {
   function cleanup() {
     confirmBtn.removeEventListener('click', onConfirm);
     cancelBtn.removeEventListener('click', onCancel);
-    if (simulationModeSelect && modeChangeHandler) {
-      simulationModeSelect.removeEventListener('change', modeChangeHandler);
-    }
+    // Mode cards don't need cleanup as they're recreated each time
   }
 
   confirmBtn.addEventListener('click', onConfirm);

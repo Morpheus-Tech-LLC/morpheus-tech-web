@@ -48,4 +48,5 @@ export function initSpace() {
     const controls = new OrbitControls(camera, renderer.domElement);
     
     state.camera = camera;
+    state.controls = controls;
 }

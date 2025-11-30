@@ -150,72 +150,106 @@
       <div class="modal-body modal-grid">
         <div class="sim-col" style="grid-column: 1 / -1; margin-bottom: 1rem;">
           <div class="rules-title">Simulation Mode</div>
-          <label class="modal-label" for="simulation-mode-select">Mode</label>
-          <select id="simulation-mode-select" class="glass-select">
-            <option value="gameOfLife">Game of Life (3D)</option>
-            <option value="rule30">Rule 30</option>
-            <option value="rule30_2D">Rule 30 (3D)</option>
-            <option value="sineWave">Sine Wave</option>
-          </select>
+          <div class="mode-selector">
+            <button class="mode-card" data-mode="gameOfLife" id="mode-gameOfLife">
+              <span class="mode-name">Game of Life</span>
+              <span class="mode-subtitle">3D</span>
+            </button>
+            <button class="mode-card" data-mode="rule30" id="mode-rule30">
+              <span class="mode-name">Rule 30</span>
+              <span class="mode-subtitle">1D</span>
+            </button>
+            <button class="mode-card" data-mode="rule30_2D" id="mode-rule30_2D">
+              <span class="mode-name">Rule 30</span>
+              <span class="mode-subtitle">2D</span>
+            </button>
+            <button class="mode-card" data-mode="sineWave" id="mode-sineWave">
+              <span class="mode-name">Sine Wave</span>
+              <span class="mode-subtitle">Continuous</span>
+            </button>
+          </div>
         </div>
         <div class="sim-col">
           <div class="rules-title">Simulation</div>
-          <label id="sim-size-label" class="modal-label" for="sim-size">Size</label>
-          <input type="number" id="sim-size" class="glass-input" min="1" step="1" />
-          <label class="modal-label" for="sim-generations">Generations</label>
-          <input type="number" id="sim-generations" class="glass-input" min="1" step="1" />
+          <div class="modal-field-row">
+            <label id="sim-size-label" class="modal-label" for="sim-size">Size</label>
+            <input type="number" id="sim-size" class="glass-input" min="1" step="1" />
+          </div>
+          <div class="modal-field-row">
+            <label class="modal-label" for="sim-generations">Generations</label>
+            <input type="number" id="sim-generations" class="glass-input" min="1" step="1" />
+          </div>
         </div>
 
         <div id="seed-section" class="seed-col">
           <div class="rules-title">Seed</div>
-          <label class="modal-label" for="modal-shape-select">Shape</label>
-          <select id="modal-shape-select" class="glass-select">
-            <option value="perlin">Perlin</option>
-            <option value="worley">Worley</option>
-            <option value="cube">Cube</option>
-            <option value="tetrahedron">Tetrahedron</option>
-            <option value="octahedron">Octahedron</option>
-            <!-- <option value="rule30">Rule 30</option> -->
-          </select>
-          <label id="shape-size-label" class="modal-label" for="shape-size">
-            <span id="shape-size-label-text">Size</span>
-            <span class="info-icon" data-tooltip="Tooltip text">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-          </label>
-          <input type="number" id="shape-size" class="glass-input" min="1" step="1" />
-          <label id="shape-density-label" class="modal-label" for="shape-density">
-            <span id="shape-density-label-text">Density (0 - 1)</span>
-            <span class="info-icon" data-tooltip="Tooltip text">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-          </label>
-          <input type="number" id="shape-density" class="glass-input" min="0" max="1" step="0.01" />
-          <label id="shape-region-size-label" class="modal-label hidden" for="shape-region-size">
-            <span id="shape-region-size-label-text">Region Size</span>
-            <span class="info-icon" data-tooltip="Tooltip text">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-          </label>
-          <input type="number" id="shape-region-size" class="glass-input hidden" min="1" step="1" />
+          <div class="modal-field-row">
+            <label class="modal-label" for="modal-shape-select">Shape</label>
+            <select id="modal-shape-select" class="glass-select">
+              <option value="perlin">Perlin</option>
+              <option value="worley">Worley</option>
+              <option value="cube">Cube</option>
+              <option value="tetrahedron">Tetrahedron</option>
+              <option value="octahedron">Octahedron</option>
+              <!-- <option value="rule30">Rule 30</option> -->
+            </select>
+          </div>
+          <div class="modal-field-row">
+            <label id="shape-size-label" class="modal-label" for="shape-size">
+              <span id="shape-size-label-text">Size</span>
+              <span class="info-icon" data-tooltip="Tooltip text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </label>
+            <input type="number" id="shape-size" class="glass-input" min="1" step="1" />
+          </div>
+          <div class="modal-field-row">
+            <label id="shape-density-label" class="modal-label" for="shape-density">
+              <span id="shape-density-label-text">Density (0 - 1)</span>
+              <span class="info-icon" data-tooltip="Tooltip text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </label>
+            <input type="number" id="shape-density" class="glass-input" min="0" max="1" step="0.01" />
+          </div>
+          <div class="modal-field-row hidden" id="shape-region-size-row">
+            <label id="shape-region-size-label" class="modal-label" for="shape-region-size">
+              <span id="shape-region-size-label-text">Region Size</span>
+              <span class="info-icon" data-tooltip="Tooltip text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </label>
+            <input type="number" id="shape-region-size" class="glass-input" min="1" step="1" />
+          </div>
         </div>
 
         <div id="rules-section" class="rules-col">
-          <div class="rules-title">Rules</div>
-          <label class="modal-label" for="rule-birth">Birth</label>
-          <input type="text" id="rule-birth" class="glass-input" placeholder="" />
-          <label class="modal-label" for="rule-survival">Survival</label>
-          <input type="text" id="rule-survival" class="glass-input" placeholder="" />
-          <div class="rules-hint">Enter values as list or range (e.g., 9,10 or 5-15). Isolation and overcrowding are calculated automatically.</div>
+          <div class="rules-title">
+            <span>Rules</span>
+            <span class="info-icon" data-tooltip="Enter values as list or range (e.g., 9,10 or 5-15). Isolation and overcrowding are calculated automatically.">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </div>
+          <div class="modal-field-row">
+            <label class="modal-label" for="rule-birth">Birth</label>
+            <input type="text" id="rule-birth" class="glass-input" placeholder="" />
+          </div>
+          <div class="modal-field-row">
+            <label class="modal-label" for="rule-survival">Survival</label>
+            <input type="text" id="rule-survival" class="glass-input" placeholder="" />
+          </div>
         </div>
 
         <div id="boundary-rules-section" class="boundary-col">
@@ -227,24 +261,36 @@
           <div id="boundary-rules-inputs" style="display: none;">
             <div style="margin-bottom: 15px;">
               <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Corner (7 neighbors)</div>
-              <label class="modal-label" for="boundary-corner-birth">Birth</label>
-              <input type="text" id="boundary-corner-birth" class="glass-input" placeholder="2,3" />
-              <label class="modal-label" for="boundary-corner-survival">Survival</label>
-              <input type="text" id="boundary-corner-survival" class="glass-input" placeholder="2-4" />
+              <div class="modal-field-row">
+                <label class="modal-label" for="boundary-corner-birth">Birth</label>
+                <input type="text" id="boundary-corner-birth" class="glass-input" placeholder="2,3" />
+              </div>
+              <div class="modal-field-row">
+                <label class="modal-label" for="boundary-corner-survival">Survival</label>
+                <input type="text" id="boundary-corner-survival" class="glass-input" placeholder="2-4" />
+              </div>
             </div>
             <div style="margin-bottom: 15px;">
               <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Edge (11 neighbors)</div>
-              <label class="modal-label" for="boundary-edge-birth">Birth</label>
-              <input type="text" id="boundary-edge-birth" class="glass-input" placeholder="4" />
-              <label class="modal-label" for="boundary-edge-survival">Survival</label>
-              <input type="text" id="boundary-edge-survival" class="glass-input" placeholder="2-6" />
+              <div class="modal-field-row">
+                <label class="modal-label" for="boundary-edge-birth">Birth</label>
+                <input type="text" id="boundary-edge-birth" class="glass-input" placeholder="4" />
+              </div>
+              <div class="modal-field-row">
+                <label class="modal-label" for="boundary-edge-survival">Survival</label>
+                <input type="text" id="boundary-edge-survival" class="glass-input" placeholder="2-6" />
+              </div>
             </div>
             <div style="margin-bottom: 15px;">
               <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Face (17 neighbors)</div>
-              <label class="modal-label" for="boundary-face-birth">Birth</label>
-              <input type="text" id="boundary-face-birth" class="glass-input" placeholder="6" />
-              <label class="modal-label" for="boundary-face-survival">Survival</label>
-              <input type="text" id="boundary-face-survival" class="glass-input" placeholder="3-9" />
+              <div class="modal-field-row">
+                <label class="modal-label" for="boundary-face-birth">Birth</label>
+                <input type="text" id="boundary-face-birth" class="glass-input" placeholder="6" />
+              </div>
+              <div class="modal-field-row">
+                <label class="modal-label" for="boundary-face-survival">Survival</label>
+                <input type="text" id="boundary-face-survival" class="glass-input" placeholder="3-9" />
+              </div>
             </div>
           </div>
         </div>
@@ -476,6 +522,7 @@
 
   /* === SLIDER STYLING === */
   .glass-slider {
+    appearance: none;
     -webkit-appearance: none;
     width: 300px;
     height: 8px;
@@ -1059,16 +1106,256 @@
     filter: grayscale(100%);
     transition: opacity 0.3s ease, filter 0.3s ease;
   }
-  .modal-content { position: relative; padding: 16px 18px; width: 680px; font-size: 15px; }
-  .modal-title { margin: 0 0 12px; color: var(--color-text-contrast); border-bottom: 1px solid var(--color-info-display-border); padding-bottom: 6px; }
-  .modal-body { display: flex; flex-direction: column; gap: 10px; }
-  .modal-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px 18px; align-items: start; position: relative; }
-  .modal-grid .sim-col { grid-column: 1; display: flex; flex-direction: column; gap: 8px; }
-  .modal-grid .seed-col { grid-column: 2; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid var(--color-info-display-border); padding-left: 16px; }
-  .modal-grid .rules-col { grid-column: 3; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid var(--color-info-display-border); padding-left: 16px; }
-  .modal-grid .boundary-col { grid-column: 4; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid var(--color-info-display-border); padding-left: 16px; }
-  .rules-hint { color: var(--color-info-display-text); font-size: 12px; opacity: .85; margin: -2px 0 4px; }
-  .rules-title { color: #ffb7c5; font-weight: 700; text-transform: uppercase; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid var(--color-info-display-border); padding-bottom: 4px; }
+  .modal-content { 
+    position: relative; 
+    padding: 16px 20px; 
+    width: auto;
+    min-width: 600px;
+    max-width: 90vw; 
+    max-height: 90vh; 
+    font-size: 15px; 
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-title { margin: 0 0 8px; color: var(--color-text-contrast); border-bottom: 1px solid var(--color-info-display-border); padding-bottom: 4px; }
+  .modal-body { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+    padding-right: 4px;
+  }
+  .modal-body::-webkit-scrollbar {
+    width: 8px;
+  }
+  .modal-body::-webkit-scrollbar-track {
+    background: var(--color-control-inactive-background);
+    border-radius: 4px;
+  }
+  .modal-body::-webkit-scrollbar-thumb {
+    background: var(--color-control-border);
+    border-radius: 4px;
+  }
+  .modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--color-control-hover);
+  }
+  .modal-grid { 
+    display: grid; 
+    grid-template-columns: repeat(4, auto); 
+    gap: 12px 16px; 
+    align-items: start; 
+    position: relative; 
+    min-width: 0;
+  }
+  @media (max-width: 900px) {
+    .modal-content {
+      min-width: 90vw;
+    }
+    .modal-grid {
+      grid-template-columns: repeat(2, auto);
+    }
+    .modal-grid .rules-col,
+    .modal-grid .boundary-col {
+      border-left: none;
+      border-top: 1px solid var(--color-info-display-border);
+      padding-left: 0;
+      padding-top: 12px;
+      margin-top: 6px;
+    }
+  }
+  @media (max-width: 600px) {
+    .modal-content {
+      min-width: 95vw;
+      padding: 12px 16px;
+    }
+    .modal-grid {
+      grid-template-columns: 1fr;
+    }
+    .modal-grid .seed-col,
+    .modal-grid .rules-col,
+    .modal-grid .boundary-col {
+      border-left: none;
+      border-top: 1px solid var(--color-info-display-border);
+      padding-left: 0;
+      padding-top: 12px;
+      margin-top: 6px;
+      width: 100%;
+    }
+    .modal-field-row .glass-input,
+    .modal-field-row .glass-select {
+      max-width: 100%;
+    }
+  }
+  .modal-grid .sim-col { 
+    grid-column: 1 / -1; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+    margin-bottom: 4px;
+  }
+  .modal-grid .sim-col:not(:first-child) {
+    grid-column: 1;
+    margin-bottom: 0;
+  }
+  .modal-grid .seed-col { 
+    grid-column: 1; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+    border-left: 1px solid var(--color-info-display-border); 
+    padding-left: 12px; 
+    min-width: 0;
+    width: fit-content;
+  }
+  .modal-grid .rules-col { 
+    grid-column: 2; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+    border-left: 1px solid var(--color-info-display-border); 
+    padding-left: 12px; 
+    min-width: 0;
+    width: fit-content;
+  }
+  .modal-grid .boundary-col { 
+    grid-column: 3; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+    border-left: 1px solid var(--color-info-display-border); 
+    padding-left: 12px; 
+    min-width: 0;
+    width: fit-content;
+  }
+  @media (max-width: 1200px) {
+    .modal-grid .sim-col:not(:first-child) { grid-column: 1; }
+    .modal-grid .seed-col { grid-column: 1; }
+    .modal-grid .rules-col { grid-column: 2; }
+    .modal-grid .boundary-col { grid-column: 1 / -1; }
+  }
+  @media (max-width: 768px) {
+    .modal-grid .sim-col:not(:first-child),
+    .modal-grid .seed-col,
+    .modal-grid .rules-col,
+    .modal-grid .boundary-col {
+      grid-column: 1;
+    }
+  }
+  .rules-title { 
+    color: #ffb7c5; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    font-size: 12px; 
+    margin-bottom: 4px; 
+    border-bottom: 1px solid var(--color-info-display-border); 
+    padding-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mode-selector {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .mode-card {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    background: var(--color-control-inactive-background);
+    color: var(--color-control-font);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    outline: none;
+  }
+  .mode-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  .mode-card.active {
+    border-color: currentColor;
+    box-shadow: 0 0 0 2px currentColor;
+  }
+  .mode-card[data-mode="gameOfLife"] {
+    background: linear-gradient(135deg, rgba(0, 180, 200, 0.2), rgba(0, 150, 180, 0.15));
+    color: #00b4c8;
+  }
+  .mode-card[data-mode="gameOfLife"].active {
+    background: linear-gradient(135deg, rgba(0, 180, 200, 0.3), rgba(0, 150, 180, 0.25));
+    border-color: #00b4c8;
+    box-shadow: 0 0 0 2px rgba(0, 180, 200, 0.3);
+  }
+  .mode-card[data-mode="rule30"] {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(56, 142, 60, 0.15));
+    color: #4caf50;
+  }
+  .mode-card[data-mode="rule30"].active {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.3), rgba(56, 142, 60, 0.25));
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+  }
+  .mode-card[data-mode="rule30_2D"] {
+    background: linear-gradient(135deg, rgba(0, 150, 136, 0.2), rgba(0, 121, 107, 0.15));
+    color: #009688;
+  }
+  .mode-card[data-mode="rule30_2D"].active {
+    background: linear-gradient(135deg, rgba(0, 150, 136, 0.3), rgba(0, 121, 107, 0.25));
+    border-color: #009688;
+    box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.3);
+  }
+  .mode-card[data-mode="sineWave"] {
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.2), rgba(123, 31, 162, 0.15));
+    color: #9c27b0;
+  }
+  .mode-card[data-mode="sineWave"].active {
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.3), rgba(123, 31, 162, 0.25));
+    border-color: #9c27b0;
+    box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.3);
+  }
+  .mode-name {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .mode-subtitle {
+    font-size: 11px;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .modal-field-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+    min-width: 0;
+  }
+  .modal-field-row .modal-label {
+    min-width: 70px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  .modal-field-row .glass-input,
+  .modal-field-row .glass-select {
+    width: auto;
+    min-width: 120px;
+    max-width: 200px;
+    flex-shrink: 0;
+  }
+  .modal-field-row .glass-select {
+    min-width: 150px;
+  }
   .modal-label { 
     color: var(--color-info-display-text); 
     font-weight: 600; 
@@ -1120,6 +1407,13 @@
     z-index: 1000;
     pointer-events: none;
   }
-  .glass-input { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--color-control-border); background: var(--color-control-inactive-background); color: var(--color-control-font); outline: none; }
+  .glass-input { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--color-control-border); background: var(--color-control-inactive-background); color: var(--color-control-font); outline: none; font-size: 14px; }
+  .modal-field-row .glass-select { 
+    padding: 8px 10px; 
+    font-size: 14px; 
+    border-radius: 8px;
+    appearance: none;
+    -webkit-appearance: none;
+  }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
 </style>

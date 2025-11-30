@@ -15,6 +15,51 @@ let measuredFps = 0;
 let simSpeed = 2.6;        // user multiplier (1/4 of the way up: 0.1 + (10-0.1)*0.25 = 2.575, rounded to 2.6)
 const baseInterval = 100;  // ms per generation at normal speed → 10 gens/s base rate
 
+// Auto-rotation parameters
+const ROTATION_DURATION = 10000; // 10 seconds for full 360° rotation
+
+// Track user input to stop auto-rotation
+function setupUserInputTracking() {
+  const stopAutoRotate = () => {
+    if (state.autoRotateActive) {
+      state.autoRotateActive = false;
+      state.userHasInteracted = true;
+      // Clear stored initial values
+      state.autoRotateInitialPosition = null;
+      state.autoRotateInitialRadius = null;
+      state.autoRotateInitialAngle = null;
+      // Re-enable OrbitControls
+      if (state.controls) {
+        state.controls.enabled = true;
+      }
+    }
+  };
+
+  // Track mouse events
+  document.addEventListener('mousedown', stopAutoRotate, { once: true });
+  document.addEventListener('mousemove', stopAutoRotate, { once: true });
+  document.addEventListener('wheel', stopAutoRotate, { once: true });
+  
+  // Track touch events
+  document.addEventListener('touchstart', stopAutoRotate, { once: true });
+  document.addEventListener('touchmove', stopAutoRotate, { once: true });
+  
+  // Track keyboard events
+  document.addEventListener('keydown', stopAutoRotate, { once: true });
+  document.addEventListener('keyup', stopAutoRotate, { once: true });
+  
+  // Track any control interactions
+  const interactiveElements = document.querySelectorAll('button, input, select, [role="button"]');
+  interactiveElements.forEach(el => {
+    el.addEventListener('click', stopAutoRotate, { once: true });
+    el.addEventListener('input', stopAutoRotate, { once: true });
+    el.addEventListener('change', stopAutoRotate, { once: true });
+  });
+}
+
+// Initialize user input tracking
+setupUserInputTracking();
+
 const fpsDisplay = document.getElementById('fps-value');
 const speedDisplay = document.getElementById('speed-value');
 const speedControl = document.getElementById('speed-control');
@@ -44,6 +89,47 @@ export function animate(currentTime) {
   if (elapsedFrame >= frameInterval) {
     lastFrameTime = currentTime - (elapsedFrame % frameInterval);
 
+    // === Auto-rotation ===
+    if (state.autoRotateActive && state.camera && state.controls) {
+      // Store initial camera position on first frame of rotation
+      if (!state.autoRotateInitialPosition) {
+        const initialPos = state.camera.position;
+        state.autoRotateInitialPosition = initialPos.clone();
+        state.autoRotateInitialRadius = Math.sqrt(initialPos.x * initialPos.x + initialPos.z * initialPos.z);
+        state.autoRotateInitialAngle = Math.atan2(initialPos.z, initialPos.x);
+      }
+      
+      const elapsed = currentTime - state.autoRotateStartTime;
+      
+      if (elapsed < ROTATION_DURATION) {
+        // Disable OrbitControls during auto-rotation
+        state.controls.enabled = false;
+        
+        // Calculate rotation angle (0 to 2π)
+        const angle = (elapsed / ROTATION_DURATION) * Math.PI * 2;
+        
+        // Calculate new camera position in a circle around origin
+        // Start from initial angle and rotate by the elapsed angle
+        const newAngle = state.autoRotateInitialAngle + angle;
+        const x = state.autoRotateInitialRadius * Math.cos(newAngle);
+        const z = state.autoRotateInitialRadius * Math.sin(newAngle);
+        const y = state.autoRotateInitialPosition.y; // Keep same height
+        
+        state.camera.position.set(x, y, z);
+        state.camera.lookAt(0, 0, 0); // Always look at center
+      } else {
+        // Rotation complete, stop auto-rotation
+        state.autoRotateActive = false;
+        state.userHasInteracted = true;
+        // Clear stored initial values
+        state.autoRotateInitialPosition = null;
+        state.autoRotateInitialRadius = null;
+        state.autoRotateInitialAngle = null;
+        // Re-enable OrbitControls
+        state.controls.enabled = true;
+      }
+    }
+
     // === FPS Measurement ===
     frameCount++;
     const now = performance.now();
@@ -69,6 +155,11 @@ export function animate(currentTime) {
       }
 
       updatePoints();
+    }
+
+    // Update OrbitControls (only if enabled)
+    if (state.controls && state.controls.enabled) {
+      state.controls.update();
     }
 
     // Always render the scene

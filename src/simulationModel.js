@@ -89,6 +89,12 @@ export async function initSimulation() {
     // drawClock();
     scene.add(points);
 
+    // Start auto-rotation for first load only
+    if (!state.userHasInteracted && !state.autoRotateActive) {
+      state.autoRotateActive = true;
+      state.autoRotateStartTime = performance.now();
+    }
+
     // Hide overlay on next frame to ensure DOM/styles applied
     const overlayNode = document.getElementById('loading-overlay');
     if (overlayNode) {
