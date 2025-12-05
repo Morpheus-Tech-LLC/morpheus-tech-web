@@ -6,8 +6,8 @@ import { state } from './state.js';
 // Matrix evolution
 // ---------------------------
 
-export async function generateSimulation(size, generations, shapeFn, useRule30 = false, useRule30_2D = false, useSineWave = false) {
-  console.log(`generateSimulation: size=${size}, generations=${generations}, useRule30=${useRule30}, useRule30_2D=${useRule30_2D}, useSineWave=${useSineWave}`);
+export async function generateSimulation(size, generations, shapeFn, useRule30 = false, useRule30_2D = false, useSineWave = false, useSandpile = false, sandpileParams = null) {
+  console.log(`generateSimulation: size=${size}, generations=${generations}, useRule30=${useRule30}, useRule30_2D=${useRule30_2D}, useSineWave=${useSineWave}, useSandpile=${useSandpile}`);
   const history = [];
   
   if (useSineWave) {
@@ -16,6 +16,110 @@ export async function generateSimulation(size, generations, shapeFn, useRule30 =
       const grid = generateSineWaveGrid(size, gen, generations);
       history.push(grid);
       console.log(`Sine Wave Generation ${gen}: ${grid.active.length} active cells`);
+    }
+  } else if (useSandpile) {
+    // Generate sandpile simulation
+    const params = sandpileParams || { initialSand: 0, threshold: 4 };
+    // Start with empty grid (or minimal initial sand)
+    let grid = initSandpile(size, params);
+    
+    console.log(`Initial sandpile: ${countActiveSandpileCells(grid)} active cells`);
+    history.push(grid);
+    
+    const center = Math.floor(size / 2);
+    
+    for (let i = 0; i < generations; i++) {
+      const generationNumber = i + 1; // Track generation number (1-indexed)
+      
+      // Add 1 grain of sand at the center each generation
+      const currentSand = grid.get(center, center, 0);
+      grid.data[grid._idx(center, center, 0)] = Math.min(255, currentSand + 1);
+      
+      // Update active array after adding sand
+      updateSandpileActive(grid);
+      
+      // Save state right after adding grain (before toppling) so we can see height 4
+      // Create a deep copy of the grid to save
+      const gridAfterDrop = new Grid3D(size, 0);
+      gridAfterDrop.data.set(grid.data);
+      updateSandpileActive(gridAfterDrop);
+      gridAfterDrop.generation = generationNumber; // Store generation number
+      history.push(gridAfterDrop);
+      
+      // Topple until stable
+      // Strategy: Allow cells to reach height 4, save that state, then topple them in next step
+      let toppled = true;
+      let iterations = 0;
+      const maxIterations = size * size * 10; // Safety limit
+      
+      while (toppled && iterations < maxIterations) {
+        // Check if any cells are at height 4 (threshold) - these should be visible before toppling
+        let hasHeight4 = false;
+        for (let x = 0; x < size; x++) {
+          for (let y = 0; y < size; y++) {
+            if (grid.get(x, y, 0) === params.threshold) {
+              hasHeight4 = true;
+              break;
+            }
+          }
+          if (hasHeight4) break;
+        }
+        
+        // Save state if we have cells at height 4 (before they topple)
+        if (hasHeight4) {
+          const gridAtHeight4 = new Grid3D(size, 0);
+          gridAtHeight4.data.set(grid.data);
+          updateSandpileActive(gridAtHeight4);
+          gridAtHeight4.generation = generationNumber; // Store generation number
+          history.push(gridAtHeight4);
+          
+          // Now topple cells that are at or above threshold (including height 4)
+          const newGrid = evolveSandpileWithThreshold(grid, params.threshold);
+          
+          // Check if any toppling occurred
+          toppled = false;
+          for (let x = 0; x < size; x++) {
+            for (let y = 0; y < size; y++) {
+              if (newGrid.get(x, y, 0) !== grid.get(x, y, 0)) {
+                toppled = true;
+                break;
+              }
+            }
+            if (toppled) break;
+          }
+          
+          grid = newGrid;
+        } else {
+          // No height 4 cells, check for cells above threshold
+          toppled = false;
+          const newGrid = evolveSandpile(grid, params);
+          
+          // Check if any toppling occurred by comparing grids
+          for (let x = 0; x < size; x++) {
+            for (let y = 0; y < size; y++) {
+              if (newGrid.get(x, y, 0) !== grid.get(x, y, 0)) {
+                toppled = true;
+                break;
+              }
+            }
+            if (toppled) break;
+          }
+          
+          grid = newGrid;
+        }
+        
+        iterations++;
+      }
+      
+      if (iterations >= maxIterations) {
+        console.warn(`Sandpile generation ${i + 1} hit max iterations limit`);
+      }
+      
+      // Save final stable state after toppling
+      grid.generation = generationNumber; // Store generation number
+      history.push(grid);
+      const activeCount = countActiveSandpileCells(grid);
+      console.log(`Sandpile Generation ${generationNumber}: ${activeCount} active cells, center sand: ${grid.get(center, center, 0)}`);
     }
   } else {
     let grid = initMatrix(size, shapeFn);
@@ -454,4 +558,230 @@ export function generateSineWaveGrid(size, generation, totalGenerations) {
   }
   
   return grid;
+}
+
+// ---------------------------
+// Abelian Sandpile Model (2D simulation, 3D visualization)
+// ---------------------------
+
+/**
+ * Initialize a 2D sandpile grid by placing initial sand at the center.
+ * Sand is stored at z=0, and will be visualized in 3D using Z-axis as height.
+ * @param {number} size - Size of the grid (NxNxN, but only uses 2D plane at z=0)
+ * @param {Object} params - Sandpile parameters
+ * @param {number} params.initialSand - Total amount of sand to place initially
+ * @param {number} params.threshold - Threshold for toppling (typically 4 for 2D)
+ * @returns {Grid3D} - Grid with initial sand distribution (stored at z=0)
+ */
+export function initSandpile(size, params) {
+  const grid = new Grid3D(size, 0);
+  const { initialSand } = params;
+  
+  // Place initial sand at the center (if any)
+  const center = Math.floor(size / 2);
+  const initialAmount = Math.min(255, Math.max(0, initialSand || 0));
+  if (initialAmount > 0) {
+    grid.data[grid._idx(center, center, 0)] = initialAmount;
+  }
+  
+  // Update active array for visualization (cells with sand > 0, visualized at height = sand amount)
+  updateSandpileActive(grid);
+  
+  return grid;
+}
+
+/**
+ * Evolve the 2D sandpile by toppling cells that exceed the threshold (but not at threshold).
+ * Uses 4 neighbors in 2D (up, down, left, right).
+ * This allows cells at exactly threshold (height 4) to remain visible before toppling.
+ * @param {Grid3D} grid - Current sandpile grid (sand stored at z=0)
+ * @param {Object} params - Sandpile parameters
+ * @param {number} params.threshold - Threshold for toppling (typically 4 for 2D)
+ * @returns {Grid3D} - New grid after one evolution step
+ */
+export function evolveSandpile(grid, params) {
+  const size = grid.size;
+  const { threshold } = params;
+  const newGrid = new Grid3D(size, 0);
+  
+  // Copy current sand amounts (only from z=0 plane)
+  for (let x = 0; x < size; x++) {
+    for (let y = 0; y < size; y++) {
+      const sand = grid.get(x, y, 0);
+      newGrid.data[newGrid._idx(x, y, 0)] = sand;
+    }
+  }
+  
+  // Find all cells that need to topple (only check z=0 plane)
+  // Only topple cells that EXCEED threshold (not equal to), so height 4 stays visible
+  const toppleQueue = [];
+  for (let x = 0; x < size; x++) {
+    for (let y = 0; y < size; y++) {
+      const sand = newGrid.get(x, y, 0);
+      if (sand > threshold) {
+        toppleQueue.push([x, y]);
+      }
+    }
+  }
+  
+  // Process toppling
+  const wrapping = state.gridWrapping ?? true;
+  
+  // Helper to get neighbor coordinates in 2D
+  const getNeighborCoord = (coord, delta) => {
+    const newCoord = coord + delta;
+    if (wrapping) {
+      return grid._wrap(newCoord);
+    } else {
+      return Math.max(0, Math.min(size - 1, newCoord));
+    }
+  };
+  
+  // 2D neighbors: up, down, left, right (4 neighbors)
+  const neighborOffsets = [
+    [0, -1],  // up (decrease y)
+    [0, 1],   // down (increase y)
+    [-1, 0],  // left (decrease x)
+    [1, 0]    // right (increase x)
+  ];
+  
+  // Topple all cells in the queue
+  for (const [x, y] of toppleQueue) {
+    const sand = newGrid.get(x, y, 0);
+    if (sand <= threshold) continue; // Already toppled by a previous cell or at threshold
+    
+    // Calculate how many times this cell topples (could be multiple if sand >> threshold)
+    const topples = Math.floor(sand / threshold);
+    const remainder = sand % threshold;
+    
+    // Set remainder
+    newGrid.data[newGrid._idx(x, y, 0)] = remainder;
+    
+    // Distribute sand to 2D neighbors (1 grain per neighbor per topple)
+    for (const [dx, dy] of neighborOffsets) {
+      const nx = getNeighborCoord(x, dx);
+      const ny = getNeighborCoord(y, dy);
+      
+      const idx = newGrid._idx(nx, ny, 0);
+      const newSand = Math.min(255, newGrid.data[idx] + topples);
+      newGrid.data[idx] = newSand;
+    }
+  }
+  
+  // Update active array for visualization
+  updateSandpileActive(newGrid);
+  
+  return newGrid;
+}
+
+/**
+ * Evolve the 2D sandpile by toppling cells that are at or above the threshold.
+ * Uses 4 neighbors in 2D (up, down, left, right).
+ * @param {Grid3D} grid - Current sandpile grid (sand stored at z=0)
+ * @param {number} threshold - Threshold for toppling (cells >= threshold will topple)
+ * @returns {Grid3D} - New grid after one evolution step
+ */
+function evolveSandpileWithThreshold(grid, threshold) {
+  const size = grid.size;
+  const newGrid = new Grid3D(size, 0);
+  
+  // Copy current sand amounts (only from z=0 plane)
+  for (let x = 0; x < size; x++) {
+    for (let y = 0; y < size; y++) {
+      const sand = grid.get(x, y, 0);
+      newGrid.data[newGrid._idx(x, y, 0)] = sand;
+    }
+  }
+  
+  // Find all cells that need to topple (only check z=0 plane)
+  // Topple cells that are at or above threshold
+  const toppleQueue = [];
+  for (let x = 0; x < size; x++) {
+    for (let y = 0; y < size; y++) {
+      const sand = newGrid.get(x, y, 0);
+      if (sand >= threshold) {
+        toppleQueue.push([x, y]);
+      }
+    }
+  }
+  
+  // Process toppling
+  const wrapping = state.gridWrapping ?? true;
+  
+  // Helper to get neighbor coordinates in 2D
+  const getNeighborCoord = (coord, delta) => {
+    const newCoord = coord + delta;
+    if (wrapping) {
+      return grid._wrap(newCoord);
+    } else {
+      return Math.max(0, Math.min(size - 1, newCoord));
+    }
+  };
+  
+  // 2D neighbors: up, down, left, right (4 neighbors)
+  const neighborOffsets = [
+    [0, -1],  // up (decrease y)
+    [0, 1],   // down (increase y)
+    [-1, 0],  // left (decrease x)
+    [1, 0]    // right (increase x)
+  ];
+  
+  // Topple all cells in the queue
+  for (const [x, y] of toppleQueue) {
+    const sand = newGrid.get(x, y, 0);
+    if (sand < threshold) continue; // Already toppled by a previous cell
+    
+    // Calculate how many times this cell topples (could be multiple if sand >> threshold)
+    const topples = Math.floor(sand / threshold);
+    const remainder = sand % threshold;
+    
+    // Set remainder
+    newGrid.data[newGrid._idx(x, y, 0)] = remainder;
+    
+    // Distribute sand to 2D neighbors (1 grain per neighbor per topple)
+    for (const [dx, dy] of neighborOffsets) {
+      const nx = getNeighborCoord(x, dx);
+      const ny = getNeighborCoord(y, dy);
+      
+      const idx = newGrid._idx(nx, ny, 0);
+      const newSand = Math.min(255, newGrid.data[idx] + topples);
+      newGrid.data[idx] = newSand;
+    }
+  }
+  
+  // Update active array for visualization
+  updateSandpileActive(newGrid);
+  
+  return newGrid;
+}
+
+/**
+ * Update the active array for sandpile visualization.
+ * For 2D sandpile: create one point per grain of sand, stacked vertically.
+ * If a cell has 3 grains, we create 3 points at heights 0, 1, 2 (stacked).
+ * @param {Grid3D} grid - Grid to update
+ */
+function updateSandpileActive(grid) {
+  grid.active = [];
+  const size = grid.size;
+  for (let x = 0; x < size; x++) {
+    for (let y = 0; y < size; y++) {
+      const sand = grid.get(x, y, 0);
+      // Create one point for each grain of sand, stacked vertically
+      // Each grain is at a different Z height (0, 1, 2, 3, ...)
+      for (let grain = 0; grain < sand; grain++) {
+        // Store [x, y, grainHeight] where grainHeight is the vertical position of this grain
+        grid.active.push([x, y, grain]);
+      }
+    }
+  }
+}
+
+/**
+ * Count active cells in a sandpile grid (cells with sand > 0).
+ * @param {Grid3D} grid - Grid to count
+ * @returns {number} - Number of active cells
+ */
+function countActiveSandpileCells(grid) {
+  return grid.active.length;
 }

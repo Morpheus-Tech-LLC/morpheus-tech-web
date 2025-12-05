@@ -29,15 +29,17 @@ export async function initSimulation() {
     state.viewMode = 'full';
     state.sliceAxis = 'x';
     state.sliceIndex = Math.floor((simSize - 1) / 2); // Ensure valid index (0 to simSize - 1)
-    // Generate Simulation Data - History (Game of Life, Rule 30, or Sine Wave)
-    console.log(`initSimulation: About to call generateSimulation with useRule30=${state.useRule30}, useRule30_2D=${state.useRule30_2D}, useSineWave=${state.useSineWave}`);
+    // Generate Simulation Data - History (Game of Life, Rule 30, Sine Wave, or Sandpile)
+    console.log(`initSimulation: About to call generateSimulation with useRule30=${state.useRule30}, useRule30_2D=${state.useRule30_2D}, useSineWave=${state.useSineWave}, useSandpile=${state.useSandpile}`);
     const [simulationData, clockData] = await generateSimulation(
       simSize,
       simGenerations,
       simSeed,
       state.useRule30,
       state.useRule30_2D,
-      state.useSineWave
+      state.useSineWave,
+      state.useSandpile,
+      state.useSandpile ? state.sandpileParams : null
     );
     console.log(`initSimulation: generateSimulation completed, history length: ${simulationData.length}`);
     state.simulationData = simulationData;
@@ -167,36 +169,98 @@ export function updatePoints() {
   const spanZ = matrixDepth > 1 ? matrixDepth - 1 : 0;
   const halfSpanZ = spanZ / 2;
 
+  // Special handling for sandpile mode (2D simulation, 3D visualization)
+  const isSandpile = state.useSandpile;
+  
   for (const [x, y, z] of grid.active) {
-    // Slice filtering
-    if (
-      state.viewMode === "slice" &&
-      ((state.sliceAxis === "x" && x !== state.sliceIndex) ||
-       (state.sliceAxis === "y" && y !== state.sliceIndex) ||
-       (state.sliceAxis === "z" && z !== state.sliceIndex))
-    ) {
-      continue;
-    }
-
-    // World position of this cell
-    const worldX = x - halfSpanXY;
-    // Flip Y-axis if toggle is enabled (applies to all simulations)
-    const worldY = state.flipOrientation
-      ? halfSpanXY - y  // Inverted
-      : y - halfSpanXY; // Normal
-    let worldZ;
-    if (matrixDepth <= 1) {
-      worldZ = 0;
-    } else {
-      const normalizedZ = z / (matrixSize - 1);
-      worldZ = normalizedZ * spanZ - halfSpanZ;
-    }
-    const worldPos = new THREE.Vector3(worldX, worldY, worldZ);
+    let worldX, worldY, worldZ;
+    let normX, normZ;
+    let color;
     
-    const normX = x / (matrixSize - 1);
-    const normZ = z / (matrixSize - 1);
-    const color = baseColor.clone().lerp(targetColor, normX);
-    color.offsetHSL(0, 0, normZ * 0.5);
+    if (isSandpile) {
+      // For sandpile: z is the grain height (0, 1, 2, 3, ...)
+      // Each grain is visualized at its actual height, creating a 3D stack
+      const grainHeight = z; // z is the vertical position of this grain (0 = bottom, 1 = second, etc.)
+      const heightScale = 1.0; // Each grain is 1 unit tall
+      
+      // Slice filtering for 2D view mode
+      if (
+        state.viewMode === "slice" &&
+        ((state.sliceAxis === "x" && x !== state.sliceIndex) ||
+         (state.sliceAxis === "y" && y !== state.sliceIndex) ||
+         (state.sliceAxis === "z" && grainHeight !== state.sliceIndex))
+      ) {
+        continue;
+      }
+      
+      worldX = x - halfSpanXY;
+      worldY = state.flipOrientation
+        ? halfSpanXY - y  // Inverted
+        : y - halfSpanXY; // Normal
+      worldZ = grainHeight * heightScale; // Each grain is stacked 1 unit above the previous
+      
+      normX = x / (matrixSize - 1);
+      
+      // Coherent color scheme for first 4 layers (heights 0-3)
+      // These are the most common since threshold is 4
+      color = new THREE.Color();
+      
+      if (grainHeight === 0) {
+        // Height 0: Deep blue - the foundation
+        color.setHex(0x1a237e); // Deep indigo blue
+      } else if (grainHeight === 1) {
+        // Height 1: Green
+        color.setHex(0x4caf50); // Green
+      } else if (grainHeight === 2) {
+        // Height 2: Purple
+        color.setHex(0x9c27b0); // Purple
+      } else if (grainHeight === 3) {
+        // Height 3: Gold
+        color.setHex(0xffd700); // Gold
+      } else if (grainHeight === 4) {
+        // Height 4: White
+        color.setHex(0xffffff); // White
+      } else {
+        // Heights 5+: Gradient from white to light gray
+        const extraHeight = grainHeight - 4;
+        const maxExtra = 10;
+        const t = Math.min(1, extraHeight / maxExtra);
+        color.lerpColors(new THREE.Color(0xffffff), new THREE.Color(0xe0e0e0), t);
+      }
+    } else {
+      // Standard 3D grid visualization
+      // Slice filtering
+      if (
+        state.viewMode === "slice" &&
+        ((state.sliceAxis === "x" && x !== state.sliceIndex) ||
+         (state.sliceAxis === "y" && y !== state.sliceIndex) ||
+         (state.sliceAxis === "z" && z !== state.sliceIndex))
+      ) {
+        continue;
+      }
+
+      // World position of this cell
+      worldX = x - halfSpanXY;
+      // Flip Y-axis if toggle is enabled (applies to all simulations)
+      worldY = state.flipOrientation
+        ? halfSpanXY - y  // Inverted
+        : y - halfSpanXY; // Normal
+      if (matrixDepth <= 1) {
+        worldZ = 0;
+      } else {
+        const normalizedZ = z / (matrixSize - 1);
+        worldZ = normalizedZ * spanZ - halfSpanZ;
+      }
+      
+      normX = x / (matrixSize - 1);
+      normZ = z / (matrixSize - 1);
+      
+      // Standard color calculation for non-sandpile modes
+      color = baseColor.clone().lerp(targetColor, normX);
+      color.offsetHSL(0, 0, normZ * 0.5);
+    }
+    
+    const worldPos = new THREE.Vector3(worldX, worldY, worldZ);
 
     activeCells.push([x, y, z]);
 
@@ -220,7 +284,9 @@ export function updatePoints() {
   // Update wireframe cells if enabled
   updateWireframeCells(activeCells, matrixSize, matrixDepth);
 
-  document.getElementById("gen").textContent = `${gen}`;
+  // Display generation number (if stored in grid) or frame number
+  const genDisplay = grid.generation !== undefined ? grid.generation : gen;
+  document.getElementById("gen").textContent = `${genDisplay}`;
   document.getElementById("slice-value").textContent = `${state.sliceAxis}-${state.sliceIndex}`;
 }
 
@@ -245,38 +311,83 @@ function updateWireframeCells(activeCells, matrixSize, matrixDepth) {
   const spanZ = matrixDepth > 1 ? matrixDepth - 1 : 0;
   const halfSpanZ = spanZ / 2;
   
+  const isSandpile = state.useSandpile;
+  
   // Create wireframe boxes for each active cell
   for (const [x, y, z] of activeCells) {
+    let worldX, worldY, worldZ;
+    let normX, normZ;
+    let color;
+    
+    if (isSandpile) {
+      // For sandpile: z is the grain height (0, 1, 2, 3, ...)
+      // Each grain is visualized at its actual height, creating a 3D stack
+      const grainHeight = z; // z is the vertical position of this grain (0 = bottom, 1 = second, etc.)
+      const heightScale = 1.0; // Each grain is 1 unit tall
+      
+      worldX = x - halfSpanXY;
+      worldY = state.flipOrientation
+        ? halfSpanXY - y  // Inverted
+        : y - halfSpanXY; // Normal
+      worldZ = grainHeight * heightScale; // Each grain is stacked 1 unit above the previous
+      
+      normX = x / (matrixSize - 1);
+      
+      // Coherent color scheme for first 4 layers (heights 0-3) for wireframe
+      // These are the most common since threshold is 4
+      color = new THREE.Color();
+      
+      if (grainHeight === 0) {
+        // Height 0: Deep blue - the foundation
+        color.setHex(0x1a237e); // Deep indigo blue
+      } else if (grainHeight === 1) {
+        // Height 1: Green
+        color.setHex(0x4caf50); // Green
+      } else if (grainHeight === 2) {
+        // Height 2: Purple
+        color.setHex(0x9c27b0); // Purple
+      } else if (grainHeight === 3) {
+        // Height 3: Gold
+        color.setHex(0xffd700); // Gold
+      } else if (grainHeight === 4) {
+        // Height 4: White
+        color.setHex(0xffffff); // White
+      } else {
+        // Heights 5+: Gradient from white to light gray
+        const extraHeight = grainHeight - 4;
+        const maxExtra = 10;
+        const t = Math.min(1, extraHeight / maxExtra);
+        color.lerpColors(new THREE.Color(0xffffff), new THREE.Color(0xe0e0e0), t);
+      }
+    } else {
+      // Standard 3D grid visualization
+      worldX = x - halfSpanXY;
+      worldY = state.flipOrientation
+        ? halfSpanXY - y  // Inverted
+        : y - halfSpanXY; // Normal
+      if (matrixDepth <= 1) {
+        worldZ = 0;
+      } else {
+        const normalizedZ = z / (matrixSize - 1);
+        worldZ = normalizedZ * spanZ - halfSpanZ;
+      }
+      
+      normX = x / (matrixSize - 1);
+      normZ = z / (matrixSize - 1);
+      
+      // Standard color calculation for non-sandpile modes
+      color = baseColor.clone().lerp(targetColor, normX);
+      color.offsetHSL(0, 0, normZ * 0.5);
+    }
+    
     // Create a new box geometry for each cell (EdgesGeometry needs its own geometry)
     const boxGeometry = new THREE.BoxGeometry(cellSize, cellSize, cellSize);
     const edges = new THREE.EdgesGeometry(boxGeometry);
     
-    const normX = x / (matrixSize - 1);
-    const normZ = z / (matrixSize - 1);
-    const color = baseColor.clone().lerp(targetColor, normX);
-    color.offsetHSL(0, 0, normZ * 0.5);
-    
     const lineMaterial = new THREE.LineBasicMaterial({ color: color });
     const line = new THREE.LineSegments(edges, lineMaterial);
     
-    let worldZ;
-    if (matrixDepth <= 1) {
-      worldZ = 0;
-    } else {
-      const normalizedZ = z / (matrixSize - 1);
-      worldZ = normalizedZ * spanZ - halfSpanZ;
-    }
-
-    // Flip Y-axis if toggle is enabled (applies to all simulations)
-    const worldY = state.flipOrientation
-      ? halfSpanXY - y  // Inverted
-      : y - halfSpanXY; // Normal
-    
-    line.position.set(
-      x - halfSpanXY,
-      worldY,
-      worldZ
-    );
+    line.position.set(worldX, worldY, worldZ);
     
     wireframeCellsGroup.add(line);
     

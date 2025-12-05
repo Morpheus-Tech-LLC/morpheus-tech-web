@@ -386,7 +386,12 @@ function openShapeModal() {
 
   // Initialize simulation mode cards
   const modeCards = document.querySelectorAll('.mode-card');
-  const currentMode = state.simulationMode || 'gameOfLife';
+  // If current mode is rule30_2D, convert to rule30 (we now use toggle instead)
+  let currentMode = state.simulationMode || 'gameOfLife';
+  if (currentMode === 'rule30_2D') {
+    currentMode = 'rule30';
+    state.simulationMode = 'rule30';
+  }
   modeCards.forEach(card => {
     if (card.dataset.mode === currentMode) {
       card.classList.add('active');
@@ -420,6 +425,8 @@ function openShapeModal() {
 
   // Function to update UI based on selected mode
   const boundaryRulesSection = document.getElementById('boundary-rules-section');
+  const rule302DToggleRow = document.getElementById('rule30-2d-toggle-row');
+  const rule302DToggle = document.getElementById('rule30-2d-toggle');
   function updateModeUI(mode) {
     if (mode === 'gameOfLife') {
       // Show rules section
@@ -430,15 +437,38 @@ function openShapeModal() {
       if (seedSection) seedSection.style.display = '';
       // Show size controls
       if (simSizeLabel) simSizeLabel.style.display = '';
-      if (simSizeInput) simSizeInput.style.display = '';
+      if (simSizeInput) {
+        simSizeInput.style.display = '';
+        // Set default size to 50 for Game of Life
+        if (!simSizeInput.value || parseInt(simSizeInput.value) !== 50) {
+          simSizeInput.value = '50';
+        }
+      }
       // Show grid wrapping controls for Game of Life mode
       if (gridWrappingLabel) gridWrappingLabel.style.display = '';
       if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = '';
+      // Hide 2D toggle for Game of Life mode
+      if (rule302DToggleRow) rule302DToggleRow.style.display = 'none';
       // Show all shape options
       if (modalShapeSelect) {
         Array.from(modalShapeSelect.options).forEach(opt => {
           opt.style.display = '';
         });
+        // Set default shape to cube for Game of Life if not already set
+        const currentShape = pendingShapeKey || state.shapeKey;
+        if (!currentShape || currentShape === 'rule30') {
+          modalShapeSelect.value = 'cube';
+          pendingShapeKey = 'cube';
+          // Trigger change handler to update labels and inputs
+          if (modalShapeSelect.onchange) {
+            const event = new Event('change', { bubbles: true });
+            Object.defineProperty(event, 'target', { value: modalShapeSelect, enumerable: true });
+            modalShapeSelect.onchange(event);
+          }
+        } else {
+          // Restore the current shape selection
+          modalShapeSelect.value = currentShape;
+        }
       }
     } else if (mode === 'sineWave') {
       // Hide rules section for Sine Wave mode
@@ -449,29 +479,49 @@ function openShapeModal() {
       if (seedSection) seedSection.style.display = 'none';
       // Show size controls for Sine Wave (size affects wave resolution)
       if (simSizeLabel) simSizeLabel.style.display = '';
-      if (simSizeInput) simSizeInput.style.display = '';
+      if (simSizeInput) {
+        simSizeInput.style.display = '';
+        // Set default size to 50 for Sine Wave mode if not already set
+        if (!simSizeInput.value || parseInt(simSizeInput.value) !== 50) {
+          simSizeInput.value = '50';
+        }
+      }
       // Hide grid wrapping controls for Sine Wave mode
       if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
       if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = 'none';
+      // Hide 2D toggle for Sine Wave mode
+      if (rule302DToggleRow) rule302DToggleRow.style.display = 'none';
       // Hide shape select for Sine Wave mode
       if (modalShapeSelect) {
         Array.from(modalShapeSelect.options).forEach(opt => {
           opt.style.display = 'none';
         });
       }
-    } else {
-      // Hide rules section for Rule 30 modes
+    } else if (mode === 'rule30') {
+      // Hide rules section for Rule 30 mode
       if (rulesSection) rulesSection.style.display = 'none';
-      // Hide boundary rules section for Rule 30 modes
+      // Hide boundary rules section for Rule 30 mode
       if (boundaryRulesSection) boundaryRulesSection.style.display = 'none';
-      // Hide seed section for Rule 30 modes
+      // Hide seed section for Rule 30 mode
       if (seedSection) seedSection.style.display = 'none';
-      // Hide size controls for Rule 30 modes
+      // Hide size controls for Rule 30 mode (auto-calculated)
       if (simSizeLabel) simSizeLabel.style.display = 'none';
       if (simSizeInput) simSizeInput.style.display = 'none';
-      // Hide grid wrapping controls for Rule 30 modes
+      // Hide grid wrapping controls for Rule 30 mode
       if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
       if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = 'none';
+      // Show 2D toggle for Rule 30
+      if (rule302DToggleRow) rule302DToggleRow.style.display = '';
+      // Initialize toggle based on current state
+      if (rule302DToggle) {
+        rule302DToggle.checked = state.useRule30_2D || false;
+        // Update size calculation when toggle is initialized
+        if (simGenerationsInput && simSizeInput) {
+          const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
+          const calculatedSize = calculateRule30Size(generations, state.useRule30_2D ? 'rule30_2D' : 'rule30');
+          simSizeInput.value = calculatedSize;
+        }
+      }
       // Only show rule30 shape option (though seed section is hidden anyway)
       if (modalShapeSelect) {
         Array.from(modalShapeSelect.options).forEach(opt => {
@@ -488,23 +538,75 @@ function openShapeModal() {
         }
       }
       
-      // Auto-calculate and update size based on generations
-      if (simGenerationsInput && simSizeInput) {
-        const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
-        const calculatedSize = calculateRule30Size(generations, mode);
-        simSizeInput.value = calculatedSize;
+      // Auto-calculate and update size based on generations and 2D toggle
+      if (simGenerationsInput && simSizeInput && rule302DToggle) {
+        const updateSize = () => {
+          const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
+          const is2D = rule302DToggle.checked;
+          const calculatedSize = calculateRule30Size(generations, is2D ? 'rule30_2D' : 'rule30');
+          simSizeInput.value = calculatedSize;
+        };
+        updateSize();
+        // Update size when toggle changes
+        rule302DToggle.addEventListener('change', updateSize);
       }
+    } else if (mode === 'sandpile') {
+      // Hide rules section for Sandpile mode
+      if (rulesSection) rulesSection.style.display = 'none';
+      // Hide boundary rules section for Sandpile mode
+      if (boundaryRulesSection) boundaryRulesSection.style.display = 'none';
+      // Hide seed section for Sandpile mode
+      if (seedSection) seedSection.style.display = 'none';
+      // Show size controls for Sandpile mode
+      if (simSizeLabel) simSizeLabel.style.display = '';
+      if (simSizeInput) {
+        simSizeInput.style.display = '';
+      }
+      // Set default generations to 1000 for sandpile mode
+      if (simGenerationsInput && (!simGenerationsInput.value || parseInt(simGenerationsInput.value) !== 1000)) {
+        simGenerationsInput.value = '1000';
+      }
+      // Show sandpile parameters section
+      const sandpileSection = document.getElementById('sandpile-section');
+      if (sandpileSection) sandpileSection.style.display = '';
+      // Initialize sandpile parameter inputs from state
+      const initialSandInput = document.getElementById('sandpile-initial-sand');
+      const thresholdInput = document.getElementById('sandpile-threshold');
+      if (initialSandInput && !initialSandInput.value) {
+        initialSandInput.value = state.sandpileParams?.initialSand || 0;
+      }
+      if (thresholdInput && !thresholdInput.value) {
+        thresholdInput.value = state.sandpileParams?.threshold || 4;
+      }
+      // Hide grid wrapping controls for Sandpile mode (wrapping is handled in evolution)
+      if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
+      if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = 'none';
+      // Hide 2D toggle for Sandpile mode
+      if (rule302DToggleRow) rule302DToggleRow.style.display = 'none';
+      // Hide shape select for Sandpile mode
+      if (modalShapeSelect) {
+        Array.from(modalShapeSelect.options).forEach(opt => {
+          opt.style.display = 'none';
+        });
+      }
+    } else {
+      // Hide 2D toggle for non-Rule 30 modes
+      if (rule302DToggleRow) rule302DToggleRow.style.display = 'none';
+      // Hide sandpile section for other modes
+      const sandpileSection = document.getElementById('sandpile-section');
+      if (sandpileSection) sandpileSection.style.display = 'none';
     }
   }
   
   // Listen for generations input changes when Rule 30 is selected
-  if (simGenerationsInput) {
+  if (simGenerationsInput && rule302DToggle) {
     const generationsChangeHandler = () => {
       const activeCard = document.querySelector('.mode-card.active');
       const selectedMode = activeCard ? activeCard.dataset.mode : 'gameOfLife';
-      if (selectedMode === 'rule30' || selectedMode === 'rule30_2D') {
+      if (selectedMode === 'rule30') {
         const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
-        const calculatedSize = calculateRule30Size(generations, selectedMode);
+        const is2D = rule302DToggle.checked;
+        const calculatedSize = calculateRule30Size(generations, is2D ? 'rule30_2D' : 'rule30');
         if (simSizeInput) {
           simSizeInput.value = calculatedSize;
         }
@@ -512,6 +614,7 @@ function openShapeModal() {
     };
     simGenerationsInput.addEventListener('input', generationsChangeHandler);
     simGenerationsInput.addEventListener('change', generationsChangeHandler);
+    rule302DToggle.addEventListener('change', generationsChangeHandler);
   }
 
   // Set initial UI state
@@ -554,13 +657,18 @@ function openShapeModal() {
     if (shapeKey === 'perlin') {
       // Perlin noise labels
       if (sizeLabelText) {
-        sizeLabelText.textContent = `Noise Detail (1 - 100)`;
+        sizeLabelText.textContent = `Noise Detail`;
       }
       if (sizeInfoIcon) {
         sizeInfoIcon.setAttribute('data-tooltip', 'Controls noise frequency detail. Lower values (1-10) create smoother, larger patterns. Medium values (10-30) create moderate detail. Higher values (30-100) create fine-grained, detailed patterns.');
       }
+      // Update range hint
+      const shapeSizeRangeHint = document.getElementById('shape-size-range');
+      if (shapeSizeRangeHint) {
+        shapeSizeRangeHint.textContent = `1 - 100`;
+      }
       if (densityLabelText) {
-        densityLabelText.textContent = `Fill Amount (0 - 1)`;
+        densityLabelText.textContent = `Fill Amount`;
       }
       if (densityInfoIcon) {
         densityInfoIcon.setAttribute('data-tooltip', 'Controls how many cells are alive. 0 = few cells, 1 = many cells. Higher values create denser patterns.');
@@ -582,13 +690,18 @@ function openShapeModal() {
     } else if (shapeKey === 'worley') {
       // Worley noise labels
       if (sizeLabelText) {
-        sizeLabelText.textContent = `Feature Points (1 - 50)`;
+        sizeLabelText.textContent = `Feature Points`;
       }
       if (sizeInfoIcon) {
         sizeInfoIcon.setAttribute('data-tooltip', 'Approximate number of feature points (cell centers) that generate the pattern. Uses cube root, so values like 8 or 27 work best. More points create more complex cellular structures.');
       }
+      // Update range hint
+      const shapeSizeRangeHint = document.getElementById('shape-size-range');
+      if (shapeSizeRangeHint) {
+        shapeSizeRangeHint.textContent = `1 - 50`;
+      }
       if (densityLabelText) {
-        densityLabelText.textContent = `Activation Distance (0 - 1)`;
+        densityLabelText.textContent = `Activation Distance`;
       }
       if (densityInfoIcon) {
         densityInfoIcon.setAttribute('data-tooltip', 'How far from feature points cells become alive. Lower values = cells only near feature points. Higher values = cells fill more space.');
@@ -610,13 +723,18 @@ function openShapeModal() {
     } else {
       // Standard shape labels (cube, tetrahedron, octahedron)
       if (sizeLabelText) {
-        sizeLabelText.textContent = `Size (max ${maxSim})`;
+        sizeLabelText.textContent = `Size`;
       }
       if (sizeInfoIcon) {
         sizeInfoIcon.setAttribute('data-tooltip', 'Size of the shape in grid cells.');
       }
+      // Update range hint - will be updated by updateShapeSizeMax
+      const shapeSizeRangeHint = document.getElementById('shape-size-range');
+      if (shapeSizeRangeHint) {
+        shapeSizeRangeHint.textContent = `1 - ${maxSim}`;
+      }
       if (densityLabelText) {
-        densityLabelText.textContent = 'Density (0 - 1)';
+        densityLabelText.textContent = 'Density';
       }
       if (densityInfoIcon) {
         densityInfoIcon.setAttribute('data-tooltip', 'Probability that each cell in the shape is alive. 1 = all cells filled, 0 = no cells.');
@@ -637,31 +755,39 @@ function openShapeModal() {
     // Perlin noise detail has a fixed max of 100 (maps to noiseScale 0.5)
     // Worley feature points has a fixed max of 50 (creates 3-4 cells per dimension)
     // Other shapes use maxSim
+    let maxVal;
     if (currKey === 'perlin') {
       sizeInput.max = '100';
+      maxVal = 100;
     } else if (currKey === 'worley') {
       sizeInput.max = '50';
+      maxVal = 50;
     } else {
       sizeInput.max = `${maxSim}`;
+      maxVal = maxSim;
+    }
+    
+    // Update range hint for shape size
+    const shapeSizeRangeHint = document.getElementById('shape-size-range');
+    if (shapeSizeRangeHint) {
+      shapeSizeRangeHint.textContent = `1 - ${maxVal}`;
     }
     
     if (regionSizeInput) {
       regionSizeInput.max = `${maxSim}`;
       const currRegionSize = Math.max(1, parseInt(regionSizeInput.value || '1'));
       if (currRegionSize > maxSim) regionSizeInput.value = `${maxSim}`;
+      
+      // Update range hint for region size
+      const regionSizeRangeHint = document.getElementById('shape-region-size-range');
+      if (regionSizeRangeHint) {
+        regionSizeRangeHint.textContent = `1 - ${maxSim}`;
+      }
     }
     
     // Update labels with current max
     updateShapeLabels(currKey);
     const curr = Math.max(1, parseInt(sizeInput.value || '1'));
-    let maxVal;
-    if (currKey === 'perlin') {
-      maxVal = 100;
-    } else if (currKey === 'worley') {
-      maxVal = 50;
-    } else {
-      maxVal = maxSim;
-    }
     if (curr > maxVal) sizeInput.value = `${maxVal}`;
   }
   updateShapeSizeMax();
@@ -872,24 +998,15 @@ function openShapeModal() {
 
     // Set Rule 30 and Sine Wave flags based on mode
     if (selectedMode === 'rule30') {
-      state.useRule30 = true;
-      state.useRule30_2D = false;
+      // Read 2D toggle value
+      const is2D = rule302DToggle ? rule302DToggle.checked : false;
+      state.useRule30 = !is2D;
+      state.useRule30_2D = is2D;
       state.useSineWave = false;
       state.shapeKey = 'rule30';
-      // Auto-calculate size for Rule 30 based on generations
+      // Auto-calculate size for Rule 30 based on generations and 2D mode
       const generations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
-      const calculatedSize = calculateRule30Size(generations, 'rule30');
-      if (simSizeInput) {
-        simSizeInput.value = calculatedSize;
-      }
-    } else if (selectedMode === 'rule30_2D') {
-      state.useRule30 = false;
-      state.useRule30_2D = true;
-      state.useSineWave = false;
-      state.shapeKey = 'rule30';
-      // Auto-calculate size for Rule 30 (3D) based on generations
-      const generations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
-      const calculatedSize = calculateRule30Size(generations, 'rule30_2D');
+      const calculatedSize = calculateRule30Size(generations, is2D ? 'rule30_2D' : 'rule30');
       if (simSizeInput) {
         simSizeInput.value = calculatedSize;
       }
@@ -897,10 +1014,50 @@ function openShapeModal() {
       state.useRule30 = false;
       state.useRule30_2D = false;
       state.useSineWave = true;
+      state.useSandpile = false;
+      // Set default size to 50 for Sine Wave
+      if (simSizeInput) {
+        simSizeInput.value = '50';
+        state.sim_size = 50;
+      }
+    } else if (selectedMode === 'sandpile') {
+      state.useRule30 = false;
+      state.useRule30_2D = false;
+      state.useSineWave = false;
+      state.useSandpile = true;
+      // Set default generations to 1000 for sandpile mode
+      if (simGenerationsInput) {
+        simGenerationsInput.value = '1000';
+        state.sim_generations = 1000;
+      }
+      // Read sandpile parameters
+      const initialSandInput = document.getElementById('sandpile-initial-sand');
+      const thresholdInput = document.getElementById('sandpile-threshold');
+      
+      if (initialSandInput) {
+        state.sandpileParams.initialSand = Math.max(0, parseInt(initialSandInput.value) || 0);
+      }
+      if (thresholdInput) {
+        state.sandpileParams.threshold = Math.max(1, Math.min(26, parseInt(thresholdInput.value) || 4));
+      }
     } else {
       state.useRule30 = false;
       state.useRule30_2D = false;
       state.useSineWave = false;
+      state.useSandpile = false;
+    }
+    
+    // For Game of Life, ensure defaults are set
+    if (selectedMode === 'gameOfLife') {
+      // Set default size to 50 if not set
+      if (simSizeInput && (!simSizeInput.value || parseInt(simSizeInput.value) !== 50)) {
+        simSizeInput.value = '50';
+      }
+      // Set default shape to cube if not set
+      if (modalShapeSelect && (!modalShapeSelect.value || modalShapeSelect.value === 'rule30')) {
+        modalShapeSelect.value = 'cube';
+        pendingShapeKey = 'cube';
+      }
     }
     
     // Compute proposed sim size/gens first so clamping uses new size
@@ -1027,9 +1184,8 @@ function openShapeModal() {
     if (densityOut && selectedMode === 'gameOfLife') densityOut.textContent = `${density.toFixed(2)}`;
     if (shapeOut) {
       if (selectedMode === 'rule30') {
-        shapeOut.textContent = 'rule30';
-      } else if (selectedMode === 'rule30_2D') {
-        shapeOut.textContent = 'rule30 (2D)';
+        const is2D = rule302DToggle ? rule302DToggle.checked : false;
+        shapeOut.textContent = is2D ? 'rule30 (2D)' : 'rule30';
       } else if (selectedMode === 'sineWave') {
         shapeOut.textContent = 'sine wave';
       } else {

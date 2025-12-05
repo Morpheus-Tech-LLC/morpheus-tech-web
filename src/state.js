@@ -79,7 +79,12 @@ export const state = {
   useRule30: false,
   useRule30_2D: false,
   useSineWave: false,
+  useSandpile: false,
   flipOrientation: false,
+  sandpileParams: {
+    initialSand: 0, // Optional initial sand at center (0 = start empty, 1 grain added per generation)
+    threshold: 4, // Threshold for toppling (4 for 2D, standard Abelian sandpile)
+  },
   shapes: {
     perlin: perlinShape(10, 0.3, 30),
     cube: cubeShape(5, 1),
