@@ -85,6 +85,14 @@ export const state = {
     initialSand: 0, // Optional initial sand at center (0 = start empty, 1 grain added per generation)
     threshold: 4, // Threshold for toppling (fixed at 4, not user-adjustable)
   },
+  // Store per-mode values for size and generations
+  modeValues: {
+    gameOfLife: { size: 50, generations: 100 },
+    sineWave: { size: 50, generations: 100 },
+    rule30: { size: null, generations: 100 }, // size is auto-calculated
+    sandpile: { size: 50, generations: 1000 },
+    monteCarlo: { size: 50, generations: 100 }
+  },
   shapes: {
     perlin: perlinShape(10, 0.3, 30),
     cube: cubeShape(5, 1),
