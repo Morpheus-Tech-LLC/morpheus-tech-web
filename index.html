@@ -148,7 +148,7 @@
     <div class="modal-content glass-panel">
       <h3 class="modal-title">Configuration</h3>
       <div class="modal-body modal-grid">
-        <div class="sim-col" style="grid-column: 1 / -1; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(100, 150, 200, 0.15);">
+        <div class="sim-col" style="grid-column: 1 / -1; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(100, 150, 200, 0.15);">
           <div class="rules-title">Simulation Mode</div>
           <div class="mode-selector">
             <button class="mode-card" data-mode="gameOfLife" id="mode-gameOfLife">
@@ -174,23 +174,11 @@
         </div>
         <div class="sim-col" style="grid-column: 1;">
           <div class="rules-title">
-            <span>Simulation Parameters</span>
-            <span class="info-icon" data-tooltip="Core simulation settings including grid dimensions and number of evolution steps to compute.">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
+            <span data-tooltip="Core simulation settings including grid dimensions and number of evolution steps to compute.">Simulation Parameters</span>
           </div>
           <div class="modal-field-row">
             <label id="sim-size-label" class="modal-label" for="sim-size">
-              <span>Size</span>
-              <span class="info-icon" data-tooltip="The dimensions of the 3D simulation grid (N×N×N). Larger sizes provide more detail but require more computation.">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span data-tooltip="The dimensions of the 3D simulation grid (N×N×N). Larger sizes provide more detail but require more computation.">Size</span>
             </label>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
               <input type="number" id="sim-size" class="glass-input" min="1" max="200" step="1" />
@@ -204,13 +192,7 @@
           </div>
           <div class="modal-field-row">
             <label class="modal-label" for="sim-generations">
-              <span>Generations</span>
-              <span class="info-icon" data-tooltip="The number of simulation steps to compute. Each generation represents one evolution cycle of the cellular automaton.">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span data-tooltip="The number of simulation steps to compute. Each generation represents one evolution cycle of the cellular automaton.">Generations</span>
             </label>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
               <input type="number" id="sim-generations" class="glass-input" min="1" max="100" step="1" />
@@ -224,13 +206,7 @@
           </div>
           <div id="rule30-2d-toggle-row" class="modal-field-row" style="display: none;">
             <label class="modal-label" for="rule30-2d-toggle">
-              <span>2D Mode</span>
-              <span class="info-icon" data-tooltip="Toggle between 1D (single row) and 2D (full plane) Rule 30 simulation modes.">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span data-tooltip="Toggle between 1D (single row) and 2D (full plane) Rule 30 simulation modes.">2D Mode</span>
             </label>
             <button type="button" id="rule30-2d-toggle" class="toggle-button" style="margin-left: auto;">
               <span class="toggle-label-off">1D</span>
@@ -242,23 +218,11 @@
 
         <div id="seed-section" class="seed-col">
           <div class="rules-title">
-            <span>Initial Seed</span>
-            <span class="info-icon" data-tooltip="Configuration for the initial state of the simulation. Choose a shape pattern and set its size and density to determine starting conditions.">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
+            <span data-tooltip="Configuration for the initial state of the simulation. Choose a shape pattern and set its size and density to determine starting conditions.">Initial Seed</span>
           </div>
           <div class="modal-field-row">
             <label class="modal-label" for="modal-shape-select">
-              <span>Shape</span>
-              <span class="info-icon" data-tooltip="The geometric pattern used as the initial state. Options include procedural noise patterns (Perlin, Worley) and geometric shapes (Cube, Tetrahedron, Octahedron).">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span data-tooltip="The geometric pattern used as the initial state. Options include procedural noise patterns (Perlin, Worley) and geometric shapes (Cube, Tetrahedron, Octahedron).">Shape</span>
             </label>
             <select id="modal-shape-select" class="glass-select">
               <option value="perlin">Perlin</option>
@@ -271,13 +235,7 @@
           </div>
           <div class="modal-field-row">
             <label id="shape-size-label" class="modal-label" for="shape-size">
-              <span id="shape-size-label-text">Size</span>
-              <span class="info-icon" data-tooltip="The size of the initial seed shape within the simulation grid. Must be smaller than the simulation size.">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span id="shape-size-label-text" data-tooltip="The size of the initial seed shape within the simulation grid. Must be smaller than the simulation size.">Size</span>
             </label>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
               <input type="number" id="shape-size" class="glass-input" min="1" step="1" />
@@ -286,13 +244,7 @@
           </div>
           <div class="modal-field-row">
             <label id="shape-density-label" class="modal-label" for="shape-density">
-              <span id="shape-density-label-text">Density</span>
-              <span class="info-icon" data-tooltip="The probability (0.0 to 1.0) that a cell within the seed shape will be initially alive. Higher values create denser initial patterns.">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span id="shape-density-label-text" data-tooltip="The probability (0.0 to 1.0) that a cell within the seed shape will be initially alive. Higher values create denser initial patterns.">Density</span>
             </label>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
               <input type="number" id="shape-density" class="glass-input" min="0" max="1" step="0.01" />
@@ -301,13 +253,7 @@
           </div>
           <div class="modal-field-row hidden" id="shape-region-size-row">
             <label id="shape-region-size-label" class="modal-label" for="shape-region-size">
-              <span id="shape-region-size-label-text">Region Size</span>
-              <span class="info-icon" data-tooltip="Controls the scale of noise features for Perlin and Worley patterns. Larger values create smoother, larger-scale variations.">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span id="shape-region-size-label-text" data-tooltip="Controls the scale of noise features for Perlin and Worley patterns. Larger values create smoother, larger-scale variations.">Region Size</span>
             </label>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
               <input type="number" id="shape-region-size" class="glass-input" min="1" step="1" />
@@ -318,23 +264,11 @@
 
         <div id="rules-section" class="rules-col">
           <div class="rules-title">
-            <span>Evolution Rules</span>
-            <span class="info-icon" data-tooltip="Rules that govern how cells evolve between generations. Birth rules determine when dead cells become alive, and survival rules determine when living cells stay alive. Enter values as list or range (e.g., 9,10 or 5-15). Isolation and overcrowding are calculated automatically.">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
+            <span data-tooltip="Rules that govern how cells evolve between generations. Birth rules determine when dead cells become alive, and survival rules determine when living cells stay alive. Enter values as list or range (e.g., 9,10 or 5-15). Isolation and overcrowding are calculated automatically.">Evolution Rules</span>
           </div>
           <div class="modal-field-row">
             <label class="modal-label" for="rule-birth">
-              <span>Birth</span>
-              <span class="info-icon" data-tooltip="Neighbor counts that cause a dead cell to become alive. Enter as comma-separated list (e.g., 9,10) or range (e.g., 5-15).">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span data-tooltip="Neighbor counts that cause a dead cell to become alive. Enter as comma-separated list (e.g., 9,10) or range (e.g., 5-15).">Birth</span>
             </label>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
               <input type="text" id="rule-birth" class="glass-input" placeholder="" />
@@ -343,13 +277,7 @@
           </div>
           <div class="modal-field-row">
             <label class="modal-label" for="rule-survival">
-              <span>Survival</span>
-              <span class="info-icon" data-tooltip="Neighbor counts that allow a living cell to stay alive. Enter as comma-separated list (e.g., 5,6,7) or range (e.g., 5-15).">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span data-tooltip="Neighbor counts that allow a living cell to stay alive. Enter as comma-separated list (e.g., 5,6,7) or range (e.g., 5-15).">Survival</span>
             </label>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
               <input type="text" id="rule-survival" class="glass-input" placeholder="" />
@@ -360,24 +288,12 @@
 
         <div id="boundary-rules-section" class="boundary-col">
           <div class="rules-title">
-            <span>Boundary Rules</span>
-            <span class="info-icon" data-tooltip="Rules for cells at the grid boundaries. When grid wrapping is disabled, boundary cells (corner, edge, face) have fewer neighbors and can use different evolution rules than interior cells.">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
+            <span data-tooltip="Rules for cells at the grid boundaries. When grid wrapping is disabled, boundary cells (corner, edge, face) have fewer neighbors and can use different evolution rules than interior cells.">Boundary Rules</span>
           </div>
           <div class="modal-field-row" id="grid-wrapping-label">
             <label class="modal-label" for="grid-wrapping-checkbox" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
               <input type="checkbox" id="grid-wrapping-checkbox" checked style="width: auto; cursor: pointer;" />
-              <span>Grid Wrapping</span>
-              <span class="info-icon" data-tooltip="When enabled, the grid edges wrap around (toroidal topology). When disabled, boundary cells have fewer neighbors and use different rules.">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span data-tooltip="When enabled, the grid edges wrap around (toroidal topology). When disabled, boundary cells have fewer neighbors and use different rules.">Grid Wrapping</span>
             </label>
           </div>
           <div id="boundary-rules-inputs" style="display: none;">
@@ -385,25 +301,13 @@
               <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Corner (7 neighbors)</div>
               <div class="modal-field-row">
                 <label class="modal-label" for="boundary-corner-birth">
-                  <span>Birth</span>
-                  <span class="info-icon" data-tooltip="Neighbor counts that cause a dead corner cell to become alive. Corner cells have 7 neighbors.">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                      <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                  </span>
+                  <span data-tooltip="Neighbor counts that cause a dead corner cell to become alive. Corner cells have 7 neighbors.">Birth</span>
                 </label>
                 <input type="text" id="boundary-corner-birth" class="glass-input" placeholder="2,3" />
               </div>
               <div class="modal-field-row">
                 <label class="modal-label" for="boundary-corner-survival">
-                  <span>Survival</span>
-                  <span class="info-icon" data-tooltip="Neighbor counts that allow a living corner cell to stay alive. Corner cells have 7 neighbors.">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                      <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                  </span>
+                  <span data-tooltip="Neighbor counts that allow a living corner cell to stay alive. Corner cells have 7 neighbors.">Survival</span>
                 </label>
                 <input type="text" id="boundary-corner-survival" class="glass-input" placeholder="2-4" />
               </div>
@@ -412,25 +316,13 @@
               <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Edge (11 neighbors)</div>
               <div class="modal-field-row">
                 <label class="modal-label" for="boundary-edge-birth">
-                  <span>Birth</span>
-                  <span class="info-icon" data-tooltip="Neighbor counts that cause a dead edge cell to become alive. Edge cells have 11 neighbors.">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                      <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                  </span>
+                  <span data-tooltip="Neighbor counts that cause a dead edge cell to become alive. Edge cells have 11 neighbors.">Birth</span>
                 </label>
                 <input type="text" id="boundary-edge-birth" class="glass-input" placeholder="4" />
               </div>
               <div class="modal-field-row">
                 <label class="modal-label" for="boundary-edge-survival">
-                  <span>Survival</span>
-                  <span class="info-icon" data-tooltip="Neighbor counts that allow a living edge cell to stay alive. Edge cells have 11 neighbors.">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                      <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                  </span>
+                  <span data-tooltip="Neighbor counts that allow a living edge cell to stay alive. Edge cells have 11 neighbors.">Survival</span>
                 </label>
                 <input type="text" id="boundary-edge-survival" class="glass-input" placeholder="2-6" />
               </div>
@@ -439,25 +331,13 @@
               <div class="rules-title" style="font-size: 0.9em; margin-bottom: 10px;">Face (17 neighbors)</div>
               <div class="modal-field-row">
                 <label class="modal-label" for="boundary-face-birth">
-                  <span>Birth</span>
-                  <span class="info-icon" data-tooltip="Neighbor counts that cause a dead face cell to become alive. Face cells have 17 neighbors.">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                      <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                  </span>
+                  <span data-tooltip="Neighbor counts that cause a dead face cell to become alive. Face cells have 17 neighbors.">Birth</span>
                 </label>
                 <input type="text" id="boundary-face-birth" class="glass-input" placeholder="6" />
               </div>
               <div class="modal-field-row">
                 <label class="modal-label" for="boundary-face-survival">
-                  <span>Survival</span>
-                  <span class="info-icon" data-tooltip="Neighbor counts that allow a living face cell to stay alive. Face cells have 17 neighbors.">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                      <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                  </span>
+                  <span data-tooltip="Neighbor counts that allow a living face cell to stay alive. Face cells have 17 neighbors.">Survival</span>
                 </label>
                 <input type="text" id="boundary-face-survival" class="glass-input" placeholder="3-9" />
               </div>
@@ -466,23 +346,11 @@
         </div>
         <div id="sandpile-section" class="sandpile-col" style="display: none;">
           <div class="rules-title">
-            <span>Sandpile Parameters</span>
-            <span class="info-icon" data-tooltip="Configuration for the Abelian Sandpile Model. Controls the initial sand distribution and toppling behavior.">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
+            <span data-tooltip="Configuration for the Abelian Sandpile Model. Controls the initial sand distribution and toppling behavior.">Sandpile Parameters</span>
           </div>
           <div class="modal-field-row">
             <label class="modal-label" for="sandpile-initial-sand">
-              <span>Initial Sand (optional)</span>
-              <span class="info-icon" data-tooltip="Optional initial amount of sand to place at the center before starting the simulation. Leave at 0 to start empty and add 1 grain per generation.">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
+              <span data-tooltip="Optional initial amount of sand to place at the center before starting the simulation. Leave at 0 to start empty and add 1 grain per generation.">Initial Sand (optional)</span>
             </label>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
               <input type="number" id="sandpile-initial-sand" class="glass-input" min="0" max="255" step="1" value="0" />
@@ -497,8 +365,11 @@
         </div>
       </div>
       <div class="modal-actions">
-        <button id="shapeCancel" class="glass-button">Cancel</button>
-        <button id="shapeConfirm" class="glass-button">Apply</button>
+        <div id="tooltip-display" class="tooltip-display"></div>
+        <div class="modal-actions-buttons">
+          <button id="shapeCancel" class="glass-button">Cancel</button>
+          <button id="shapeConfirm" class="glass-button">Apply</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1331,30 +1202,30 @@
   }
   .modal-content { 
     position: relative; 
-    padding: 24px 28px; 
+    padding: 16px 20px; 
     width: auto;
     min-width: 600px;
     max-width: 90vw; 
     max-height: 90vh; 
-    font-size: 14px; 
+    font-size: 13px; 
     display: flex;
     flex-direction: column;
     overflow: hidden;
     background: rgba(15, 15, 20, 0.95);
   }
   .modal-title { 
-    margin: 0 0 20px; 
+    margin: 0 0 12px; 
     color: rgba(200, 220, 255, 0.95); 
     border-bottom: 1px solid rgba(100, 150, 200, 0.2); 
-    padding-bottom: 12px; 
+    padding-bottom: 8px; 
     font-weight: 600;
-    font-size: 16px;
-    letter-spacing: 0.5px;
+    font-size: 15px;
+    letter-spacing: 0.3px;
   }
   .modal-body { 
     display: flex; 
     flex-direction: column; 
-    gap: 6px; 
+    gap: 4px; 
     overflow-y: auto;
     overflow-x: hidden;
     flex: 1;
@@ -1378,7 +1249,7 @@
   .modal-grid { 
     display: grid; 
     grid-template-columns: repeat(4, auto); 
-    gap: 12px 16px; 
+    gap: 8px 12px; 
     align-items: start; 
     position: relative; 
     min-width: 0;
@@ -1426,25 +1297,25 @@
     grid-column: 1 / -1; 
     display: flex; 
     flex-direction: column; 
-    gap: 6px; 
-    margin-bottom: 4px;
+    gap: 4px; 
+    margin-bottom: 2px;
   }
   .modal-grid .sim-col:not(:first-child) {
     grid-column: 1;
     margin-bottom: 0;
     border-left: 1px solid rgba(100, 150, 200, 0.15);
-    padding-left: 20px;
+    padding-left: 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
   }
   .modal-grid .seed-col { 
     grid-column: 2; 
     display: flex; 
     flex-direction: column; 
-    gap: 10px; 
+    gap: 6px; 
     border-left: 1px solid rgba(100, 150, 200, 0.15); 
-    padding-left: 20px; 
+    padding-left: 16px; 
     min-width: 0;
     width: fit-content;
   }
@@ -1452,9 +1323,9 @@
     grid-column: 3; 
     display: flex; 
     flex-direction: column; 
-    gap: 10px; 
+    gap: 6px; 
     border-left: 1px solid rgba(100, 150, 200, 0.15); 
-    padding-left: 20px; 
+    padding-left: 16px; 
     min-width: 0;
     width: fit-content;
   }
@@ -1462,10 +1333,10 @@
     grid-column: 4; 
     display: flex; 
     flex-direction: column; 
-    gap: 10px; 
+    gap: 6px; 
     border-left: 1px solid rgba(100, 150, 200, 0.15); 
-    padding-left: 20px; 
-    padding-right: 20px;
+    padding-left: 16px; 
+    padding-right: 16px;
     min-width: 0;
     width: fit-content;
   }
@@ -1486,26 +1357,26 @@
   .rules-title { 
     color: rgba(220, 240, 255, 1); 
     font-weight: 700; 
-    font-size: 14px; 
-    margin-bottom: 12px; 
+    font-size: 13px; 
+    margin-bottom: 8px; 
     border-bottom: 1px solid rgba(100, 150, 200, 0.15); 
-    padding-bottom: 6px;
+    padding-bottom: 4px;
     display: flex;
     align-items: center;
     gap: 6px;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.3px;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
   .mode-selector {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap;
-    margin-top: 8px;
+    margin-top: 4px;
   }
   .mode-card {
     flex: 1;
     min-width: 120px;
-    padding: 14px 18px;
+    padding: 10px 14px;
     border-radius: 6px;
     border: 1px solid rgba(100, 150, 200, 0.2);
     background: rgba(25, 30, 40, 0.4);
@@ -1515,7 +1386,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     outline: none;
   }
   .mode-card:hover {
@@ -1562,18 +1433,18 @@
   }
   .mode-name {
     font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 0.3px;
+    font-size: 13px;
+    letter-spacing: 0.2px;
   }
   .mode-description {
-    margin-top: 16px;
-    padding: 12px 16px;
+    margin-top: 8px;
+    padding: 8px 12px;
     background: rgba(20, 25, 35, 0.5);
     border: 1px solid rgba(100, 150, 200, 0.15);
     border-radius: 6px;
     color: rgba(180, 200, 240, 0.85);
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 12px;
+    line-height: 1.5;
     letter-spacing: 0.2px;
   }
   .mode-description p {
@@ -1588,18 +1459,29 @@
   .modal-field-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
+    gap: 4px;
+    margin-bottom: 6px;
     min-width: 0;
+    padding: 4px 6px;
+    border-radius: 6px;
+    background: rgba(25, 35, 50, 0.3);
+    border: 1px solid rgba(100, 150, 200, 0.1);
+    transition: all 0.2s ease;
+  }
+  
+  .modal-field-row:hover {
+    background: rgba(30, 40, 55, 0.4);
+    border-color: rgba(100, 150, 200, 0.2);
   }
   .modal-field-row .modal-label {
     min-width: 100px;
     flex-shrink: 0;
     white-space: nowrap;
-    font-size: 13px;
+    font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    padding-right: 4px;
   }
   .modal-field-row .glass-input,
   .modal-field-row .glass-select {
@@ -1625,13 +1507,14 @@
     margin-left: 0;
   }
   .modal-label { 
-    color: rgba(180, 200, 240, 0.85); 
-    font-weight: 500; 
+    color: rgba(200, 220, 255, 0.95); 
+    font-weight: 600; 
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
-    letter-spacing: 0.2px;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
   }
   .input-range-hint {
     font-size: 10px;
@@ -1640,55 +1523,51 @@
     line-height: 1;
     letter-spacing: 0.2px;
   }
-  .info-icon {
-    font-size: 14px;
-    cursor: help;
-    opacity: 0.6;
-    transition: opacity 0.2s;
+  /* Tooltip styles for elements with data-tooltip attribute */
+  [data-tooltip] {
     position: relative;
-    color: rgba(150, 180, 220, 0.8);
+    cursor: help;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: rgba(150, 180, 220, 0.5);
+    text-underline-offset: 2px;
   }
-  .info-icon:hover {
-    opacity: 1;
-    color: rgba(180, 210, 255, 0.95);
+  [data-tooltip]:hover {
+    text-decoration-color: rgba(180, 210, 255, 0.8);
   }
-  .info-icon[data-tooltip]:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 14px;
-    background: rgba(20, 25, 35, 0.98);
-    color: rgba(200, 220, 255, 0.95);
-    border: 1px solid rgba(100, 150, 200, 0.3);
-    border-radius: 6px;
-    font-size: 12px;
-    white-space: normal;
-    width: 280px;
-    min-width: 200px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    text-align: left;
+  
+  /* Tooltip display area at bottom of modal */
+  .tooltip-display {
+    flex: 1;
+    min-height: 20px;
+    padding: 8px 0;
+    font-size: 13px;
     line-height: 1.5;
-    z-index: 1000;
-    margin-bottom: 8px;
-    pointer-events: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    word-wrap: break-word;
+    color: rgba(0, 220, 255, 1);
+    text-align: left;
+    transition: opacity 0.2s ease;
+    font-weight: 500;
+    text-shadow: 0 0 8px rgba(0, 220, 255, 0.5);
   }
-  .info-icon[data-tooltip]:hover::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: rgba(0, 0, 0, 0.9);
-    margin-bottom: -5px;
-    z-index: 1000;
-    pointer-events: none;
+  
+  .tooltip-display:empty {
+    opacity: 0;
   }
-  .glass-input { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--color-control-border); background: var(--color-control-inactive-background); color: var(--color-control-font); outline: none; font-size: 14px; }
+  
+  .modal-actions-buttons {
+    display: flex;
+    gap: 12px;
+  }
+  .glass-input { 
+    padding: 8px 10px; 
+    border-radius: 8px; 
+    border: 1px solid var(--color-control-border); 
+    background: var(--color-control-inactive-background); 
+    color: var(--color-control-font); 
+    outline: none; 
+    font-size: 14px;
+    font-weight: 500;
+  }
   .modal-field-row .glass-select { 
     padding: 8px 10px; 
     font-size: 14px; 
@@ -1699,9 +1578,10 @@
   .modal-actions { 
     display: flex; 
     gap: 12px; 
-    justify-content: flex-end; 
-    margin-top: 20px; 
-    padding-top: 20px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px; 
+    padding-top: 12px;
     border-top: 1px solid rgba(100, 150, 200, 0.15);
   }
   
@@ -1831,3 +1711,31 @@
     color: rgba(200, 230, 255, 0.9);
   }
 </style>
+<script>
+  // Display tooltips in the bottom tooltip display area
+  document.addEventListener('DOMContentLoaded', function() {
+    const tooltipDisplay = document.getElementById('tooltip-display');
+    if (!tooltipDisplay) return;
+    
+    const tooltipElements = document.querySelectorAll('[data-tooltip]');
+    
+    tooltipElements.forEach(element => {
+      element.addEventListener('mouseenter', function() {
+        const tooltipText = this.getAttribute('data-tooltip');
+        if (tooltipText) {
+          tooltipDisplay.textContent = tooltipText;
+        }
+      });
+      
+      element.addEventListener('mouseleave', function() {
+        // Only clear if no other tooltip element is being hovered
+        setTimeout(() => {
+          const hoveredElement = document.querySelector('[data-tooltip]:hover');
+          if (!hoveredElement) {
+            tooltipDisplay.textContent = '';
+          }
+        }, 100);
+      });
+    });
+  });
+</script>
