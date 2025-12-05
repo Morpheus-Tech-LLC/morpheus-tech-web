@@ -83,7 +83,7 @@ export const state = {
   flipOrientation: false,
   sandpileParams: {
     initialSand: 0, // Optional initial sand at center (0 = start empty, 1 grain added per generation)
-    threshold: 4, // Threshold for toppling (4 for 2D, standard Abelian sandpile)
+    threshold: 4, // Threshold for toppling (fixed at 4, not user-adjustable)
   },
   shapes: {
     perlin: perlinShape(10, 0.3, 30),

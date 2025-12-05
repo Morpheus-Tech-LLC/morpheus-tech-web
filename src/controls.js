@@ -298,6 +298,31 @@ export function initControls() {
     });
   }
 
+  // Company logo button - open company modal (set up globally)
+  const companyLogoButton = document.getElementById('company-logo-button');
+  const companyModal = document.getElementById('company-modal');
+  const companyModalClose = document.getElementById('company-modal-close');
+  
+  if (companyLogoButton && companyModal) {
+    companyLogoButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      companyModal.classList.remove('hidden');
+    });
+  }
+  
+  if (companyModalClose && companyModal) {
+    companyModalClose.addEventListener('click', () => {
+      companyModal.classList.add('hidden');
+    });
+    
+    // Close modal when clicking outside
+    companyModal.addEventListener('click', (e) => {
+      if (e.target === companyModal) {
+        companyModal.classList.add('hidden');
+      }
+    });
+  }
+
   // Flip orientation toggle (applies to all simulations)
   const flipOrientationToggle = document.getElementById('flipOrientationToggle');
   const flipOrientationIcon = document.getElementById('flipOrientationIcon');
@@ -381,7 +406,10 @@ function openShapeModal() {
 
   // Initialize simulation inputs from state
   if (simSizeInput) simSizeInput.value = `${state.sim_size}`;
-  if (simGenerationsInput) simGenerationsInput.value = `${state.sim_generations}`;
+  if (simGenerationsInput) {
+    const maxGens = state.simulationMode === 'gameOfLife' ? Math.min(100, state.sim_generations) : state.sim_generations;
+    simGenerationsInput.value = `${maxGens}`;
+  }
   if (gridWrappingCheckbox) gridWrappingCheckbox.checked = state.gridWrapping ?? true;
 
   // Initialize simulation mode cards
@@ -439,8 +467,8 @@ function openShapeModal() {
       if (simSizeLabel) simSizeLabel.style.display = '';
       if (simSizeInput) {
         simSizeInput.style.display = '';
-        // Set default size to 50 for Game of Life
-        if (!simSizeInput.value || parseInt(simSizeInput.value) !== 50) {
+        // Set default size to 50 for Game of Life only if value is empty or invalid
+        if (!simSizeInput.value || isNaN(parseInt(simSizeInput.value)) || parseInt(simSizeInput.value) < 1) {
           simSizeInput.value = '50';
         }
       }
@@ -571,13 +599,10 @@ function openShapeModal() {
       if (sandpileSection) sandpileSection.style.display = '';
       // Initialize sandpile parameter inputs from state
       const initialSandInput = document.getElementById('sandpile-initial-sand');
-      const thresholdInput = document.getElementById('sandpile-threshold');
       if (initialSandInput && !initialSandInput.value) {
         initialSandInput.value = state.sandpileParams?.initialSand || 0;
       }
-      if (thresholdInput && !thresholdInput.value) {
-        thresholdInput.value = state.sandpileParams?.threshold || 4;
-      }
+      // Threshold is fixed at 4, not user-adjustable
       // Hide grid wrapping controls for Sandpile mode (wrapping is handled in evolution)
       if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
       if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = 'none';
@@ -1032,14 +1057,12 @@ function openShapeModal() {
       }
       // Read sandpile parameters
       const initialSandInput = document.getElementById('sandpile-initial-sand');
-      const thresholdInput = document.getElementById('sandpile-threshold');
       
       if (initialSandInput) {
         state.sandpileParams.initialSand = Math.max(0, parseInt(initialSandInput.value) || 0);
       }
-      if (thresholdInput) {
-        state.sandpileParams.threshold = Math.max(1, Math.min(26, parseInt(thresholdInput.value) || 4));
-      }
+      // Threshold is fixed at 4, not user-adjustable
+      state.sandpileParams.threshold = 4;
     } else {
       state.useRule30 = false;
       state.useRule30_2D = false;
@@ -1049,8 +1072,8 @@ function openShapeModal() {
     
     // For Game of Life, ensure defaults are set
     if (selectedMode === 'gameOfLife') {
-      // Set default size to 50 if not set
-      if (simSizeInput && (!simSizeInput.value || parseInt(simSizeInput.value) !== 50)) {
+      // Set default size to 50 only if value is empty or invalid (not if user changed it)
+      if (simSizeInput && (!simSizeInput.value || isNaN(parseInt(simSizeInput.value)) || parseInt(simSizeInput.value) < 1)) {
         simSizeInput.value = '50';
       }
       // Set default shape to cube if not set
@@ -1062,7 +1085,11 @@ function openShapeModal() {
     
     // Compute proposed sim size/gens first so clamping uses new size
     const newSimSize = simSizeInput ? Math.max(1, parseInt(simSizeInput.value)) : state.sim_size;
-    const newSimGenerations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
+    // Cap generations at 100 for Game of Life mode
+    let newSimGenerations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
+    if (selectedMode === 'gameOfLife') {
+      newSimGenerations = Math.min(100, Math.max(1, newSimGenerations));
+    }
     const newGridWrapping = gridWrappingCheckbox ? gridWrappingCheckbox.checked : state.gridWrapping ?? true;
     const size = Math.min(newSimSize, Math.max(1, parseInt(sizeInput.value)));
     const density = Math.min(1, Math.max(0, parseFloat(densityInput.value)));

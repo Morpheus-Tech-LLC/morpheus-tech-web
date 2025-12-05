@@ -19,7 +19,8 @@ export async function generateSimulation(size, generations, shapeFn, useRule30 =
     }
   } else if (useSandpile) {
     // Generate sandpile simulation
-    const params = sandpileParams || { initialSand: 0, threshold: 4 };
+    // Threshold is fixed at 4 (not user-adjustable)
+    const params = sandpileParams ? { ...sandpileParams, threshold: 4 } : { initialSand: 0, threshold: 4 };
     // Start with empty grid (or minimal initial sand)
     let grid = initSandpile(size, params);
     
@@ -47,67 +48,53 @@ export async function generateSimulation(size, generations, shapeFn, useRule30 =
       history.push(gridAfterDrop);
       
       // Topple until stable
-      // Strategy: Allow cells to reach height 4, save that state, then topple them in next step
+      // Strategy: Allow cells to reach threshold, save that state once per generation, then topple them
       let toppled = true;
       let iterations = 0;
-      const maxIterations = size * size * 10; // Safety limit
+      // Increase max iterations for lower thresholds (they need more toppling iterations)
+      const maxIterations = size * size * 20; // Safety limit (increased for threshold 3)
+      let savedThresholdState = false; // Track if we've saved a threshold state this generation
       
       while (toppled && iterations < maxIterations) {
-        // Check if any cells are at height 4 (threshold) - these should be visible before toppling
-        let hasHeight4 = false;
+        // Check if any cells are at threshold - these should be visible before toppling
+        let hasThreshold = false;
         for (let x = 0; x < size; x++) {
           for (let y = 0; y < size; y++) {
             if (grid.get(x, y, 0) === params.threshold) {
-              hasHeight4 = true;
+              hasThreshold = true;
               break;
             }
           }
-          if (hasHeight4) break;
+          if (hasThreshold) break;
         }
         
-        // Save state if we have cells at height 4 (before they topple)
-        if (hasHeight4) {
-          const gridAtHeight4 = new Grid3D(size, 0);
-          gridAtHeight4.data.set(grid.data);
-          updateSandpileActive(gridAtHeight4);
-          gridAtHeight4.generation = generationNumber; // Store generation number
-          history.push(gridAtHeight4);
-          
-          // Now topple cells that are at or above threshold (including height 4)
-          const newGrid = evolveSandpileWithThreshold(grid, params.threshold);
-          
-          // Check if any toppling occurred
-          toppled = false;
-          for (let x = 0; x < size; x++) {
-            for (let y = 0; y < size; y++) {
-              if (newGrid.get(x, y, 0) !== grid.get(x, y, 0)) {
-                toppled = true;
-                break;
-              }
-            }
-            if (toppled) break;
-          }
-          
-          grid = newGrid;
-        } else {
-          // No height 4 cells, check for cells above threshold
-          toppled = false;
-          const newGrid = evolveSandpile(grid, params);
-          
-          // Check if any toppling occurred by comparing grids
-          for (let x = 0; x < size; x++) {
-            for (let y = 0; y < size; y++) {
-              if (newGrid.get(x, y, 0) !== grid.get(x, y, 0)) {
-                toppled = true;
-                break;
-              }
-            }
-            if (toppled) break;
-          }
-          
-          grid = newGrid;
+        // Save state ONCE per generation if we have cells at threshold (before they topple)
+        // Only save if we haven't already saved a threshold state in this generation
+        if (hasThreshold && !savedThresholdState) {
+          const gridAtThreshold = new Grid3D(size, 0);
+          gridAtThreshold.data.set(grid.data);
+          updateSandpileActive(gridAtThreshold);
+          gridAtThreshold.generation = generationNumber; // Store generation number
+          history.push(gridAtThreshold);
+          savedThresholdState = true; // Mark that we've saved this state for this generation
         }
         
+        // Topple cells that are at or above threshold
+        const newGrid = evolveSandpileWithThreshold(grid, params.threshold);
+        
+        // Check if any toppling occurred
+        toppled = false;
+        for (let x = 0; x < size; x++) {
+          for (let y = 0; y < size; y++) {
+            if (newGrid.get(x, y, 0) !== grid.get(x, y, 0)) {
+              toppled = true;
+              break;
+            }
+          }
+          if (toppled) break;
+        }
+        
+        grid = newGrid;
         iterations++;
       }
       
@@ -648,7 +635,7 @@ export function evolveSandpile(grid, params) {
   // Topple all cells in the queue
   for (const [x, y] of toppleQueue) {
     const sand = newGrid.get(x, y, 0);
-    if (sand <= threshold) continue; // Already toppled by a previous cell or at threshold
+    if (sand < threshold) continue; // Already toppled by a previous cell (shouldn't happen, but safety check)
     
     // Calculate how many times this cell topples (could be multiple if sand >> threshold)
     const topples = Math.floor(sand / threshold);
