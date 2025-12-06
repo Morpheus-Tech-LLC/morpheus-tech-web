@@ -154,6 +154,11 @@ export function initControls() {
   const rightArrow = document.getElementById("rightArrow");
   rightArrow.classList.add("active");
   let isReversing = false; // variable changes based on button
+
+  // Initialize step circles
+  const leftStepCircle = document.getElementById("leftStepCircle");
+  const rightStepCircle = document.getElementById("rightStepCircle");
+  if (rightStepCircle) rightStepCircle.classList.add("active");
   
   reverseBtn.addEventListener("click", () => {
     // isReversing = getPlaybackDirection
@@ -174,7 +179,22 @@ export function initControls() {
       leftArrow.classList.remove("active");
       rightArrow.classList.add("active");
     }
+    updateStepCircles();
     // updateDirectionIcon();
+  }
+
+  function updateStepCircles() {
+    const leftStepCircle = document.getElementById("leftStepCircle");
+    const rightStepCircle = document.getElementById("rightStepCircle");
+    if (leftStepCircle && rightStepCircle) {
+      if (state.isReversing) {
+        leftStepCircle.classList.add("active");
+        rightStepCircle.classList.remove("active");
+      } else {
+        leftStepCircle.classList.remove("active");
+        rightStepCircle.classList.add("active");
+      }
+    }
   }
 
   // Buttons
@@ -1525,6 +1545,12 @@ function resetControlsUI() {
   if (leftArrow) leftArrow.classList.remove('active');
   if (rightArrow) rightArrow.classList.add('active');
   state.isReversing = false;
+
+  // Reset step circles (right circle active only)
+  const leftStepCircle = document.getElementById('leftStepCircle');
+  const rightStepCircle = document.getElementById('rightStepCircle');
+  if (leftStepCircle) leftStepCircle.classList.remove('active');
+  if (rightStepCircle) rightStepCircle.classList.add('active');
 
   // Reset generation display
   const genEl = document.getElementById('gen');

@@ -24,9 +24,9 @@
             <div class="bottom-row">
               <button id="stepButton" class="glass-button">
                 <svg id="stepIcon" width="40" height="16" viewBox="0 0 40 16" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="5" cy="8" r="5" fill="currentColor"/>
+                  <circle id="leftStepCircle" cx="5" cy="8" r="5" fill="currentColor" class="step-circle"/>
                   <line x1="10" y1="8" x2="30" y2="8" stroke="currentColor" stroke-width="2"/>
-                  <circle cx="35" cy="8" r="5" fill="currentColor"/>
+                  <circle id="rightStepCircle" cx="35" cy="8" r="5" fill="currentColor" class="step-circle"/>
                 </svg>
               </button>
             </div>
@@ -465,6 +465,16 @@
     font-weight: bold;
   }
 
+  .step-circle {
+    opacity: 0.5;
+    transition: opacity 0.3s, fill 0.3s;
+  }
+
+  .step-circle.active {
+    opacity: 1;
+    fill: var(--color-control-active-icon);
+  }
+
   #controls-time {
     display: flex;
     justify-content: center;
@@ -792,14 +802,12 @@
   .multi-section-button {
     display: flex;
     margin-top: 10px;
-    border-radius: 0px;
+    border-radius: 6px;
     overflow: hidden;
-    border: 1px solid var(--color-control-border);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background: var(--color-control-inactive-background);
+    border: 1px solid rgba(100, 150, 200, 0.3);
+    background: rgba(35, 45, 60, 0.7);
     cursor: pointer;
-    transition: box-shadow 0.3s ease;
+    transition: all 0.2s ease;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -807,29 +815,29 @@
     }
 
   .multi-section-button:hover {
-  box-shadow: 0 6px 14px var(--color-control-hover);
+    background: rgba(45, 60, 80, 0.8);
+    border-color: rgba(120, 180, 255, 0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
   .state-section {
     flex: 1;
-    padding: 12px 20px;
+    padding: 10px 20px;
     text-align: center;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--color-control-font);
-    transition: background 0.3s ease, color 0.3s ease;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    color: rgba(200, 220, 255, 0.95);
+    transition: all 0.2s ease;
     user-select: none;
   }
 
   .state-active-x .section-x,
   .state-active-y .section-y,
   .state-active-z .section-z {
-    background: var(--color-control-active-background);
-    color: var(--color-control-font);
-  }
-
-  .state-active-x .section-x {
-    box-shadow: inset 0 0 10px var(--color-control-active-shadow);
+    background: rgba(60, 80, 100, 0.8);
+    color: rgba(220, 235, 255, 1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
   /* .state-active-y .section-y {
