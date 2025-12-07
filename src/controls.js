@@ -219,6 +219,11 @@ export function initControls() {
 
     // update display
     document.getElementById("gen").textContent = `${state.currentGen}`;
+    // Also update bottom display
+    const bottomGen = document.getElementById('bottom-gen');
+    if (bottomGen) {
+      bottomGen.textContent = `${state.currentGen}`;
+    }
   });
 
   updateStepButtonVisibility();
@@ -1555,4 +1560,6 @@ function resetControlsUI() {
   // Reset generation display
   const genEl = document.getElementById('gen');
   if (genEl) genEl.textContent = '0';
+  const bottomGen = document.getElementById('bottom-gen');
+  if (bottomGen) bottomGen.textContent = '0';
 }

@@ -287,6 +287,11 @@ export function updatePoints() {
   // Display generation number (if stored in grid) or frame number
   const genDisplay = grid.generation !== undefined ? grid.generation : gen;
   document.getElementById("gen").textContent = `${genDisplay}`;
+  // Also update bottom display
+  const bottomGen = document.getElementById('bottom-gen');
+  if (bottomGen) {
+    bottomGen.textContent = `${genDisplay}`;
+  }
   document.getElementById("slice-value").textContent = `${state.sliceAxis}-${state.sliceIndex}`;
 }
 

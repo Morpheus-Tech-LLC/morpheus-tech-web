@@ -67,6 +67,11 @@ const speedControl = document.getElementById('speed-control');
 function updateSpeedDisplay() {
   const gensPerSecond = (1000 / (baseInterval / simSpeed)).toFixed(0);
   speedDisplay.textContent = `${gensPerSecond}`;
+  // Also update bottom display
+  const bottomSpeedValue = document.getElementById('bottom-speed-value');
+  if (bottomSpeedValue) {
+    bottomSpeedValue.textContent = `${gensPerSecond}`;
+  }
 }
 
 if (speedControl) {
