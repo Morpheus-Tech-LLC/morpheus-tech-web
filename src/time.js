@@ -61,13 +61,11 @@ function setupUserInputTracking() {
 setupUserInputTracking();
 
 const fpsDisplay = document.getElementById('fps-value');
-const speedDisplay = document.getElementById('speed-value');
 const speedControl = document.getElementById('speed-control');
 
 function updateSpeedDisplay() {
   const gensPerSecond = (1000 / (baseInterval / simSpeed)).toFixed(0);
-  speedDisplay.textContent = `${gensPerSecond}`;
-  // Also update bottom display
+  // Update bottom display
   const bottomSpeedValue = document.getElementById('bottom-speed-value');
   if (bottomSpeedValue) {
     bottomSpeedValue.textContent = `${gensPerSecond}`;

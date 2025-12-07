@@ -130,11 +130,9 @@ export function initControls() {
 
   // --- Slice Index Slider ---
   const sliceIndexSlider = document.getElementById('slice-index');
-  const sliceValueLabel = document.getElementById('slice-value');
   sliceIndexSlider.addEventListener('input', () => {
     const index = parseInt(sliceIndexSlider.value);
     state.sliceIndex = index;
-    sliceValueLabel.textContent = index;
     if (state.viewMode === 'slice') updatePoints();
   });
 
@@ -217,9 +215,7 @@ export function initControls() {
       state.currentGen = (state.currentGen + 1) % state.simulationData.length;
     }
 
-    // update display
-    document.getElementById("gen").textContent = `${state.currentGen}`;
-    // Also update bottom display
+    // update bottom display
     const bottomGen = document.getElementById('bottom-gen');
     if (bottomGen) {
       bottomGen.textContent = `${state.currentGen}`;
@@ -1530,12 +1526,10 @@ function resetControlsUI() {
 
   // Reset slice index to mid and label
   const slider = document.getElementById('slice-index');
-  const label = document.getElementById('slice-value');
   if (slider) {
     slider.max = state.sim_size;
     const mid = Math.floor(state.sim_size / 2);
     slider.value = `${mid}`;
-    if (label) label.textContent = `${mid}`;
   }
 
   // Reset play/pause to paused and enable step
@@ -1558,8 +1552,6 @@ function resetControlsUI() {
   if (rightStepCircle) rightStepCircle.classList.add('active');
 
   // Reset generation display
-  const genEl = document.getElementById('gen');
-  if (genEl) genEl.textContent = '0';
   const bottomGen = document.getElementById('bottom-gen');
   if (bottomGen) bottomGen.textContent = '0';
 }
