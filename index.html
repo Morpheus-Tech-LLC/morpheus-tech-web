@@ -1146,12 +1146,13 @@
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  background: var(--color-controls-background);
-  border: 1px solid var(--color-control-border);
+  background: rgba(35, 45, 60, 0.7);
+  border: 1px solid rgba(100, 150, 200, 0.3);
   cursor: pointer;
   transition: all 0.2s ease;
   pointer-events: auto;
   box-sizing: border-box;
+  color: rgba(200, 220, 255, 0.95);
 }
 
 /* 3D/2D button - 2x width of play/pause button (120px) */
@@ -1166,8 +1167,14 @@
 }
 
 .view-control-button:hover {
-  background: var(--color-controls-background-hover);
-  border-color: var(--color-control-border-hover);
+  background: rgba(45, 60, 80, 0.8);
+  border-color: rgba(120, 180, 255, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.view-control-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .view-control-button .state-section {
@@ -1198,8 +1205,8 @@
 }
 
 .view-control-button .state-section.active {
-  background: var(--color-control-active, rgba(100, 150, 255, 0.3));
-  color: #fff;
+  background: rgba(30, 50, 80, 0.8);
+  color: var(--color-control-active-icon);
   font-weight: 700;
 }
 
