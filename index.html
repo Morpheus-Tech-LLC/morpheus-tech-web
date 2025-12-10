@@ -10,36 +10,8 @@
     <div id="right-controls">
       <div id="controls">
             </div>
-      <!-- New Seed Config Box below controls -->
-      <div id="shape-box" class="control-panel">
-        <div class="info-line">
-          <span class="label">Configure</span>
-          <span class="value">
-            <button id="seedConfigButton" class="glass-button" aria-label="Configure seed" style="pointer-events:auto;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-.94,7.43,7.43,0,0,0-.05-.94l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.63-.94l-.38-2.65A.5.5,0,0,0,13.64,2H10.36a.5.5,0,0,0-.5.42L9.48,5.07a7.28,7.28,0,0,0-1.63.94l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.91,11.06a7.43,7.43,0,0,0-.05.94,7.43,7.43,0,0,0,.05.94L2.8,14.59a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.63.94l.38,2.65a.5.5,0,0,0,.5.42h3.28a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.63-.94l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
-                </svg>
-              </button>
-          </span>
-            </div>
-          </div>
       <!-- View Controls Panel -->
       <div class="control-panel">
-          <div id="dualStateButton" class="multi-section-button state-active-x">
-            <div class="state-section section-x state-active-x active" data-value="full" data-id="x">3D</div>
-            <div class="state-section section-y" data-value="slice" data-id="y">2D</div>
-          </div>
-          <div id="triStateButton" class="multi-section-button state-active-x">
-            <div class="state-section section-x state-active-x active" data-value="x">X</div>
-            <div class="state-section section-y" data-value="y">Y</div>
-            <div class="state-section section-z" data-value="z">Z</div>
-          </div>
-        <div id="slider" class="slider-container">
-          <label class="slider-label">
-            <span class="slider-title">2D Slice</span>
-            <input type="range" id="slice-index" class="glass-slider" min="0" max="49" value="25" />
-          </label>
-        </div>
         <div class="info-line" style="margin-top: 10px;">
           <span class="label">Grid</span>
           <span class="value">
@@ -362,27 +334,18 @@
   </div>
   <!-- === FOOTER ICONS === -->
   <div id="footer-icons">
-    <!-- GitHub (bottom-left) -->
-    <a
-      id="github-link"
-      href="https://github.com/Morpheus-Tech-LLC/morpheus-tech-web"
-      target="_blank"
-      aria-label="View source on GitHub"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        class="footer-icon"
-      >
-        <path
-          d="M12 .5C5.7.5.6 5.6.6 12a11.5 11.5 0 0 0 7.9 10.9c.6.1.8-.3.8-.6v-2.1c-3.2.7-3.9-1.4-3.9-1.4-.5-1.2-1.2-1.5-1.2-1.5-1-.6.1-.6.1-.6 1.1.1 1.7 1.1 1.7 1.1 1 .1.7 2 .7 2 .9 1.6 2.7 1.2 3.3.9.1-.7.3-1.2.6-1.5-2.6-.3-5.3-1.3-5.3-6 0-1.3.5-2.3 1.1-3.1 0-.3-.5-1.5.1-3 0 0 1-.3 3.2 1.2a10.8 10.8 0 0 1 5.8 0c2.3-1.5 3.2-1.2 3.2-1.2.6 1.5.1 2.7.1 3 .6.8 1.1 1.8 1.1 3.1 0 4.7-2.7 5.6-5.3 6 .4.3.7 1 .7 2v3c0 .3.2.7.8.6A11.5 11.5 0 0 0 23.4 12C23.4 5.6 18.3.5 12 .5Z"
-        />
-      </svg>
-    </a>
-
-    <!-- Bottom Center Controls -->
-    <div id="bottom-controls-wrapper">
+    <!-- Bottom Controls Container -->
+    <div id="bottom-controls-container" class="footer-center">
+      <!-- Configuration Button Panel -->
+      <div id="config-controls-panel" class="bottom-controls-panel">
+        <button id="seedConfigButton" class="glass-button" aria-label="Configure seed" style="pointer-events:auto;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-.94,7.43,7.43,0,0,0-.05-.94l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.63-.94l-.38-2.65A.5.5,0,0,0,13.64,2H10.36a.5.5,0,0,0-.5.42L9.48,5.07a7.28,7.28,0,0,0-1.63.94l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.91,11.06a7.43,7.43,0,0,0-.05.94,7.43,7.43,0,0,0,.05.94L2.8,14.59a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.63.94l.38,2.65a.5.5,0,0,0,.5.42h3.28a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.63-.94l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
+          </svg>
+        </button>
+      </div>
+      <!-- Bottom Center Controls -->
+      <div id="bottom-controls-wrapper">
       <div id="bottom-controls-display" class="bottom-controls-display">
         <div class="control-display-line">
           <span class="control-display-label">Generation</span>
@@ -422,9 +385,35 @@
         </button>
       </div>
     </div>
+      <!-- View Controls Panel (to the right of play/pause) -->
+      <div id="view-controls-panel" class="bottom-controls-panel">
+        <div id="view-controls-wrapper">
+          <div id="triStateButton" class="multi-section-button state-active-x">
+            <div class="state-section section-x state-active-x active" data-value="x">X</div>
+            <div class="state-section section-y" data-value="y">Y</div>
+            <div class="state-section section-z" data-value="z">Z</div>
+          </div>
+          <div id="view-slice-slider" class="slider-container">
+            <label class="slider-label">
+              <input type="range" id="slice-index" class="glass-slider" min="0" max="49" value="25" />
+            </label>
+          </div>
+          <div id="view-controls-display" class="bottom-controls-display">
+            <div class="control-display-line">
+              <span id="view-controls-display-min" class="control-display-min-max"></span>
+              <span id="view-controls-display-text" class="control-display-value"></span>
+              <span id="view-controls-display-max" class="control-display-min-max"></span>
+            </div>
+          </div>
+          <div id="dualStateButton" class="multi-section-button state-active-x view-control-button">
+            <div class="state-section section-x state-active-x active" data-value="full" data-id="x">3D</div>
+            <div class="state-section section-y" data-value="slice" data-id="y">2D</div>
+          </div>
+        </div>
+      </div>
 
     <!-- Company (bottom-right) -->
-    <div id="company-brand">
+    <div id="company-brand" class="footer-right">
       <a href="https://github.com/Morpheus-Tech-LLC/morpheus-tech-web" target="_blank" aria-label="Morpheus Tech GitHub">
         <img src="src/assets/images/morpheus-tech.png" alt="Morpheus Tech" class="footer-icon" />
       </a>
@@ -1002,24 +991,218 @@
   left: 0;
   right: 0;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: flex-end;
   padding: 16px 20px;
   pointer-events: none; /* ensures they don't block 3D scene clicks */
   z-index: 50;
 }
 
-#footer-icons > a:first-child {
-  position: absolute;
-  left: 20px;
-  bottom: 16px;
+
+.footer-center {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  pointer-events: auto;
 }
 
-#footer-icons > #company-brand {
-  position: absolute;
-  right: 20px;
-  bottom: 16px;
+.footer-right {
+  flex: 0 0 auto;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  margin-left: auto; /* Push to the right */
 }
+
+
+#view-controls-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  min-height: 84px; /* Match bottom-controls-panel height exactly (60px button + 24px padding) */
+  width: 144px; /* Fixed width: 120px button + 24px padding */
+  box-sizing: border-box;
+  justify-content: flex-end;
+}
+
+#view-controls-panel #view-controls-display {
+  width: 80px; /* Less wide than 3D/2D button (120px) */
+  min-width: 80px;
+  max-width: 80px;
+}
+
+#view-controls-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#view-controls-display .control-display-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex: 0 0 auto !important; /* Override general rule */
+  min-width: 0 !important; /* Override general rule */
+  gap: 0 !important; /* Override general rule */
+  position: relative;
+}
+
+#view-controls-display .control-display-min-max {
+  position: absolute;
+  font-size: 10px;
+  font-weight: 400;
+  color: rgba(150, 170, 200, 0.6);
+  font-style: italic;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#view-controls-display .control-display-min-max:first-child {
+  left: 4px;
+}
+
+#view-controls-display .control-display-min-max:last-child {
+  right: 4px;
+}
+
+#view-controls-display .control-display-value {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-control-font);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+#view-controls-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column; /* Normal order: tri-state, slider, display, 3D/2D */
+  align-items: center;
+  gap: 8px;
+}
+
+#view-controls-panel #triStateButton {
+  display: none;
+  order: -2; /* Always appears above slider when visible */
+  margin-bottom: 8px; /* Gap between tri-state and slider */
+}
+
+#view-controls-panel #view-slice-slider {
+  display: none;
+  order: -1; /* Appears between tri-state and display when visible */
+  width: 120px; /* Match 3D/2D button width */
+  margin: 0;
+  margin-bottom: -24px; /* Reduce gap between slider and display (counteract wrapper gap of 8px + extra reduction) */
+}
+
+#view-controls-panel #view-controls-display {
+  order: 0; /* Always appears above 3D/2D toggle, below slider when visible */
+  margin-top: 0; /* Remove top margin to bring it closer to slider */
+}
+
+#view-controls-panel #view-slice-slider .slider-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+#view-controls-panel #view-slice-slider .slider-title {
+  font-size: 11px;
+  line-height: 1;
+  color: var(--color-info-display-text);
+}
+
+#view-controls-panel #view-slice-slider .glass-slider {
+  width: 100%;
+  height: 4px;
+  margin: 0;
+}
+
+/* Show tri-state button and slider when 2D is active */
+#view-controls-panel #dualStateButton .section-y.active ~ #triStateButton,
+#view-controls-wrapper:has(#dualStateButton .section-y.active) #triStateButton {
+  display: flex;
+}
+
+#view-controls-panel #dualStateButton .section-y.active ~ #view-slice-slider,
+#view-controls-wrapper:has(#dualStateButton .section-y.active) #view-slice-slider {
+  display: block;
+}
+
+.view-control-button {
+  height: 60px;
+  min-height: 60px;
+  max-height: 60px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--color-controls-background);
+  border: 1px solid var(--color-control-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+/* 3D/2D button - 2x width of play/pause button (120px) */
+#view-controls-panel #dualStateButton {
+  width: 120px;
+  min-width: 120px;
+}
+
+/* Tri-state button - use original styling */
+#view-controls-panel #triStateButton {
+  margin-top: 0; /* Remove top margin in this context */
+}
+
+.view-control-button:hover {
+  background: var(--color-controls-background-hover);
+  border-color: var(--color-control-border-hover);
+}
+
+.view-control-button .state-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  height: 60px;
+  max-height: 60px;
+  border-radius: 0;
+  color: rgba(200, 220, 255, 0.95);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.view-control-button .state-section:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.view-control-button .state-section:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.view-control-button .state-section.active {
+  background: var(--color-control-active, rgba(100, 150, 255, 0.3));
+  color: #fff;
+  font-weight: 700;
+}
+
 
 .bottom-controls-panel {
   display: flex;
@@ -1031,6 +1214,8 @@
   border: 1px solid var(--color-control-border);
   border-radius: 8px;
   padding: 12px;
+  box-sizing: border-box;
+  height: 84px; /* Fixed height: 60px button + 24px padding */
 }
 
 .bottom-controls-panel .glass-button {
@@ -1054,11 +1239,42 @@
   margin: 0;
 }
 
+#bottom-controls-container {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 10px;
+  justify-content: center;
+}
+
 #bottom-controls-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+}
+
+#config-controls-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+  background: var(--color-controls-background);
+  border: 1px solid var(--color-control-border);
+  border-radius: 8px;
+  padding: 12px;
+  white-space: nowrap;
+}
+
+#config-controls-panel .glass-button {
+  height: 60px;
+  width: 60px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .bottom-controls-display {
@@ -1114,11 +1330,6 @@
 }
 
 /* Enable pointer events only on links/buttons */
-#footer-icons a,
-#footer-icons #company-brand,
-#footer-icons #bottom-controls-wrapper {
-  pointer-events: auto;
-}
 
 .footer-icon {
   width: 36px;
@@ -1132,14 +1343,6 @@
   opacity: 1;
   transform: scale(1.08);
   color: var(--color-control-font);
-}
-
-/* GitHub link positioning */
-#github-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
 }
 
 /* Company branding */

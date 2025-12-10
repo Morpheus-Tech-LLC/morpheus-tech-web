@@ -100,9 +100,41 @@ export function initControls() {
     nextSection.classList.add('active');
     const newAxis = nextSection.dataset.value;
     state.sliceAxis = newAxis;
+    updateViewControlsDisplay();
     updatePoints();
   });
+  
+  // Initialize view controls display
+  updateViewControlsDisplay();
 
+  // Function to update view controls display
+  function updateViewControlsDisplay() {
+    const displayText = document.getElementById('view-controls-display-text');
+    const displayMin = document.getElementById('view-controls-display-min');
+    const displayMax = document.getElementById('view-controls-display-max');
+    const sliceSlider = document.getElementById('slice-index');
+    
+    if (displayText) {
+      if (state.viewMode === 'slice') {
+        const index = state.sliceIndex !== null ? state.sliceIndex : 0;
+        displayText.textContent = `${index}`;
+        // Get min/max from slider and show them
+        if (sliceSlider && displayMin && displayMax) {
+          displayMin.textContent = sliceSlider.min || '0';
+          displayMax.textContent = sliceSlider.max || '49';
+          displayMin.style.display = 'inline';
+          displayMax.style.display = 'inline';
+        }
+      } else {
+        const size = state.sim_size || 50;
+        displayText.textContent = `${size} x ${size} x ${size}`;
+        // Hide min/max when not in 2D mode
+        if (displayMin) displayMin.style.display = 'none';
+        if (displayMax) displayMax.style.display = 'none';
+      }
+    }
+  }
+  
   // --- Dual-State for Dimension View Button ---
   const dimensionToggleButton = document.getElementById('dualStateButton');
   dimensionToggleButton.addEventListener('click', () => {
@@ -124,6 +156,7 @@ export function initControls() {
     console.log("View Mode Change");
     console.log(newViewMode);
     state.viewMode = newViewMode;
+    updateViewControlsDisplay();
     updatePoints();
     updateTriStateVisibility();
   });
@@ -133,6 +166,7 @@ export function initControls() {
   sliceIndexSlider.addEventListener('input', () => {
     const index = parseInt(sliceIndexSlider.value);
     state.sliceIndex = index;
+    updateViewControlsDisplay();
     if (state.viewMode === 'slice') updatePoints();
   });
 
