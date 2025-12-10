@@ -212,7 +212,22 @@ export function initControls() {
       rightArrow.classList.add("active");
     }
     updateStepCircles();
+    updateDirectionDisplay();
     // updateDirectionIcon();
+  }
+  
+  function updateDirectionDisplay() {
+    const directionValue = document.getElementById('bottom-direction-value');
+    if (directionValue) {
+      directionValue.textContent = state.isReversing ? 'rev' : 'fwd';
+    }
+  }
+  
+  function updateStateDisplay() {
+    const stateValue = document.getElementById('bottom-state-value');
+    if (stateValue) {
+      stateValue.textContent = state.isPlaying ? 'play' : 'pause';
+    }
   }
 
   function updateStepCircles() {
@@ -238,6 +253,7 @@ export function initControls() {
     playPauseIcon.className = next ? "pause" : "play";
     console.log("Playback Direction:", next);
     updateStepButtonVisibility();
+    updateStateDisplay();
   }
 
   // const reverseButton = document.getElementById("reverseButton");
@@ -270,6 +286,30 @@ export function initControls() {
 
   // Ensure slice/controls visibility reflects current mode on load
   updateTriStateVisibility();
+  
+  // Initialize additional controls display
+  updateAdditionalControlsDisplay();
+  
+  // Initialize direction and state displays
+  updateDirectionDisplay();
+  updateStateDisplay();
+
+  // Function to update additional controls display
+  function updateAdditionalControlsDisplay() {
+    const gridStatus = document.getElementById('additional-grid-status');
+    const orientationStatus = document.getElementById('additional-orientation-status');
+    const cellSizeValue = document.getElementById('additional-cell-size-value');
+    
+    if (gridStatus) {
+      gridStatus.textContent = state.showWireframeGrid ? 'on' : 'off';
+    }
+    if (orientationStatus) {
+      orientationStatus.textContent = state.flipOrientation ? 'down' : 'up';
+    }
+    if (cellSizeValue) {
+      cellSizeValue.textContent = (state.cellSize ?? 1.2).toFixed(2);
+    }
+  }
 
   // Wireframe grid toggle
   const wireframeGridToggle = document.getElementById('wireframeGridToggle');
@@ -285,6 +325,7 @@ export function initControls() {
       if (state.simulationModel && state.simulationModel.wireframeGridHelper) {
         state.simulationModel.wireframeGridHelper.visible = state.showWireframeGrid;
       }
+      updateAdditionalControlsDisplay();
     });
     // Initialize icon state
     if (wireframeGridIcon) {
@@ -350,6 +391,7 @@ export function initControls() {
       if (state.simulationData && state.showCellWireframe) {
         updatePoints();
       }
+      updateAdditionalControlsDisplay();
     });
   }
 
@@ -396,6 +438,7 @@ export function initControls() {
       if (flipOrientationIcon) {
         flipOrientationIcon.style.fill = state.flipOrientation ? '#4da3ff' : 'currentColor';
       }
+      updateAdditionalControlsDisplay();
       // Update rendering to reflect the flip
       if (state.simulationData) {
         updatePoints();
@@ -1571,6 +1614,7 @@ function resetControlsUI() {
   if (playPauseIcon) playPauseIcon.className = 'play';
   state.isPlaying = false;
   updateStepButtonVisibility();
+  updateStateDisplay();
 
   // Reset reverse (right arrow active only)
   const leftArrow = document.getElementById('leftArrow');
@@ -1578,6 +1622,7 @@ function resetControlsUI() {
   if (leftArrow) leftArrow.classList.remove('active');
   if (rightArrow) rightArrow.classList.add('active');
   state.isReversing = false;
+  updateDirectionDisplay();
 
   // Reset step circles (right circle active only)
   const leftStepCircle = document.getElementById('leftStepCircle');

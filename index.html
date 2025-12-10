@@ -12,49 +12,6 @@
             </div>
       <!-- View Controls Panel -->
       <div class="control-panel">
-        <div class="info-line" style="margin-top: 10px;">
-          <span class="label">Grid</span>
-          <span class="value">
-            <button id="wireframeGridToggle" class="glass-button" aria-label="Toggle wireframe grid" style="pointer-events:auto; padding: 4px;">
-              <svg id="wireframeGridIcon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <!-- Isometric 3D grid cube -->
-                <!-- Top face -->
-                <path d="M3 8 L12 3 L21 8 L12 13 Z" />
-                <!-- Bottom face -->
-                <path d="M3 16 L12 11 L21 16 L12 21 Z" />
-                <!-- Vertical edges connecting top to bottom -->
-                <line x1="3" y1="8" x2="3" y2="16" />
-                <line x1="12" y1="3" x2="12" y2="11" />
-                <line x1="21" y1="8" x2="21" y2="16" />
-                <line x1="12" y1="13" x2="12" y2="21" />
-                <!-- Grid divisions on top face -->
-                <line x1="7.5" y1="5.5" x2="7.5" y2="10.5" />
-                <line x1="16.5" y1="5.5" x2="16.5" y2="10.5" />
-                <line x1="3" y1="8" x2="21" y2="8" />
-                <!-- Grid divisions on bottom face -->
-                <line x1="7.5" y1="13.5" x2="7.5" y2="18.5" />
-                <line x1="16.5" y1="13.5" x2="16.5" y2="18.5" />
-                <line x1="3" y1="16" x2="21" y2="16" />
-              </svg>
-            </button>
-          </span>
-        </div>
-        <div id="cell-size-slider" class="slider-container">
-          <label class="slider-label">
-            <span class="slider-title">Cell Size</span>
-            <input type="range" id="cellSizeSlider" class="glass-slider" min="0.1" max="2" step="0.01" value="1.2" />
-          </label>
-        </div>
-        <div class="info-line" style="margin-top: 8px;">
-          <span class="label">Flip Orientation</span>
-          <span class="value">
-            <button id="flipOrientationToggle" class="glass-button" aria-label="Flip simulation orientation" style="pointer-events:auto; padding: 4px;">
-              <svg id="flipOrientationIcon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 3 L12 21 M8 7 L12 3 L16 7 M8 17 L12 21 L16 17" />
-              </svg>
-            </button>
-          </span>
-        </div>
       </div>
     </div>
   </div>
@@ -356,6 +313,14 @@
           <span id="bottom-speed-value" class="control-display-value">1</span>
           <span class="control-display-unit">gen/s</span>
         </div>
+        <div class="control-display-line">
+          <span class="control-display-label">Direction</span>
+          <span id="bottom-direction-value" class="control-display-value">fwd</span>
+        </div>
+        <div class="control-display-line">
+          <span class="control-display-label">State</span>
+          <span id="bottom-state-value" class="control-display-value">pause</span>
+        </div>
       </div>
       <div id="bottom-controls" class="bottom-controls-panel">
         <button id="playPauseButton" class="glass-button">
@@ -377,7 +342,7 @@
           <span id="rightArrow" class="arrow">&rarr;</span>
         </button>
         <button id="stepButton" class="glass-button">
-          <svg id="stepIcon" width="60" height="24" viewBox="-4 0 58 16" xmlns="http://www.w3.org/2000/svg">
+          <svg id="stepIcon" width="38" height="15" viewBox="-4 0 58 16" xmlns="http://www.w3.org/2000/svg">
             <circle id="leftStepCircle" cx="5" cy="8" r="9" fill="currentColor" class="step-circle"/>
             <line x1="14" y1="8" x2="36" y2="8" stroke="currentColor" stroke-width="2.5"/>
             <circle id="rightStepCircle" cx="45" cy="8" r="9" fill="currentColor" class="step-circle"/>
@@ -409,6 +374,55 @@
             <div class="state-section section-x state-active-x active" data-value="full" data-id="x">3D</div>
             <div class="state-section section-y" data-value="slice" data-id="y">2D</div>
           </div>
+        </div>
+      </div>
+      <!-- Additional Controls Panel (to the right of 3D/2D toggle) -->
+      <div id="additional-controls-wrapper">
+        <div id="additional-controls-display" class="bottom-controls-display">
+          <div class="control-display-line">
+            <span class="control-display-label">Grid</span>
+            <span id="additional-grid-status" class="control-display-value">off</span>
+          </div>
+          <div class="control-display-line">
+            <span class="control-display-label">Orientation</span>
+            <span id="additional-orientation-status" class="control-display-value">up</span>
+          </div>
+          <div class="control-display-line">
+            <span class="control-display-label">Cell Size</span>
+            <span id="additional-cell-size-value" class="control-display-value">1.2</span>
+          </div>
+        </div>
+        <div id="additional-controls-panel" class="bottom-controls-panel">
+        <button id="wireframeGridToggle" class="glass-button" aria-label="Toggle wireframe grid" style="pointer-events:auto;">
+          <svg id="wireframeGridIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+            <!-- Isometric 3D grid cube -->
+            <!-- Top face -->
+            <path d="M3 8 L12 3 L21 8 L12 13 Z" />
+            <!-- Bottom face -->
+            <path d="M3 16 L12 11 L21 16 L12 21 Z" />
+            <!-- Vertical edges connecting top to bottom -->
+            <line x1="3" y1="8" x2="3" y2="16" />
+            <line x1="12" y1="3" x2="12" y2="11" />
+            <line x1="21" y1="8" x2="21" y2="16" />
+            <line x1="12" y1="13" x2="12" y2="21" />
+            <!-- Grid divisions on top face -->
+            <line x1="7.5" y1="5.5" x2="7.5" y2="10.5" />
+            <line x1="16.5" y1="5.5" x2="16.5" y2="10.5" />
+            <line x1="3" y1="8" x2="21" y2="8" />
+            <!-- Grid divisions on bottom face -->
+            <line x1="7.5" y1="13.5" x2="7.5" y2="18.5" />
+            <line x1="16.5" y1="13.5" x2="16.5" y2="18.5" />
+            <line x1="3" y1="16" x2="21" y2="16" />
+          </svg>
+        </button>
+        <button id="flipOrientationToggle" class="glass-button" aria-label="Flip simulation orientation" style="pointer-events:auto;">
+          <svg id="flipOrientationIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3 L12 21 M8 7 L12 3 L16 7 M8 17 L12 21 L16 17" />
+          </svg>
+        </button>
+        <div id="cell-size-slider" class="slider-container">
+          <input type="range" id="cellSizeSlider" class="glass-slider" min="0.1" max="2" step="0.01" value="1.2" />
+        </div>
         </div>
       </div>
 
@@ -1229,6 +1243,10 @@
   height: 60px;
   width: 60px;
   border-radius: 6px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bottom-controls-panel .slider-container {
@@ -1238,6 +1256,26 @@
   align-items: center;
   justify-content: center;
   padding: 0 10px;
+}
+
+#additional-controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+#additional-controls-display {
+  width: 180px; /* Wider to accommodate the labels and values */
+  min-width: 180px;
+  max-width: 180px;
+}
+
+#additional-controls-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
 .bottom-controls-panel .glass-slider {
@@ -1291,10 +1329,16 @@
   padding: 6px 12px;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   gap: 16px;
   pointer-events: auto;
   min-height: 28px;
+}
+
+#bottom-controls-display {
+  width: 294px; /* Match bottom-controls-panel width: 4 buttons (60px each) + 3 gaps (10px each) + 2 padding (12px each) = 240 + 30 + 24 = 294px */
+  box-sizing: border-box;
 }
 
 .control-display-line {
@@ -1302,7 +1346,12 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  flex: 1;
+  flex: 0 1 auto; /* Allow wrapping, don't force equal sizes */
+}
+
+#bottom-controls-display .control-display-line {
+  flex: 0 0 auto; /* Don't grow, allow wrapping */
+  min-width: 100px; /* Minimum width for each line */
 }
 
 .control-display-line:first-child {
