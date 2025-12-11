@@ -305,21 +305,23 @@
       <div id="bottom-controls-wrapper">
       <div id="bottom-controls-display" class="bottom-controls-display">
         <div class="control-display-line">
+          <span class="control-display-label">State</span>
+          <span id="bottom-state-value" class="control-display-value">pause</span>
+        </div>
+        <div class="control-display-line">
+          <span class="control-display-label">Rate</span>
+          <span class="control-display-value-wrapper">
+            <span id="bottom-speed-value" class="control-display-value">1</span>
+            <span class="control-display-unit">gen/s</span>
+          </span>
+        </div>
+        <div class="control-display-line">
           <span class="control-display-label">Generation</span>
           <span id="bottom-gen" class="control-display-value">0</span>
         </div>
         <div class="control-display-line">
-          <span class="control-display-label">Rate</span>
-          <span id="bottom-speed-value" class="control-display-value">1</span>
-          <span class="control-display-unit">gen/s</span>
-        </div>
-        <div class="control-display-line">
           <span class="control-display-label">Direction</span>
           <span id="bottom-direction-value" class="control-display-value">fwd</span>
-        </div>
-        <div class="control-display-line">
-          <span class="control-display-label">State</span>
-          <span id="bottom-state-value" class="control-display-value">pause</span>
         </div>
       </div>
       <div id="bottom-controls" class="bottom-controls-panel">
@@ -505,6 +507,7 @@
     border-radius: 8px;
     padding: 12px;
     pointer-events: auto; /* ensure interactive */
+    display: none; /* Hide empty control panel */
   }
 
   /* Shape panel layout */
@@ -1232,11 +1235,12 @@
   gap: 10px;
   pointer-events: auto;
   background: var(--color-controls-background);
-  border: 1px solid var(--color-control-border);
+  border: 1px solid rgba(120, 180, 255, 0.4);
   border-radius: 8px;
   padding: 12px;
   box-sizing: border-box;
   height: 84px; /* Fixed height: 60px button + 24px padding */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .bottom-controls-panel .glass-button {
@@ -1247,6 +1251,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(45, 60, 80, 0.8);
+  border: 1px solid rgba(120, 180, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+.bottom-controls-panel .glass-button:hover {
+  background: rgba(55, 75, 100, 0.9);
+  border-color: rgba(140, 200, 255, 0.6);
+  box-shadow: 0 4px 12px rgba(100, 150, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.bottom-controls-panel .glass-button:active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 6px rgba(100, 150, 255, 0.2);
 }
 
 .bottom-controls-panel .slider-container {
@@ -1323,17 +1342,16 @@
 }
 
 .bottom-controls-display {
-  background: var(--color-controls-background);
-  border: 1px solid var(--color-control-border);
+  background: rgba(35, 45, 60, 0.4);
+  border: 1px solid rgba(100, 150, 200, 0.15);
   border-radius: 8px;
-  padding: 6px 12px;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-  pointer-events: auto;
-  min-height: 28px;
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  pointer-events: none;
+  cursor: default;
+  opacity: 0.85;
 }
 
 #bottom-controls-display {
@@ -1343,45 +1361,43 @@
 
 .control-display-line {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 4px;
   min-width: 0;
-  flex: 0 1 auto; /* Allow wrapping, don't force equal sizes */
 }
 
-#bottom-controls-display .control-display-line {
-  flex: 0 0 auto; /* Don't grow, allow wrapping */
-  min-width: 100px; /* Minimum width for each line */
-}
-
-.control-display-line:first-child {
-  flex: 0 0 auto;
-  min-width: 90px;
-}
-
-.control-display-line:nth-child(2) {
-  flex: 0 0 auto;
-  min-width: 80px;
+.control-display-value-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .control-display-label {
   color: rgba(200, 220, 255, 0.7);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.2px;
 }
 
 .control-display-value {
   color: rgba(200, 220, 255, 0.95);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
   min-width: 30px;
-  text-align: right;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+#bottom-gen {
+  min-width: 60px;
+  width: auto;
 }
 
 .control-display-unit {
   color: rgba(200, 220, 255, 0.6);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
 }
 

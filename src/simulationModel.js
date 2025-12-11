@@ -147,6 +147,10 @@ export function updatePoints() {
 
   console.log("Update Points")
 
+  if (!state.simulationModel || !state.simulationModel.geometry) {
+    return; // Simulation model not yet initialized
+  }
+
   const baseColor = new THREE.Color("rgba(0, 180, 200, 1)");
   const targetColor = new THREE.Color("rgb(200,20,0)");
   const geometry = state.simulationModel.geometry;
@@ -289,7 +293,8 @@ export function updatePoints() {
   // Update bottom display
   const bottomGen = document.getElementById('bottom-gen');
   if (bottomGen) {
-    bottomGen.textContent = `${genDisplay}`;
+    const maxGen = state.simulationData && state.simulationData.length > 0 ? state.simulationData.length - 1 : 0;
+    bottomGen.textContent = `${genDisplay} / ${maxGen}`;
   }
 }
 

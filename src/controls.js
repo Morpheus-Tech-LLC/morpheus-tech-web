@@ -6,6 +6,21 @@ let pendingShapeKey = null;
 let shapeDropdownPrevValue = null;
 let shapeDropdownOpened = false;
 
+// Helper functions for updating displays (must be outside initControls to be accessible from resetControlsUI)
+function updateDirectionDisplay() {
+  const directionValue = document.getElementById('bottom-direction-value');
+  if (directionValue) {
+    directionValue.textContent = state.isReversing ? 'rev' : 'fwd';
+  }
+}
+
+function updateStateDisplay() {
+  const stateValue = document.getElementById('bottom-state-value');
+  if (stateValue) {
+    stateValue.textContent = state.isPlaying ? 'play' : 'pause';
+  }
+}
+
 // controls.js
 export function initControls() {
 
@@ -215,20 +230,6 @@ export function initControls() {
     updateDirectionDisplay();
     // updateDirectionIcon();
   }
-  
-  function updateDirectionDisplay() {
-    const directionValue = document.getElementById('bottom-direction-value');
-    if (directionValue) {
-      directionValue.textContent = state.isReversing ? 'rev' : 'fwd';
-    }
-  }
-  
-  function updateStateDisplay() {
-    const stateValue = document.getElementById('bottom-state-value');
-    if (stateValue) {
-      stateValue.textContent = state.isPlaying ? 'play' : 'pause';
-    }
-  }
 
   function updateStepCircles() {
     const leftStepCircle = document.getElementById("leftStepCircle");
@@ -268,7 +269,8 @@ export function initControls() {
     // update bottom display
     const bottomGen = document.getElementById('bottom-gen');
     if (bottomGen) {
-      bottomGen.textContent = `${state.currentGen}`;
+      const maxGen = state.simulationData && state.simulationData.length > 0 ? state.simulationData.length - 1 : 0;
+      bottomGen.textContent = `${state.currentGen} / ${maxGen}`;
     }
   });
 
@@ -1632,5 +1634,8 @@ function resetControlsUI() {
 
   // Reset generation display
   const bottomGen = document.getElementById('bottom-gen');
-  if (bottomGen) bottomGen.textContent = '0';
+  if (bottomGen) {
+    const maxGen = state.simulationData && state.simulationData.length > 0 ? state.simulationData.length - 1 : 0;
+    bottomGen.textContent = `0 / ${maxGen}`;
+  }
 }
