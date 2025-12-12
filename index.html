@@ -353,32 +353,7 @@
       </div>
     </div>
       <!-- View Controls Panel (to the right of play/pause) -->
-      <div id="view-controls-panel" class="bottom-controls-panel">
-        <div id="view-controls-wrapper">
-          <div id="triStateButton" class="multi-section-button state-active-x">
-            <div class="state-section section-x state-active-x active" data-value="x">X</div>
-            <div class="state-section section-y" data-value="y">Y</div>
-            <div class="state-section section-z" data-value="z">Z</div>
-          </div>
-          <div id="view-slice-slider" class="slider-container">
-            <label class="slider-label">
-              <input type="range" id="slice-index" class="glass-slider" min="0" max="49" value="25" />
-            </label>
-          </div>
-          <div id="view-controls-display" class="bottom-controls-display">
-            <div class="control-display-line">
-              <span id="view-controls-display-min" class="control-display-min-max"></span>
-              <span id="view-controls-display-text" class="control-display-value"></span>
-              <span id="view-controls-display-max" class="control-display-min-max"></span>
-            </div>
-          </div>
-          <div id="dualStateButton" class="multi-section-button state-active-x view-control-button">
-            <div class="state-section section-x state-active-x active" data-value="full" data-id="x">3D</div>
-            <div class="state-section section-y" data-value="slice" data-id="y">2D</div>
-          </div>
-        </div>
-      </div>
-      <!-- Additional Controls Panel (to the right of 3D/2D toggle) -->
+      <!-- Additional Controls Panel -->
       <div id="additional-controls-wrapper">
         <div id="additional-controls-display" class="bottom-controls-display">
           <div class="control-display-line">
@@ -392,6 +367,10 @@
           <div class="control-display-line">
             <span class="control-display-label">Cell Size</span>
             <span id="additional-cell-size-value" class="control-display-value">1.2</span>
+          </div>
+          <div class="control-display-line">
+            <span class="control-display-label">Slice</span>
+            <span id="view-controls-display-text" class="control-display-value">0 / 0</span>
           </div>
         </div>
         <div id="additional-controls-panel" class="bottom-controls-panel">
@@ -424,6 +403,20 @@
         </button>
         <div id="cell-size-slider" class="slider-container">
           <input type="range" id="cellSizeSlider" class="glass-slider" min="0.1" max="2" step="0.01" value="1.2" />
+        </div>
+        <div id="dualStateButton" class="multi-section-button state-active-x view-control-button">
+          <div class="state-section section-x state-active-x active" data-value="full" data-id="x">3D</div>
+          <div class="state-section section-y" data-value="slice" data-id="y">2D</div>
+        </div>
+        <div id="triStateButton" class="multi-section-button state-active-x">
+          <div class="state-section section-x state-active-x active" data-value="x">X</div>
+          <div class="state-section section-y" data-value="y">Y</div>
+          <div class="state-section section-z" data-value="z">Z</div>
+        </div>
+        <div id="view-slice-slider" class="slider-container">
+          <label class="slider-label">
+            <input type="range" id="slice-index" class="glass-slider" min="0" max="49" value="25" />
+          </label>
         </div>
         </div>
       </div>
@@ -781,9 +774,10 @@
 
   .multi-section-button {
     display: flex;
-    margin-top: 10px;
+    flex-direction: row; /* Default to horizontal */
+    margin-top: 0;
     border-radius: 6px;
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid rgba(100, 150, 200, 0.3);
     background: rgba(35, 45, 60, 0.7);
     cursor: pointer;
@@ -837,7 +831,7 @@
   }
 
   #dualStateButton .section-y.active ~ #triStateButton {
-    display: block;
+    display: flex;
   }
 
   #dualStateButton .section-y.active ~ #sliceViewer {
@@ -1035,14 +1029,16 @@
 
 #view-controls-panel {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 12px;
   min-height: 84px; /* Match bottom-controls-panel height exactly (60px button + 24px padding) */
-  width: 144px; /* Fixed width: 120px button + 24px padding */
+  width: auto; /* Auto width to accommodate expanding content */
+  min-width: 224px; /* Default: display (80px) + gap (10px) + 3D/2D (120px) + padding (24px) = 234px */
   box-sizing: border-box;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  transition: min-width 0.3s ease;
 }
 
 #view-controls-panel #view-controls-display {
@@ -1099,31 +1095,40 @@
 #view-controls-wrapper {
   position: relative;
   display: flex;
-  flex-direction: column; /* Normal order: tri-state, slider, display, 3D/2D */
+  flex-direction: row; /* Horizontal layout: display, 3D/2D, tri-state, slider */
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-#view-controls-panel #triStateButton {
+#additional-controls-panel #triStateButton {
   display: none;
-  order: -2; /* Always appears above slider when visible */
-  margin-bottom: 8px; /* Gap between tri-state and slider */
+  flex-direction: row !important; /* Horizontal orientation */
+  height: 60px;
+  width: 180px; /* 3 sections × 60px each */
+  min-width: 180px;
+  max-width: 180px;
+  transition: width 0.3s ease, min-width 0.3s ease;
+  overflow: visible;
 }
 
-#view-controls-panel #view-slice-slider {
+/* Only show when 2D is active - this rule is overridden by the display rules below */
+#additional-controls-panel #triStateButton.multi-section-button {
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+}
+
+
+#additional-controls-panel #view-slice-slider {
   display: none;
-  order: -1; /* Appears between tri-state and display when visible */
-  width: 120px; /* Match 3D/2D button width */
+  width: 120px;
   margin: 0;
-  margin-bottom: -24px; /* Reduce gap between slider and display (counteract wrapper gap of 8px + extra reduction) */
+  height: 60px;
+  align-items: center;
+  justify-content: center;
 }
 
-#view-controls-panel #view-controls-display {
-  order: 0; /* Always appears above 3D/2D toggle, below slider when visible */
-  margin-top: 0; /* Remove top margin to bring it closer to slider */
-}
-
-#view-controls-panel #view-slice-slider .slider-label {
+#additional-controls-panel #view-slice-slider .slider-label {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1131,27 +1136,33 @@
   margin: 0;
 }
 
-#view-controls-panel #view-slice-slider .slider-title {
+#additional-controls-panel #view-slice-slider .slider-title {
   font-size: 11px;
   line-height: 1;
   color: var(--color-info-display-text);
 }
 
-#view-controls-panel #view-slice-slider .glass-slider {
+#additional-controls-panel #view-slice-slider .glass-slider {
   width: 100%;
   height: 4px;
   margin: 0;
 }
 
 /* Show tri-state button and slider when 2D is active */
-#view-controls-panel #dualStateButton .section-y.active ~ #triStateButton,
-#view-controls-wrapper:has(#dualStateButton .section-y.active) #triStateButton {
-  display: flex;
+#additional-controls-panel #dualStateButton .section-y.active ~ #triStateButton,
+#additional-controls-panel:has(#dualStateButton .section-y.active) #triStateButton {
+  display: flex !important;
 }
 
-#view-controls-panel #dualStateButton .section-y.active ~ #view-slice-slider,
-#view-controls-wrapper:has(#dualStateButton .section-y.active) #view-slice-slider {
-  display: block;
+#additional-controls-panel #dualStateButton .section-y.active ~ #view-slice-slider,
+#additional-controls-panel:has(#dualStateButton .section-y.active) #view-slice-slider {
+  display: flex !important;
+}
+
+/* Expand panel width when 2D is active to accommodate tri-state and slider */
+#additional-controls-panel:has(#dualStateButton .section-y.active) {
+  width: auto;
+  min-width: 744px; /* buttons (180px) + gap (10px) + 3D/2D (120px) + gap (10px) + tri-state (180px) + gap (10px) + slider (120px) + padding (24px) = ~744px */
 }
 
 .view-control-button {
@@ -1172,15 +1183,47 @@
   color: rgba(200, 220, 255, 0.95);
 }
 
-/* 3D/2D button - 2x width of play/pause button (120px) */
-#view-controls-panel #dualStateButton {
-  width: 120px;
-  min-width: 120px;
+/* 3D/2D button - wider than other buttons for better visibility */
+#additional-controls-panel #dualStateButton {
+  width: 140px;
+  min-width: 140px;
+  height: 60px;
 }
 
-/* Tri-state button - use original styling */
-#view-controls-panel #triStateButton {
-  margin-top: 0; /* Remove top margin in this context */
+/* Tri-state button - horizontal orientation */
+#additional-controls-panel #triStateButton {
+  margin-top: 0;
+  flex-direction: row !important;
+  height: 60px;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+}
+
+#additional-controls-panel #triStateButton .state-section {
+  flex: 1 1 60px;
+  min-width: 60px;
+  width: 60px;
+  height: 60px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 0;
+  visibility: visible;
+  opacity: 1;
+  box-sizing: border-box;
+}
+
+#additional-controls-panel #triStateButton .state-section:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+#additional-controls-panel #triStateButton .state-section:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .view-control-button:hover {
@@ -1206,6 +1249,7 @@
   height: 60px;
   max-height: 60px;
   border-radius: 0;
+  background: rgba(45, 60, 80, 0.8); /* Same as glass-button hover state */
   color: rgba(200, 220, 255, 0.95);
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -1222,8 +1266,9 @@
 }
 
 .view-control-button .state-section.active {
-  background: rgba(30, 50, 80, 0.8);
+  background: rgba(60, 100, 140, 0.9); /* More obvious blue-tinted background for selected */
   color: var(--color-control-active-icon);
+  box-shadow: 0 2px 8px rgba(77, 163, 255, 0.3);
   font-weight: 700;
 }
 

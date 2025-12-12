@@ -125,27 +125,15 @@ export function initControls() {
   // Function to update view controls display
   function updateViewControlsDisplay() {
     const displayText = document.getElementById('view-controls-display-text');
-    const displayMin = document.getElementById('view-controls-display-min');
-    const displayMax = document.getElementById('view-controls-display-max');
     const sliceSlider = document.getElementById('slice-index');
     
     if (displayText) {
       if (state.viewMode === 'slice') {
         const index = state.sliceIndex !== null ? state.sliceIndex : 0;
-        displayText.textContent = `${index}`;
-        // Get min/max from slider and show them
-        if (sliceSlider && displayMin && displayMax) {
-          displayMin.textContent = sliceSlider.min || '0';
-          displayMax.textContent = sliceSlider.max || '49';
-          displayMin.style.display = 'inline';
-          displayMax.style.display = 'inline';
-        }
+        const maxIndex = sliceSlider ? (parseInt(sliceSlider.max) || state.sim_size - 1) : (state.sim_size - 1);
+        displayText.textContent = `${index} / ${maxIndex}`;
       } else {
-        const size = state.sim_size || 50;
-        displayText.textContent = `${size} x ${size} x ${size}`;
-        // Hide min/max when not in 2D mode
-        if (displayMin) displayMin.style.display = 'none';
-        if (displayMax) displayMax.style.display = 'none';
+        displayText.textContent = '-';
       }
     }
   }
