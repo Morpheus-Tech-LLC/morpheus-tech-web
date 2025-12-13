@@ -59,6 +59,7 @@ export const state = {
   gridWrapping: true,
   showWireframeGrid: false,
   showCellWireframe: false,
+  showHUD: true, // HUD displays are visible by default
   cellSize: 1.2, // Size of cells (points and wireframe cubes)
   scene: null,
   renderer: null,

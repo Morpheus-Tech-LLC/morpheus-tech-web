@@ -480,20 +480,41 @@ export function initControls() {
   // HUD toggle button
   const hudToggleButton = document.getElementById('hudToggleButton');
   const glassDisplayContainer = document.getElementById('glass-display-container');
+  const bottomControlsDisplay = document.getElementById('bottom-controls-display');
+  const additionalControlsDisplay = document.getElementById('additional-controls-display');
+  const simulationModeTitle = document.getElementById('simulation-mode-title');
+  
   if (hudToggleButton && glassDisplayContainer) {
     hudToggleButton.addEventListener('click', () => {
-      const isVisible = glassDisplayContainer.style.display === 'flex';
-      glassDisplayContainer.style.display = isVisible ? 'none' : 'flex';
+      state.showHUD = !state.showHUD;
+      
+      // Toggle glass displays
+      glassDisplayContainer.style.display = state.showHUD ? 'flex' : 'none';
+      
+      // Toggle control panel info displays
+      if (bottomControlsDisplay) {
+        bottomControlsDisplay.style.display = state.showHUD ? 'flex' : 'none';
+      }
+      if (additionalControlsDisplay) {
+        additionalControlsDisplay.style.display = state.showHUD ? 'flex' : 'none';
+      }
+      
+      // Toggle title
+      if (simulationModeTitle) {
+        simulationModeTitle.style.display = state.showHUD ? 'block' : 'none';
+      }
+      
       // Update icon color - blue when visible, white/gray when hidden
       const hudIcon = document.getElementById('hudToggleIcon');
       if (hudIcon) {
-        hudIcon.style.stroke = !isVisible ? '#4da3ff' : 'currentColor';
+        hudIcon.style.stroke = state.showHUD ? '#4da3ff' : 'currentColor';
       }
     });
-    // Initialize icon state (HUD is hidden by default)
+    
+    // Initialize icon state (HUD is visible by default)
     const hudIcon = document.getElementById('hudToggleIcon');
     if (hudIcon) {
-      hudIcon.style.stroke = 'currentColor';
+      hudIcon.style.stroke = '#4da3ff'; // Blue when visible
     }
   }
 
