@@ -21,6 +21,20 @@ function updateStateDisplay() {
   }
 }
 
+function updateSimulationModeTitle() {
+  const titleEl = document.getElementById('simulation-mode-title');
+  if (titleEl) {
+    const modeNames = {
+      gameOfLife: 'Game of Life',
+      rule30: 'Rule 30',
+      sineWave: 'Sine Wave',
+      sandpile: 'Sandpile'
+    };
+    const modeName = modeNames[state.simulationMode] || 'Game of Life';
+    titleEl.textContent = modeName;
+  }
+}
+
 // controls.js
 export function initControls() {
 
@@ -35,8 +49,13 @@ export function initControls() {
     const simGensEl = document.getElementById('sim-generations-value');
     if (simSizeEl) simSizeEl.textContent = String(state.sim_size);
     if (simGensEl) simGensEl.textContent = String(state.sim_generations);
+    // Always update title when controls are refreshed
+    updateSimulationModeTitle();
     return;
   }
+  
+  // Initialize simulation mode title on first load
+  updateSimulationModeTitle();
   // Initialize Simulation info displays on first load
   const simSizeOut = document.getElementById('sim-size-value');
   const simGensOut = document.getElementById('sim-generations-value');
@@ -355,6 +374,38 @@ export function initControls() {
     }
   }
 
+  // Flip orientation toggle
+  const flipOrientationToggle = document.getElementById('flipOrientationToggle');
+  const flipOrientationUp = document.getElementById('flipOrientationUp');
+  const flipOrientationDown = document.getElementById('flipOrientationDown');
+  if (flipOrientationToggle) {
+    flipOrientationToggle.addEventListener('click', () => {
+      state.flipOrientation = !state.flipOrientation;
+      updateFlipOrientationDisplay();
+      updateAdditionalControlsDisplay();
+      // Update rendering to reflect the flip
+      if (state.simulationData) {
+        updatePoints();
+      }
+    });
+    // Initialize icon state
+    updateFlipOrientationDisplay();
+  }
+
+  function updateFlipOrientationDisplay() {
+    if (flipOrientationUp && flipOrientationDown) {
+      // When flipOrientation is false (up), highlight the up arrow
+      // When flipOrientation is true (down), highlight the down arrow
+      if (state.flipOrientation) {
+        flipOrientationUp.classList.remove('active');
+        flipOrientationDown.classList.add('active');
+      } else {
+        flipOrientationUp.classList.add('active');
+        flipOrientationDown.classList.remove('active');
+      }
+    }
+  }
+
   // Cell size slider
   const cellSizeSlider = document.getElementById('cellSizeSlider');
   if (cellSizeSlider) {
@@ -419,28 +470,32 @@ export function initControls() {
   }
 
   // Flip orientation toggle (applies to all simulations)
-  const flipOrientationToggle = document.getElementById('flipOrientationToggle');
-  const flipOrientationIcon = document.getElementById('flipOrientationIcon');
-  if (flipOrientationToggle) {
-    flipOrientationToggle.addEventListener('click', () => {
-      state.flipOrientation = !state.flipOrientation;
-      // Update icon color - blue when active (flipped), white/gray when inactive
-      if (flipOrientationIcon) {
-        flipOrientationIcon.style.fill = state.flipOrientation ? '#4da3ff' : 'currentColor';
-      }
-      updateAdditionalControlsDisplay();
-      // Update rendering to reflect the flip
-      if (state.simulationData) {
-        updatePoints();
+  // Flip orientation toggle - handled below with updateFlipOrientationDisplay
+
+  // Mark controls as initialized to prevent duplicate bindings on re-init
+  // HUD toggle button
+  const hudToggleButton = document.getElementById('hudToggleButton');
+  const glassDisplayContainer = document.getElementById('glass-display-container');
+  if (hudToggleButton && glassDisplayContainer) {
+    hudToggleButton.addEventListener('click', () => {
+      const isVisible = glassDisplayContainer.style.display === 'flex';
+      glassDisplayContainer.style.display = isVisible ? 'none' : 'flex';
+      // Update icon color - blue when visible, white/gray when hidden
+      const hudIcon = document.getElementById('hudToggleIcon');
+      if (hudIcon) {
+        hudIcon.style.stroke = !isVisible ? '#4da3ff' : 'currentColor';
       }
     });
-    // Initialize icon state
-    if (flipOrientationIcon) {
-      flipOrientationIcon.style.fill = state.flipOrientation ? '#4da3ff' : 'currentColor';
+    // Initialize icon state (HUD is hidden by default)
+    const hudIcon = document.getElementById('hudToggleIcon');
+    if (hudIcon) {
+      hudIcon.style.stroke = 'currentColor';
     }
   }
 
-  // Mark controls as initialized to prevent duplicate bindings on re-init
+  // Initialize simulation mode title
+  updateSimulationModeTitle();
+
   state.controlsInitialized = true;
 }
 
@@ -1258,6 +1313,7 @@ function openShapeModal() {
     const activeCard = document.querySelector('.mode-card.active');
     const selectedMode = activeCard ? activeCard.dataset.mode : 'gameOfLife';
     state.simulationMode = selectedMode;
+    updateSimulationModeTitle();
 
     // Set Rule 30 and Sine Wave flags based on mode
     if (selectedMode === 'rule30') {
