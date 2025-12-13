@@ -30,7 +30,11 @@ function updateSimulationModeTitle() {
       sineWave: 'Sine Wave',
       sandpile: 'Sandpile'
     };
-    const modeName = modeNames[state.simulationMode] || 'Game of Life';
+    let modeName = modeNames[state.simulationMode] || 'Game of Life';
+    // Add "(2D)" suffix for Rule 30 when 2D mode is active
+    if (state.simulationMode === 'rule30' && state.useRule30_2D) {
+      modeName = 'Rule 30 (2D)';
+    }
     titleEl.textContent = modeName;
   }
 }
@@ -1512,7 +1516,7 @@ function openShapeModal() {
     if (densityOut && selectedMode === 'gameOfLife') densityOut.textContent = `${density.toFixed(2)}`;
     if (shapeOut) {
       if (selectedMode === 'rule30') {
-        const is2D = rule302DToggle ? rule302DToggle.checked : false;
+        const is2D = rule302DToggle ? rule302DToggle.classList.contains('active') : false;
         shapeOut.textContent = is2D ? 'rule30 (2D)' : 'rule30';
       } else if (selectedMode === 'sineWave') {
         shapeOut.textContent = 'sine wave';
@@ -1619,6 +1623,14 @@ function stringifyRule(arr) {
 }
 
 function resetControlsUI() {
+  // Reset state variables to initial values
+  state.viewMode = 'full';
+  state.sliceAxis = 'x';
+  state.sliceIndex = Math.floor((state.sim_size - 1) / 2);
+  state.currentGen = 0;
+  state.isPlaying = false;
+  state.isReversing = false;
+
   // 3D/2D button → set to 3D (full)
   const dual = document.getElementById('dualStateButton');
   if (dual) {
@@ -1650,15 +1662,14 @@ function resetControlsUI() {
   // Reset slice index to mid and label
   const slider = document.getElementById('slice-index');
   if (slider) {
-    slider.max = state.sim_size;
-    const mid = Math.floor(state.sim_size / 2);
+    slider.max = state.sim_size - 1;
+    const mid = Math.floor((state.sim_size - 1) / 2);
     slider.value = `${mid}`;
   }
 
   // Reset play/pause to paused and enable step
   const playPauseIcon = document.getElementById('playPauseIcon');
   if (playPauseIcon) playPauseIcon.className = 'play';
-  state.isPlaying = false;
   updateStepButtonVisibility();
   updateStateDisplay();
 
@@ -1667,7 +1678,6 @@ function resetControlsUI() {
   const rightArrow = document.getElementById('rightArrow');
   if (leftArrow) leftArrow.classList.remove('active');
   if (rightArrow) rightArrow.classList.add('active');
-  state.isReversing = false;
   updateDirectionDisplay();
 
   // Reset step circles (right circle active only)
@@ -1682,4 +1692,7 @@ function resetControlsUI() {
     const maxGen = state.simulationData && state.simulationData.length > 0 ? state.simulationData.length - 1 : 0;
     bottomGen.textContent = `0 / ${maxGen}`;
   }
+
+  // Update tristate button visibility based on view mode
+  updateTriStateVisibility();
 }
