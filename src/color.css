@@ -15,7 +15,7 @@
 
   /* Added for maintainability */
   --color-text-contrast: #ffffff;      /* pure white for high-contrast text */
-  --color-title: #ffb7c5;             /* soft red for titles */
+  --color-title: rgb(204, 82, 0);    /* orange for titles */
   --color-state-title: #4c94ec;       /* unique title color for State box */
   --color-state-value: #8cc6ff;       /* unique value color for State box */
 }

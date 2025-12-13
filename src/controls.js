@@ -493,10 +493,10 @@ export function initControls() {
       
       // Toggle control panel info displays
       if (bottomControlsDisplay) {
-        bottomControlsDisplay.style.display = state.showHUD ? 'flex' : 'none';
+        bottomControlsDisplay.style.display = state.showHUD ? 'grid' : 'none';
       }
       if (additionalControlsDisplay) {
-        additionalControlsDisplay.style.display = state.showHUD ? 'flex' : 'none';
+        additionalControlsDisplay.style.display = state.showHUD ? 'grid' : 'none';
       }
       
       // Toggle title
@@ -515,6 +515,14 @@ export function initControls() {
     const hudIcon = document.getElementById('hudToggleIcon');
     if (hudIcon) {
       hudIcon.style.stroke = '#4da3ff'; // Blue when visible
+    }
+    
+    // Initialize display state to match CSS (grid layout)
+    if (bottomControlsDisplay) {
+      bottomControlsDisplay.style.display = state.showHUD ? 'grid' : 'none';
+    }
+    if (additionalControlsDisplay) {
+      additionalControlsDisplay.style.display = state.showHUD ? 'grid' : 'none';
     }
   }
 
