@@ -31,10 +31,6 @@ function updateSimulationModeTitle() {
       sandpile: 'Sandpile'
     };
     let modeName = modeNames[state.simulationMode] || 'Game of Life';
-    // Add "(2D)" suffix for Rule 30 when 2D mode is active
-    if (state.simulationMode === 'rule30' && state.useRule30_2D) {
-      modeName = 'Rule 30 (2D)';
-    }
     titleEl.textContent = modeName;
   }
 }
@@ -646,23 +642,20 @@ function openShapeModal() {
   // Function to update UI based on selected mode
   const boundaryRulesSection = document.getElementById('boundary-rules-section');
   const rule302DToggleRow = document.getElementById('rule30-2d-toggle-row');
-  const rule302DToggle = document.getElementById('rule30-2d-toggle');
+  const rule302DCheckbox = document.getElementById('rule30-2d-checkbox');
   const sandpileSection = document.getElementById('sandpile-section');
   
-  // Initialize toggle buttons
-  if (rule302DToggle) {
+  // Initialize checkbox
+  if (rule302DCheckbox) {
     // Set initial state
-    if (state.useRule30_2D) {
-      rule302DToggle.classList.add('active');
-    }
-    rule302DToggle.addEventListener('click', () => {
-      rule302DToggle.classList.toggle('active');
+    rule302DCheckbox.checked = state.useRule30_2D || false;
+    rule302DCheckbox.addEventListener('change', () => {
       // Only update size calculation when Rule 30 mode is active
       const activeCard = document.querySelector('.mode-card.active');
       const selectedMode = activeCard ? activeCard.dataset.mode : 'gameOfLife';
       if (selectedMode === 'rule30' && simGenerationsInput && simSizeInput) {
         const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
-        const is2D = rule302DToggle.classList.contains('active');
+        const is2D = rule302DCheckbox.checked;
         const calculatedSize = calculateRule30Size(generations, is2D ? 'rule30_2D' : 'rule30');
         simSizeInput.value = calculatedSize;
       }
@@ -703,6 +696,8 @@ function openShapeModal() {
       // Show seed section
       if (seedSection) seedSection.style.display = '';
       // Show size controls
+      const simSizeRow = document.getElementById('sim-size-row');
+      if (simSizeRow) simSizeRow.style.display = '';
       if (simSizeLabel) simSizeLabel.style.display = '';
       if (simSizeInput) {
         simSizeInput.style.display = '';
@@ -718,6 +713,9 @@ function openShapeModal() {
         simGenerationsInput.value = Math.min(100, Math.max(1, gens));
         simGenerationsInput.max = '100';
       }
+      // Update generations range hint for Game of Life mode
+      const simGenerationsRangeText = document.getElementById('sim-generations-range-text');
+      if (simGenerationsRangeText) simGenerationsRangeText.textContent = '1 - 100';
       // Show size range hint for Game of Life mode
       const simSizeRange = document.getElementById('sim-size-range');
       if (simSizeRange) simSizeRange.style.display = 'flex';
@@ -757,6 +755,8 @@ function openShapeModal() {
       // Hide seed section for Sine Wave mode
       if (seedSection) seedSection.style.display = 'none';
       // Show size controls for Sine Wave (size affects wave resolution)
+      const simSizeRow = document.getElementById('sim-size-row');
+      if (simSizeRow) simSizeRow.style.display = '';
       if (simSizeLabel) simSizeLabel.style.display = '';
       if (simSizeInput) {
         simSizeInput.style.display = '';
@@ -772,6 +772,9 @@ function openShapeModal() {
         simGenerationsInput.value = Math.min(100, Math.max(1, gens));
         simGenerationsInput.max = '100';
       }
+      // Update generations range hint for Sine Wave mode
+      const simGenerationsRangeText = document.getElementById('sim-generations-range-text');
+      if (simGenerationsRangeText) simGenerationsRangeText.textContent = '1 - 100';
       // Show size range hint for Sine Wave mode
       const simSizeRange = document.getElementById('sim-size-range');
       if (simSizeRange) simSizeRange.style.display = 'flex';
@@ -803,7 +806,12 @@ function openShapeModal() {
         simGenerationsInput.value = Math.min(100, Math.max(1, gens));
         simGenerationsInput.max = '100';
       }
+      // Update generations range hint for Rule 30 mode
+      const simGenerationsRangeText = document.getElementById('sim-generations-range-text');
+      if (simGenerationsRangeText) simGenerationsRangeText.textContent = '1 - 100';
       // Hide size controls for Rule 30 mode (auto-calculated)
+      const simSizeRow = document.getElementById('sim-size-row');
+      if (simSizeRow) simSizeRow.style.display = 'none';
       if (simSizeLabel) simSizeLabel.style.display = 'none';
       if (simSizeInput) simSizeInput.style.display = 'none';
       // Hide size range hint for Rule 30 mode
@@ -812,16 +820,12 @@ function openShapeModal() {
       // Hide grid wrapping controls for Rule 30 mode
       if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
       if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = 'none';
-      // Show 2D toggle for Rule 30
+      // Show 2D checkbox for Rule 30
       if (rule302DToggleRow) rule302DToggleRow.style.display = '';
-      // Initialize toggle based on current state
-      if (rule302DToggle) {
-        if (state.useRule30_2D) {
-          rule302DToggle.classList.add('active');
-        } else {
-          rule302DToggle.classList.remove('active');
-        }
-        // Update size calculation when toggle is initialized
+      // Initialize checkbox based on current state
+      if (rule302DCheckbox) {
+        rule302DCheckbox.checked = state.useRule30_2D || false;
+        // Update size calculation when checkbox is initialized
         if (simGenerationsInput && simSizeInput) {
           const generations = Math.max(1, parseInt(simGenerationsInput.value) || 100);
           const calculatedSize = calculateRule30Size(generations, state.useRule30_2D ? 'rule30_2D' : 'rule30');
@@ -844,16 +848,16 @@ function openShapeModal() {
         }
       }
       
-      // Auto-calculate and update size based on generations and 2D toggle
-      if (simGenerationsInput && simSizeInput && rule302DToggle) {
+      // Auto-calculate and update size based on generations and 2D checkbox
+      if (simGenerationsInput && simSizeInput && rule302DCheckbox) {
         const updateSize = () => {
           const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
-          const is2D = rule302DToggle.classList.contains('active');
+          const is2D = rule302DCheckbox.checked;
           const calculatedSize = calculateRule30Size(generations, is2D ? 'rule30_2D' : 'rule30');
           simSizeInput.value = calculatedSize;
         };
         updateSize();
-        // Update size when toggle changes (already handled in click listener above)
+        // Update size when checkbox changes (already handled in change listener above)
       }
       // Hide sandpile section for Rule 30 mode
       if (sandpileSection) sandpileSection.style.display = 'none';
@@ -865,6 +869,8 @@ function openShapeModal() {
       // Hide seed section for Sandpile mode
       if (seedSection) seedSection.style.display = 'none';
       // Show size controls for Sandpile mode
+      const simSizeRow = document.getElementById('sim-size-row');
+      if (simSizeRow) simSizeRow.style.display = '';
       if (simSizeLabel) simSizeLabel.style.display = '';
       if (simSizeInput) {
         simSizeInput.style.display = '';
@@ -879,6 +885,9 @@ function openShapeModal() {
         // Remove max limit for sandpile (can go above 100)
         simGenerationsInput.removeAttribute('max');
       }
+      // Update generations range hint for Sandpile mode
+      const simGenerationsRangeText = document.getElementById('sim-generations-range-text');
+      if (simGenerationsRangeText) simGenerationsRangeText.textContent = '1 - 1000';
       // Show size range hint for Sandpile mode
       const simSizeRange = document.getElementById('sim-size-range');
       if (simSizeRange) simSizeRange.style.display = 'flex';
@@ -925,9 +934,9 @@ function openShapeModal() {
         }
       }
       
-      if (selectedMode === 'rule30' && rule302DToggle) {
+      if (selectedMode === 'rule30' && rule302DCheckbox) {
         const generations = Math.max(1, Math.min(100, parseInt(simGenerationsInput.value) || state.sim_generations));
-        const is2D = rule302DToggle.classList.contains('active');
+        const is2D = rule302DCheckbox.checked;
         const calculatedSize = calculateRule30Size(generations, is2D ? 'rule30_2D' : 'rule30');
         if (simSizeInput) {
           simSizeInput.value = calculatedSize;
@@ -1350,8 +1359,8 @@ function openShapeModal() {
 
     // Set Rule 30 and Sine Wave flags based on mode
     if (selectedMode === 'rule30') {
-      // Read 2D toggle value
-      const is2D = rule302DToggle ? rule302DToggle.classList.contains('active') : false;
+      // Read 2D checkbox value
+      const is2D = rule302DCheckbox ? rule302DCheckbox.checked : false;
       state.useRule30 = !is2D;
       state.useRule30_2D = is2D;
       state.useSineWave = false;
@@ -1545,7 +1554,7 @@ function openShapeModal() {
     if (densityOut && selectedMode === 'gameOfLife') densityOut.textContent = `${density.toFixed(2)}`;
     if (shapeOut) {
       if (selectedMode === 'rule30') {
-        const is2D = rule302DToggle ? rule302DToggle.classList.contains('active') : false;
+        const is2D = rule302DCheckbox ? rule302DCheckbox.checked : false;
         shapeOut.textContent = is2D ? 'rule30 (2D)' : 'rule30';
       } else if (selectedMode === 'sineWave') {
         shapeOut.textContent = 'sine wave';

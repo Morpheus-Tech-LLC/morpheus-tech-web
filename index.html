@@ -67,7 +67,7 @@
           <div class="rules-title">
             <span data-tooltip="Core simulation settings including grid dimensions and number of evolution steps to compute.">Simulation Parameters</span>
           </div>
-          <div class="modal-field-row">
+          <div id="sim-size-row" class="modal-field-row">
             <div class="label-row">
               <label id="sim-size-label" class="modal-label" for="sim-size">
                 <span data-tooltip="The dimensions of the 3D simulation grid (N×N×N). Larger sizes provide more detail but require more computation.">Size</span>
@@ -87,7 +87,7 @@
                 <span data-tooltip="The number of simulation steps to compute. Each generation represents one evolution cycle of the cellular automaton.">Generations</span>
               </label>
               <span class="input-range-hint" id="sim-generations-range" style="opacity: 1; display: flex; align-items: center; gap: 6px;">
-                <span style="color: rgb(0, 180, 200); font-size: 12px; font-weight: bold;">1 - 100</span>
+                <span id="sim-generations-range-text" style="color: rgb(0, 180, 200); font-size: 12px; font-weight: bold;">1 - 100</span>
                 <button id="company-logo-button" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
                   <img src="src/assets/images/morpheus-tech.png" alt="Morpheus Tech" style="width: 18px; height: 18px; opacity: 1;" />
                 </button>
@@ -96,14 +96,10 @@
             <input type="number" id="sim-generations" class="glass-input" min="1" max="100" step="1" />
           </div>
           <div id="rule30-2d-toggle-row" class="modal-field-row" style="display: none;">
-            <label class="modal-label" for="rule30-2d-toggle">
-              <span data-tooltip="Toggle between 1D (single row) and 2D (full plane) Rule 30 simulation modes.">2D Mode</span>
+            <label class="modal-label" for="rule30-2d-checkbox" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="rule30-2d-checkbox" style="width: auto; cursor: pointer;" />
+              <span data-tooltip="When checked, Rule 30 in 3D is toggled. When unchecked, uses 2D mode (original)">3D Mode</span>
             </label>
-            <button type="button" id="rule30-2d-toggle" class="toggle-button" style="margin-left: auto;">
-              <span class="toggle-label-off">1D</span>
-              <span class="toggle-slider"></span>
-              <span class="toggle-label-on">2D</span>
-            </button>
           </div>
         </div>
 
@@ -242,10 +238,10 @@
           <div class="modal-field-row">
             <div class="label-row">
               <label class="modal-label" for="sandpile-initial-sand">
-                <span data-tooltip="Optional initial amount of sand to place at the center before starting the simulation. Leave at 0 to start empty and add 1 grain per generation.">Initial Sand (optional)</span>
+                <span data-tooltip="Optional initial amount of sand to place at the center before starting the simulation. Leave at 0 to start empty and add 1 grain per generation.">Initial Sand</span>
               </label>
               <span class="input-range-hint" id="sandpile-initial-sand-range" style="opacity: 1; display: flex; align-items: center; gap: 6px;">
-                <span style="color: rgb(0, 180, 200); font-size: 12px; font-weight: bold;">1 - 255</span>
+                <span style="color: rgb(0, 180, 200); font-size: 12px; font-weight: bold;">0 - 255</span>
                 <button id="company-logo-button-sand" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
                   <img src="src/assets/images/morpheus-tech.png" alt="Morpheus Tech" style="width: 18px; height: 18px; opacity: 1;" />
                 </button>
@@ -1675,8 +1671,7 @@
     padding: 12px 16px; 
     width: auto;
     min-width: 300px;
-    max-width: 500px;
-    max-width: 90vw; 
+    max-width: min(800px, 90vw); 
     max-height: 90vh; 
     font-size: 15px; 
     display: flex;
@@ -2049,13 +2044,14 @@
     flex: 1;
     min-height: 20px;
     padding: 8px 0;
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 16px;
+    line-height: 1.7;
     color: rgba(0, 220, 255, 1);
     text-align: left;
     transition: opacity 0.2s ease;
     font-weight: 500;
     text-shadow: 0 0 8px rgba(0, 220, 255, 0.5);
+    letter-spacing: 0.3px;
   }
   
   .tooltip-display:empty {
@@ -2144,7 +2140,7 @@
   /* Toggle button styling (replaces checkboxes) */
   .toggle-button {
     position: relative;
-    width: 80px;
+    width: 90px;
     height: 32px;
     background: rgba(25, 30, 40, 0.7);
     border: 1px solid rgba(100, 150, 200, 0.4);
@@ -2182,10 +2178,11 @@
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2);
     left: 3px;
+    z-index: 2;
   }
   
   .toggle-button.active .toggle-slider {
-    transform: translateX(48px);
+    transform: translateX(58px);
     background: rgba(180, 220, 255, 1);
     box-shadow: 0 2px 8px rgba(100, 150, 255, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3);
   }
@@ -2193,8 +2190,8 @@
   .toggle-label-off,
   .toggle-label-on {
     font-size: 11px;
-    font-weight: 600;
-    color: rgba(150, 170, 200, 0.6);
+    font-weight: 700;
+    color: rgba(100, 120, 150, 0.4);
     transition: color 0.3s ease;
     z-index: 1;
     pointer-events: none;
@@ -2203,20 +2200,27 @@
   }
   
   .toggle-label-off {
-    margin-left: 10px;
+    margin-left: 8px;
+    margin-right: auto;
+    min-width: 24px;
   }
   
   .toggle-label-on {
     margin-left: auto;
-    margin-right: 10px;
+    margin-right: 8px;
+    min-width: 24px;
   }
   
   .toggle-button.active .toggle-label-on {
-    color: rgba(200, 230, 255, 1);
+    color: rgba(255, 255, 255, 1);
+    text-shadow: 0 0 4px rgba(100, 150, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.5);
+    font-weight: 800;
   }
   
   .toggle-button:not(.active) .toggle-label-off {
-    color: rgba(200, 230, 255, 0.9);
+    color: rgba(255, 255, 255, 1);
+    text-shadow: 0 0 4px rgba(100, 150, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.5);
+    font-weight: 800;
   }
 </style>
 <script>
