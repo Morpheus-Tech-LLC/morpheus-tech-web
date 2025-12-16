@@ -444,14 +444,46 @@ export function initControls() {
   const companyLogoButtons = [
     document.getElementById('company-logo-button'),
     document.getElementById('company-logo-button-size'),
-    document.getElementById('company-logo-button-sand')
+    document.getElementById('company-logo-button-sand'),
+    document.getElementById('company-logo-button-top')
   ];
+  
+  // Functions to hide/show UI when company modal opens/closes
+  function hideUIForCompanyModal() {
+    const glassDisplayContainer = document.getElementById('glass-display-container');
+    const bottomControlsDisplay = document.getElementById('bottom-controls-display');
+    const additionalControlsDisplay = document.getElementById('additional-controls-display');
+    const simulationModeTitle = document.getElementById('simulation-mode-title');
+    const controlsWrapper = document.getElementById('controls-wrapper');
+    
+    if (glassDisplayContainer) glassDisplayContainer.style.display = 'none';
+    if (bottomControlsDisplay) bottomControlsDisplay.style.display = 'none';
+    if (additionalControlsDisplay) additionalControlsDisplay.style.display = 'none';
+    if (simulationModeTitle) simulationModeTitle.style.display = 'none';
+    if (controlsWrapper) controlsWrapper.style.display = 'none';
+  }
+  
+  function showUIAfterCompanyModal() {
+    const glassDisplayContainer = document.getElementById('glass-display-container');
+    const bottomControlsDisplay = document.getElementById('bottom-controls-display');
+    const additionalControlsDisplay = document.getElementById('additional-controls-display');
+    const simulationModeTitle = document.getElementById('simulation-mode-title');
+    const controlsWrapper = document.getElementById('controls-wrapper');
+    
+    if (glassDisplayContainer && state.showHUD) glassDisplayContainer.style.display = 'flex';
+    if (bottomControlsDisplay && state.showHUD) bottomControlsDisplay.style.display = 'grid';
+    if (additionalControlsDisplay && state.showHUD) additionalControlsDisplay.style.display = 'grid';
+    if (simulationModeTitle && state.showHUD) simulationModeTitle.style.display = 'block';
+    if (controlsWrapper) controlsWrapper.style.display = '';
+  }
   
   companyLogoButtons.forEach(button => {
     if (button && companyModal) {
       button.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
         companyModal.classList.remove('hidden');
+        hideUIForCompanyModal();
       });
     }
   });
@@ -459,12 +491,14 @@ export function initControls() {
   if (companyModalClose && companyModal) {
     companyModalClose.addEventListener('click', () => {
       companyModal.classList.add('hidden');
+      showUIAfterCompanyModal();
     });
     
     // Close modal when clicking outside
     companyModal.addEventListener('click', (e) => {
       if (e.target === companyModal) {
         companyModal.classList.add('hidden');
+        showUIAfterCompanyModal();
       }
     });
   }
