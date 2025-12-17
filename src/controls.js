@@ -6,6 +6,35 @@ let pendingShapeKey = null;
 let shapeDropdownPrevValue = null;
 let shapeDropdownOpened = false;
 
+// Helper functions for updating displays (must be outside initControls to be accessible from resetControlsUI)
+function updateDirectionDisplay() {
+  const directionValue = document.getElementById('bottom-direction-value');
+  if (directionValue) {
+    directionValue.textContent = state.isReversing ? 'rev' : 'fwd';
+  }
+}
+
+function updateStateDisplay() {
+  const stateValue = document.getElementById('bottom-state-value');
+  if (stateValue) {
+    stateValue.textContent = state.isPlaying ? 'play' : 'pause';
+  }
+}
+
+function updateSimulationModeTitle() {
+  const titleEl = document.getElementById('simulation-mode-title');
+  if (titleEl) {
+    const modeNames = {
+      gameOfLife: 'Game of Life',
+      rule30: 'Rule 30',
+      sineWave: 'Sine Wave',
+      sandpile: 'Sandpile'
+    };
+    let modeName = modeNames[state.simulationMode] || 'Game of Life';
+    titleEl.textContent = modeName;
+  }
+}
+
 // controls.js
 export function initControls() {
 
@@ -20,8 +49,13 @@ export function initControls() {
     const simGensEl = document.getElementById('sim-generations-value');
     if (simSizeEl) simSizeEl.textContent = String(state.sim_size);
     if (simGensEl) simGensEl.textContent = String(state.sim_generations);
+    // Always update title when controls are refreshed
+    updateSimulationModeTitle();
     return;
   }
+  
+  // Initialize simulation mode title on first load
+  updateSimulationModeTitle();
   // Initialize Simulation info displays on first load
   const simSizeOut = document.getElementById('sim-size-value');
   const simGensOut = document.getElementById('sim-generations-value');
@@ -100,9 +134,29 @@ export function initControls() {
     nextSection.classList.add('active');
     const newAxis = nextSection.dataset.value;
     state.sliceAxis = newAxis;
+    updateViewControlsDisplay();
     updatePoints();
   });
+  
+  // Initialize view controls display
+  updateViewControlsDisplay();
 
+  // Function to update view controls display
+  function updateViewControlsDisplay() {
+    const displayText = document.getElementById('view-controls-display-text');
+    const sliceSlider = document.getElementById('slice-index');
+    
+    if (displayText) {
+      if (state.viewMode === 'slice') {
+        const index = state.sliceIndex !== null ? state.sliceIndex : 0;
+        const maxIndex = sliceSlider ? (parseInt(sliceSlider.max) || state.sim_size - 1) : (state.sim_size - 1);
+        displayText.textContent = `${index} / ${maxIndex}`;
+      } else {
+        displayText.textContent = '-';
+      }
+    }
+  }
+  
   // --- Dual-State for Dimension View Button ---
   const dimensionToggleButton = document.getElementById('dualStateButton');
   dimensionToggleButton.addEventListener('click', () => {
@@ -124,17 +178,17 @@ export function initControls() {
     console.log("View Mode Change");
     console.log(newViewMode);
     state.viewMode = newViewMode;
+    updateViewControlsDisplay();
     updatePoints();
     updateTriStateVisibility();
   });
 
   // --- Slice Index Slider ---
   const sliceIndexSlider = document.getElementById('slice-index');
-  const sliceValueLabel = document.getElementById('slice-value');
   sliceIndexSlider.addEventListener('input', () => {
     const index = parseInt(sliceIndexSlider.value);
     state.sliceIndex = index;
-    sliceValueLabel.textContent = index;
+    updateViewControlsDisplay();
     if (state.viewMode === 'slice') updatePoints();
   });
 
@@ -154,6 +208,11 @@ export function initControls() {
   const rightArrow = document.getElementById("rightArrow");
   rightArrow.classList.add("active");
   let isReversing = false; // variable changes based on button
+
+  // Initialize step circles
+  const leftStepCircle = document.getElementById("leftStepCircle");
+  const rightStepCircle = document.getElementById("rightStepCircle");
+  if (rightStepCircle) rightStepCircle.classList.add("active");
   
   reverseBtn.addEventListener("click", () => {
     // isReversing = getPlaybackDirection
@@ -174,7 +233,23 @@ export function initControls() {
       leftArrow.classList.remove("active");
       rightArrow.classList.add("active");
     }
+    updateStepCircles();
+    updateDirectionDisplay();
     // updateDirectionIcon();
+  }
+
+  function updateStepCircles() {
+    const leftStepCircle = document.getElementById("leftStepCircle");
+    const rightStepCircle = document.getElementById("rightStepCircle");
+    if (leftStepCircle && rightStepCircle) {
+      if (state.isReversing) {
+        leftStepCircle.classList.add("active");
+        rightStepCircle.classList.remove("active");
+      } else {
+        leftStepCircle.classList.remove("active");
+        rightStepCircle.classList.add("active");
+      }
+    }
   }
 
   // Buttons
@@ -186,6 +261,7 @@ export function initControls() {
     playPauseIcon.className = next ? "pause" : "play";
     console.log("Playback Direction:", next);
     updateStepButtonVisibility();
+    updateStateDisplay();
   }
 
   // const reverseButton = document.getElementById("reverseButton");
@@ -197,8 +273,12 @@ export function initControls() {
       state.currentGen = (state.currentGen + 1) % state.simulationData.length;
     }
 
-    // update display
-    document.getElementById("gen").textContent = `${state.currentGen}`;
+    // update bottom display
+    const bottomGen = document.getElementById('bottom-gen');
+    if (bottomGen) {
+      const maxGen = state.simulationData && state.simulationData.length > 0 ? state.simulationData.length - 1 : 0;
+      bottomGen.textContent = `${state.currentGen} / ${maxGen}`;
+    }
   });
 
   updateStepButtonVisibility();
@@ -215,6 +295,30 @@ export function initControls() {
 
   // Ensure slice/controls visibility reflects current mode on load
   updateTriStateVisibility();
+  
+  // Initialize additional controls display
+  updateAdditionalControlsDisplay();
+  
+  // Initialize direction and state displays
+  updateDirectionDisplay();
+  updateStateDisplay();
+
+  // Function to update additional controls display
+  function updateAdditionalControlsDisplay() {
+    const gridStatus = document.getElementById('additional-grid-status');
+    const orientationStatus = document.getElementById('additional-orientation-status');
+    const cellSizeValue = document.getElementById('additional-cell-size-value');
+    
+    if (gridStatus) {
+      gridStatus.textContent = state.showWireframeGrid ? 'on' : 'off';
+    }
+    if (orientationStatus) {
+      orientationStatus.textContent = state.flipOrientation ? 'down' : 'up';
+    }
+    if (cellSizeValue) {
+      cellSizeValue.textContent = (state.cellSize ?? 1.2).toFixed(2);
+    }
+  }
 
   // Wireframe grid toggle
   const wireframeGridToggle = document.getElementById('wireframeGridToggle');
@@ -230,6 +334,7 @@ export function initControls() {
       if (state.simulationModel && state.simulationModel.wireframeGridHelper) {
         state.simulationModel.wireframeGridHelper.visible = state.showWireframeGrid;
       }
+      updateAdditionalControlsDisplay();
     });
     // Initialize icon state
     if (wireframeGridIcon) {
@@ -269,6 +374,38 @@ export function initControls() {
     }
   }
 
+  // Flip orientation toggle
+  const flipOrientationToggle = document.getElementById('flipOrientationToggle');
+  const flipOrientationUp = document.getElementById('flipOrientationUp');
+  const flipOrientationDown = document.getElementById('flipOrientationDown');
+  if (flipOrientationToggle) {
+    flipOrientationToggle.addEventListener('click', () => {
+      state.flipOrientation = !state.flipOrientation;
+      updateFlipOrientationDisplay();
+      updateAdditionalControlsDisplay();
+      // Update rendering to reflect the flip
+      if (state.simulationData) {
+        updatePoints();
+      }
+    });
+    // Initialize icon state
+    updateFlipOrientationDisplay();
+  }
+
+  function updateFlipOrientationDisplay() {
+    if (flipOrientationUp && flipOrientationDown) {
+      // When flipOrientation is false (up), highlight the up arrow
+      // When flipOrientation is true (down), highlight the down arrow
+      if (state.flipOrientation) {
+        flipOrientationUp.classList.remove('active');
+        flipOrientationDown.classList.add('active');
+      } else {
+        flipOrientationUp.classList.add('active');
+        flipOrientationDown.classList.remove('active');
+      }
+    }
+  }
+
   // Cell size slider
   const cellSizeSlider = document.getElementById('cellSizeSlider');
   if (cellSizeSlider) {
@@ -295,31 +432,133 @@ export function initControls() {
       if (state.simulationData && state.showCellWireframe) {
         updatePoints();
       }
+      updateAdditionalControlsDisplay();
+    });
+  }
+
+  // Company logo buttons - open company modal (set up globally)
+  const companyModal = document.getElementById('company-modal');
+  const companyModalClose = document.getElementById('company-modal-close');
+  
+  // Handle all company logo buttons
+  const companyLogoButtons = [
+    document.getElementById('company-logo-button'),
+    document.getElementById('company-logo-button-size'),
+    document.getElementById('company-logo-button-sand'),
+    document.getElementById('company-logo-button-top')
+  ];
+  
+  // Functions to hide/show UI when company modal opens/closes
+  function hideUIForCompanyModal() {
+    const glassDisplayContainer = document.getElementById('glass-display-container');
+    const bottomControlsDisplay = document.getElementById('bottom-controls-display');
+    const additionalControlsDisplay = document.getElementById('additional-controls-display');
+    const simulationModeTitle = document.getElementById('simulation-mode-title');
+    const controlsWrapper = document.getElementById('controls-wrapper');
+    
+    if (glassDisplayContainer) glassDisplayContainer.style.display = 'none';
+    if (bottomControlsDisplay) bottomControlsDisplay.style.display = 'none';
+    if (additionalControlsDisplay) additionalControlsDisplay.style.display = 'none';
+    if (simulationModeTitle) simulationModeTitle.style.display = 'none';
+    if (controlsWrapper) controlsWrapper.style.display = 'none';
+  }
+  
+  function showUIAfterCompanyModal() {
+    const glassDisplayContainer = document.getElementById('glass-display-container');
+    const bottomControlsDisplay = document.getElementById('bottom-controls-display');
+    const additionalControlsDisplay = document.getElementById('additional-controls-display');
+    const simulationModeTitle = document.getElementById('simulation-mode-title');
+    const controlsWrapper = document.getElementById('controls-wrapper');
+    
+    if (glassDisplayContainer && state.showHUD) glassDisplayContainer.style.display = 'flex';
+    if (bottomControlsDisplay && state.showHUD) bottomControlsDisplay.style.display = 'grid';
+    if (additionalControlsDisplay && state.showHUD) additionalControlsDisplay.style.display = 'grid';
+    if (simulationModeTitle && state.showHUD) simulationModeTitle.style.display = 'block';
+    if (controlsWrapper) controlsWrapper.style.display = '';
+  }
+  
+  companyLogoButtons.forEach(button => {
+    if (button && companyModal) {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        companyModal.classList.remove('hidden');
+        hideUIForCompanyModal();
+      });
+    }
+  });
+  
+  if (companyModalClose && companyModal) {
+    companyModalClose.addEventListener('click', () => {
+      companyModal.classList.add('hidden');
+      showUIAfterCompanyModal();
+    });
+    
+    // Close modal when clicking outside
+    companyModal.addEventListener('click', (e) => {
+      if (e.target === companyModal) {
+        companyModal.classList.add('hidden');
+        showUIAfterCompanyModal();
+      }
     });
   }
 
   // Flip orientation toggle (applies to all simulations)
-  const flipOrientationToggle = document.getElementById('flipOrientationToggle');
-  const flipOrientationIcon = document.getElementById('flipOrientationIcon');
-  if (flipOrientationToggle) {
-    flipOrientationToggle.addEventListener('click', () => {
-      state.flipOrientation = !state.flipOrientation;
-      // Update icon color - blue when active (flipped), white/gray when inactive
-      if (flipOrientationIcon) {
-        flipOrientationIcon.style.fill = state.flipOrientation ? '#4da3ff' : 'currentColor';
+  // Flip orientation toggle - handled below with updateFlipOrientationDisplay
+
+  // Mark controls as initialized to prevent duplicate bindings on re-init
+  // HUD toggle button
+  const hudToggleButton = document.getElementById('hudToggleButton');
+  const glassDisplayContainer = document.getElementById('glass-display-container');
+  const bottomControlsDisplay = document.getElementById('bottom-controls-display');
+  const additionalControlsDisplay = document.getElementById('additional-controls-display');
+  const simulationModeTitle = document.getElementById('simulation-mode-title');
+  
+  if (hudToggleButton && glassDisplayContainer) {
+    hudToggleButton.addEventListener('click', () => {
+      state.showHUD = !state.showHUD;
+      
+      // Toggle glass displays
+      glassDisplayContainer.style.display = state.showHUD ? 'flex' : 'none';
+      
+      // Toggle control panel info displays
+      if (bottomControlsDisplay) {
+        bottomControlsDisplay.style.display = state.showHUD ? 'grid' : 'none';
       }
-      // Update rendering to reflect the flip
-      if (state.simulationData) {
-        updatePoints();
+      if (additionalControlsDisplay) {
+        additionalControlsDisplay.style.display = state.showHUD ? 'grid' : 'none';
+      }
+      
+      // Toggle title
+      if (simulationModeTitle) {
+        simulationModeTitle.style.display = state.showHUD ? 'block' : 'none';
+      }
+      
+      // Update icon color - blue when visible, white/gray when hidden
+      const hudIcon = document.getElementById('hudToggleIcon');
+      if (hudIcon) {
+        hudIcon.style.stroke = state.showHUD ? '#4da3ff' : 'currentColor';
       }
     });
-    // Initialize icon state
-    if (flipOrientationIcon) {
-      flipOrientationIcon.style.fill = state.flipOrientation ? '#4da3ff' : 'currentColor';
+    
+    // Initialize icon state (HUD is visible by default)
+    const hudIcon = document.getElementById('hudToggleIcon');
+    if (hudIcon) {
+      hudIcon.style.stroke = '#4da3ff'; // Blue when visible
+    }
+    
+    // Initialize display state to match CSS (grid layout)
+    if (bottomControlsDisplay) {
+      bottomControlsDisplay.style.display = state.showHUD ? 'grid' : 'none';
+    }
+    if (additionalControlsDisplay) {
+      additionalControlsDisplay.style.display = state.showHUD ? 'grid' : 'none';
     }
   }
 
-  // Mark controls as initialized to prevent duplicate bindings on re-init
+  // Initialize simulation mode title
+  updateSimulationModeTitle();
+
   state.controlsInitialized = true;
 }
 
@@ -361,10 +600,10 @@ function openShapeModal() {
   const densityInput = document.getElementById('shape-density');
   const regionSizeInput = document.getElementById('shape-region-size');
   const regionSizeLabel = document.getElementById('shape-region-size-label');
+  const regionSizeRow = document.getElementById('shape-region-size-row');
   const modalShapeSelect = document.getElementById('modal-shape-select');
   const confirmBtn = document.getElementById('shapeConfirm');
   const cancelBtn = document.getElementById('shapeCancel');
-  const simulationModeSelect = document.getElementById('simulation-mode-select');
   const rulesSection = document.getElementById('rules-section');
   const seedSection = document.getElementById('seed-section');
   const simSizeLabel = document.getElementById('sim-size-label');
@@ -379,15 +618,37 @@ function openShapeModal() {
 
   if (!modal || !sizeInput || !densityInput || !confirmBtn || !cancelBtn) return;
 
-  // Initialize simulation inputs from state
-  if (simSizeInput) simSizeInput.value = `${state.sim_size}`;
-  if (simGenerationsInput) simGenerationsInput.value = `${state.sim_generations}`;
-  if (gridWrappingCheckbox) gridWrappingCheckbox.checked = state.gridWrapping ?? true;
-
-  // Initialize simulation mode dropdown
-  if (simulationModeSelect) {
-    simulationModeSelect.value = state.simulationMode || 'gameOfLife';
+  // Initialize simulation inputs from state - use mode-specific values if available
+  let currentMode = state.simulationMode || 'gameOfLife';
+  // If current mode is rule30_2D, convert to rule30 (we now use toggle instead)
+  if (currentMode === 'rule30_2D') {
+    currentMode = 'rule30';
+    state.simulationMode = 'rule30';
   }
+  const modeSize = state.modeValues[currentMode]?.size;
+  const modeGens = state.modeValues[currentMode]?.generations;
+  
+  if (simSizeInput) {
+    simSizeInput.value = `${modeSize !== undefined ? modeSize : state.sim_size}`;
+  }
+  if (simGenerationsInput) {
+    const gens = modeGens !== undefined ? modeGens : state.sim_generations;
+    const maxGens = currentMode === 'gameOfLife' ? Math.min(100, gens) : gens;
+    simGenerationsInput.value = `${maxGens}`;
+  }
+  if (gridWrappingCheckbox) {
+    gridWrappingCheckbox.checked = state.gridWrapping ?? true;
+  }
+
+  // Initialize simulation mode cards
+  const modeCards = document.querySelectorAll('.mode-card');
+  modeCards.forEach(card => {
+    if (card.dataset.mode === currentMode) {
+      card.classList.add('active');
+    } else {
+      card.classList.remove('active');
+    }
+  });
 
   const key = pendingShapeKey || state.shapeKey;
 
@@ -414,7 +675,53 @@ function openShapeModal() {
 
   // Function to update UI based on selected mode
   const boundaryRulesSection = document.getElementById('boundary-rules-section');
+  const rule302DToggleRow = document.getElementById('rule30-2d-toggle-row');
+  const rule302DCheckbox = document.getElementById('rule30-2d-checkbox');
+  const sandpileSection = document.getElementById('sandpile-section');
+  
+  // Initialize checkbox
+  if (rule302DCheckbox) {
+    // Set initial state
+    rule302DCheckbox.checked = state.useRule30_2D || false;
+    rule302DCheckbox.addEventListener('change', () => {
+      // Only update size calculation when Rule 30 mode is active
+      const activeCard = document.querySelector('.mode-card.active');
+      const selectedMode = activeCard ? activeCard.dataset.mode : 'gameOfLife';
+      if (selectedMode === 'rule30' && simGenerationsInput && simSizeInput) {
+        const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
+        const is2D = rule302DCheckbox.checked;
+        const calculatedSize = calculateRule30Size(generations, is2D ? 'rule30_2D' : 'rule30');
+        simSizeInput.value = calculatedSize;
+      }
+    });
+  }
+  
+  if (gridWrappingCheckbox) {
+    // Set initial state
+    gridWrappingCheckbox.checked = state.gridWrapping ?? true;
+  }
+  
   function updateModeUI(mode) {
+    // Store current values before switching modes
+    if (simSizeInput && simSizeInput.style.display !== 'none') {
+      const currentSize = parseInt(simSizeInput.value);
+      if (!isNaN(currentSize) && currentSize > 0) {
+        if (!state.modeValues[state.simulationMode]) {
+          state.modeValues[state.simulationMode] = {};
+        }
+        state.modeValues[state.simulationMode].size = currentSize;
+      }
+    }
+    if (simGenerationsInput && simGenerationsInput.style.display !== 'none') {
+      const currentGens = parseInt(simGenerationsInput.value);
+      if (!isNaN(currentGens) && currentGens > 0) {
+        if (!state.modeValues[state.simulationMode]) {
+          state.modeValues[state.simulationMode] = {};
+        }
+        state.modeValues[state.simulationMode].generations = currentGens;
+      }
+    }
+    
     if (mode === 'gameOfLife') {
       // Show rules section
       if (rulesSection) rulesSection.style.display = '';
@@ -423,28 +730,142 @@ function openShapeModal() {
       // Show seed section
       if (seedSection) seedSection.style.display = '';
       // Show size controls
+      const simSizeRow = document.getElementById('sim-size-row');
+      if (simSizeRow) simSizeRow.style.display = '';
       if (simSizeLabel) simSizeLabel.style.display = '';
-      if (simSizeInput) simSizeInput.style.display = '';
-      // Grid wrapping is now in boundary rules column, so it's handled there
+      if (simSizeInput) {
+        simSizeInput.style.display = '';
+        // Restore saved value or use default
+        const savedSize = state.modeValues.gameOfLife?.size;
+        simSizeInput.value = savedSize || '50';
+      }
+      // Restore saved generations or use default
+      if (simGenerationsInput) {
+        const savedGens = state.modeValues.gameOfLife?.generations;
+        const gens = savedGens || 100;
+        // Cap at 100 for Game of Life
+        simGenerationsInput.value = Math.min(100, Math.max(1, gens));
+        simGenerationsInput.max = '100';
+      }
+      // Update generations range hint for Game of Life mode
+      const simGenerationsRangeText = document.getElementById('sim-generations-range-text');
+      if (simGenerationsRangeText) simGenerationsRangeText.textContent = '1 - 100';
+      // Show size range hint for Game of Life mode
+      const simSizeRange = document.getElementById('sim-size-range');
+      if (simSizeRange) simSizeRange.style.display = 'flex';
+      // Show grid wrapping controls for Game of Life mode
+      if (gridWrappingLabel) gridWrappingLabel.style.display = '';
+      if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = '';
+      // Hide 2D toggle for Game of Life mode
+      if (rule302DToggleRow) rule302DToggleRow.style.display = 'none';
+      // Hide sandpile section for Game of Life mode
+      if (sandpileSection) sandpileSection.style.display = 'none';
       // Show all shape options
       if (modalShapeSelect) {
         Array.from(modalShapeSelect.options).forEach(opt => {
           opt.style.display = '';
         });
+        // Set default shape to cube for Game of Life if not already set
+        const currentShape = pendingShapeKey || state.shapeKey;
+        if (!currentShape || currentShape === 'rule30') {
+          modalShapeSelect.value = 'cube';
+          pendingShapeKey = 'cube';
+          // Trigger change handler to update labels and inputs
+          if (modalShapeSelect.onchange) {
+            const event = new Event('change', { bubbles: true });
+            Object.defineProperty(event, 'target', { value: modalShapeSelect, enumerable: true });
+            modalShapeSelect.onchange(event);
+          }
+        } else {
+          // Restore the current shape selection
+          modalShapeSelect.value = currentShape;
+        }
       }
-    } else {
-      // Hide rules section for Rule 30 modes
+    } else if (mode === 'sineWave') {
+      // Hide rules section for Sine Wave mode
       if (rulesSection) rulesSection.style.display = 'none';
-      // Hide boundary rules section for Rule 30 modes
+      // Hide boundary rules section for Sine Wave mode
       if (boundaryRulesSection) boundaryRulesSection.style.display = 'none';
-      // Hide seed section for Rule 30 modes
+      // Hide seed section for Sine Wave mode
       if (seedSection) seedSection.style.display = 'none';
-      // Hide size controls for Rule 30 modes
-      if (simSizeLabel) simSizeLabel.style.display = 'none';
-      if (simSizeInput) simSizeInput.style.display = 'none';
-      // Hide grid wrapping controls for Rule 30 modes
+      // Show size controls for Sine Wave (size affects wave resolution)
+      const simSizeRow = document.getElementById('sim-size-row');
+      if (simSizeRow) simSizeRow.style.display = '';
+      if (simSizeLabel) simSizeLabel.style.display = '';
+      if (simSizeInput) {
+        simSizeInput.style.display = '';
+        // Restore saved value or use default
+        const savedSize = state.modeValues.sineWave?.size;
+        simSizeInput.value = savedSize || '50';
+      }
+      // Restore saved generations or use default
+      if (simGenerationsInput) {
+        const savedGens = state.modeValues.sineWave?.generations;
+        const gens = savedGens || 100;
+        // Cap at 100 for Sine Wave
+        simGenerationsInput.value = Math.min(100, Math.max(1, gens));
+        simGenerationsInput.max = '100';
+      }
+      // Update generations range hint for Sine Wave mode
+      const simGenerationsRangeText = document.getElementById('sim-generations-range-text');
+      if (simGenerationsRangeText) simGenerationsRangeText.textContent = '1 - 100';
+      // Show size range hint for Sine Wave mode
+      const simSizeRange = document.getElementById('sim-size-range');
+      if (simSizeRange) simSizeRange.style.display = 'flex';
+      // Hide grid wrapping controls for Sine Wave mode
       if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
       if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = 'none';
+      // Hide 2D toggle for Sine Wave mode
+      if (rule302DToggleRow) rule302DToggleRow.style.display = 'none';
+      // Hide sandpile section for Sine Wave mode
+      if (sandpileSection) sandpileSection.style.display = 'none';
+      // Hide shape select for Sine Wave mode
+      if (modalShapeSelect) {
+        Array.from(modalShapeSelect.options).forEach(opt => {
+          opt.style.display = 'none';
+        });
+      }
+    } else if (mode === 'rule30') {
+      // Hide rules section for Rule 30 mode
+      if (rulesSection) rulesSection.style.display = 'none';
+      // Hide boundary rules section for Rule 30 mode
+      if (boundaryRulesSection) boundaryRulesSection.style.display = 'none';
+      // Hide seed section for Rule 30 mode
+      if (seedSection) seedSection.style.display = 'none';
+      // Restore saved generations or use default
+      if (simGenerationsInput) {
+        const savedGens = state.modeValues.rule30?.generations;
+        const gens = savedGens || 100;
+        // Cap at 100 for Rule 30
+        simGenerationsInput.value = Math.min(100, Math.max(1, gens));
+        simGenerationsInput.max = '100';
+      }
+      // Update generations range hint for Rule 30 mode
+      const simGenerationsRangeText = document.getElementById('sim-generations-range-text');
+      if (simGenerationsRangeText) simGenerationsRangeText.textContent = '1 - 100';
+      // Hide size controls for Rule 30 mode (auto-calculated)
+      const simSizeRow = document.getElementById('sim-size-row');
+      if (simSizeRow) simSizeRow.style.display = 'none';
+      if (simSizeLabel) simSizeLabel.style.display = 'none';
+      if (simSizeInput) simSizeInput.style.display = 'none';
+      // Hide size range hint for Rule 30 mode
+      const simSizeRange = document.getElementById('sim-size-range');
+      if (simSizeRange) simSizeRange.style.display = 'none';
+      // Hide grid wrapping controls for Rule 30 mode
+      if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
+      if (gridWrappingCheckbox) gridWrappingCheckbox.style.display = 'none';
+      // Show 2D checkbox for Rule 30
+      if (rule302DToggleRow) rule302DToggleRow.style.display = '';
+      // Initialize checkbox based on current state
+      if (rule302DCheckbox) {
+        rule302DCheckbox.checked = state.useRule30_2D || false;
+        // Update size calculation when checkbox is initialized
+        if (simGenerationsInput && simSizeInput) {
+          const generations = Math.max(1, parseInt(simGenerationsInput.value) || 100);
+          const calculatedSize = calculateRule30Size(generations, state.useRule30_2D ? 'rule30_2D' : 'rule30');
+          simSizeInput.value = calculatedSize;
+        }
+      }
       // Only show rule30 shape option (though seed section is hidden anyway)
       if (modalShapeSelect) {
         Array.from(modalShapeSelect.options).forEach(opt => {
@@ -461,22 +882,103 @@ function openShapeModal() {
         }
       }
       
-      // Auto-calculate and update size based on generations
-      if (simGenerationsInput && simSizeInput) {
-        const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
-        const calculatedSize = calculateRule30Size(generations, mode);
-        simSizeInput.value = calculatedSize;
+      // Auto-calculate and update size based on generations and 2D checkbox
+      if (simGenerationsInput && simSizeInput && rule302DCheckbox) {
+        const updateSize = () => {
+          const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
+          const is2D = rule302DCheckbox.checked;
+          const calculatedSize = calculateRule30Size(generations, is2D ? 'rule30_2D' : 'rule30');
+          simSizeInput.value = calculatedSize;
+        };
+        updateSize();
+        // Update size when checkbox changes (already handled in change listener above)
       }
+      // Hide sandpile section for Rule 30 mode
+      if (sandpileSection) sandpileSection.style.display = 'none';
+    } else if (mode === 'sandpile') {
+      // Hide rules section for Sandpile mode
+      if (rulesSection) rulesSection.style.display = 'none';
+      // Hide boundary rules section for Sandpile mode
+      if (boundaryRulesSection) boundaryRulesSection.style.display = 'none';
+      // Hide seed section for Sandpile mode
+      if (seedSection) seedSection.style.display = 'none';
+      // Show size controls for Sandpile mode
+      const simSizeRow = document.getElementById('sim-size-row');
+      if (simSizeRow) simSizeRow.style.display = '';
+      if (simSizeLabel) simSizeLabel.style.display = '';
+      if (simSizeInput) {
+        simSizeInput.style.display = '';
+        // Restore saved value or use default
+        const savedSize = state.modeValues.sandpile?.size;
+        simSizeInput.value = savedSize || '50';
+      }
+      // Restore saved generations or use default
+      if (simGenerationsInput) {
+        const savedGens = state.modeValues.sandpile?.generations;
+        simGenerationsInput.value = savedGens || '1000';
+        // Remove max limit for sandpile (can go above 100)
+        simGenerationsInput.removeAttribute('max');
+      }
+      // Update generations range hint for Sandpile mode
+      const simGenerationsRangeText = document.getElementById('sim-generations-range-text');
+      if (simGenerationsRangeText) simGenerationsRangeText.textContent = '1 - 1000';
+      // Show size range hint for Sandpile mode
+      const simSizeRange = document.getElementById('sim-size-range');
+      if (simSizeRange) simSizeRange.style.display = 'flex';
+      // Show sandpile parameters section (only for sandpile mode)
+      if (sandpileSection) sandpileSection.style.display = '';
+      // Initialize sandpile parameter inputs from state
+      const initialSandInput = document.getElementById('sandpile-initial-sand');
+      if (initialSandInput && !initialSandInput.value) {
+        initialSandInput.value = state.sandpileParams?.initialSand || 0;
+      }
+      // Threshold is fixed at 4, not user-adjustable
+      // Hide grid wrapping controls for Sandpile mode (wrapping is handled in evolution)
+      if (gridWrappingLabel) gridWrappingLabel.style.display = 'none';
+      if (gridWrappingCheckbox) {
+        gridWrappingCheckbox.style.display = 'none';
+      }
+      // Hide 2D toggle for Sandpile mode
+      if (rule302DToggleRow) rule302DToggleRow.style.display = 'none';
+      // Hide shape select for Sandpile mode
+      if (modalShapeSelect) {
+        Array.from(modalShapeSelect.options).forEach(opt => {
+          opt.style.display = 'none';
+        });
+      }
+    } else {
+      // Hide 2D toggle for non-Rule 30 modes
+      if (rule302DToggleRow) rule302DToggleRow.style.display = 'none';
+      // Hide sandpile section for other modes
+      if (sandpileSection) sandpileSection.style.display = 'none';
     }
   }
   
-  // Listen for generations input changes when Rule 30 is selected
+  // Listen for generations input changes
   if (simGenerationsInput) {
     const generationsChangeHandler = () => {
-      const selectedMode = simulationModeSelect ? simulationModeSelect.value : 'gameOfLife';
-      if (selectedMode === 'rule30' || selectedMode === 'rule30_2D') {
+      const activeCard = document.querySelector('.mode-card.active');
+      const selectedMode = activeCard ? activeCard.dataset.mode : 'gameOfLife';
+      
+      // Enforce max of 100 for Game of Life, Rule 30, and Sine Wave
+      if (selectedMode === 'gameOfLife' || selectedMode === 'rule30' || selectedMode === 'sineWave') {
+        const currentValue = parseInt(simGenerationsInput.value);
+        if (!isNaN(currentValue) && currentValue > 100) {
+          simGenerationsInput.value = '100';
+        }
+      }
+      
+      if (selectedMode === 'rule30' && rule302DCheckbox) {
+        const generations = Math.max(1, Math.min(100, parseInt(simGenerationsInput.value) || state.sim_generations));
+        const is2D = rule302DCheckbox.checked;
+        const calculatedSize = calculateRule30Size(generations, is2D ? 'rule30_2D' : 'rule30');
+        if (simSizeInput) {
+          simSizeInput.value = calculatedSize;
+        }
+      } else if (selectedMode === 'sandpile') {
         const generations = Math.max(1, parseInt(simGenerationsInput.value) || state.sim_generations);
-        const calculatedSize = calculateRule30Size(generations, selectedMode);
+        // Auto-calculate size based on generations (sand spreads roughly as sqrt(generations))
+        const calculatedSize = Math.max(20, Math.min(200, Math.ceil(Math.sqrt(generations) * 2.5)));
         if (simSizeInput) {
           simSizeInput.value = calculatedSize;
         }
@@ -484,19 +986,56 @@ function openShapeModal() {
     };
     simGenerationsInput.addEventListener('input', generationsChangeHandler);
     simGenerationsInput.addEventListener('change', generationsChangeHandler);
+    // Toggle change is handled in the click listener above
   }
 
   // Set initial UI state
   let modeChangeHandler = null;
-  if (simulationModeSelect) {
-    updateModeUI(simulationModeSelect.value);
-    
-    // Listen for mode changes
-    modeChangeHandler = (e) => {
-      updateModeUI(e.target.value);
-    };
-    simulationModeSelect.addEventListener('change', modeChangeHandler);
+  updateModeUI(currentMode);
+  
+  // Mode descriptions
+  const modeDescriptions = {
+    gameOfLife: 'A classic cellular automaton extended to three dimensions. Cells evolve based on the number of living neighbors, creating complex patterns of growth, stability, and decay in 3D space.',
+    rule30: 'A one-dimensional cellular automaton that generates complex, seemingly random patterns from simple rules. Each cell\'s state depends on its left, center, and right neighbors, producing fractal-like structures.',
+    sineWave: 'A continuous mathematical function visualized in discrete 3D space. Represents periodic oscillations and wave patterns, demonstrating how continuous phenomena can be sampled and displayed on a grid.',
+    sandpile: 'The Abelian Sandpile Model, a self-organized criticality system. Sand grains accumulate and topple when reaching a threshold, creating cascading avalanches that exhibit power-law distributions and fractal patterns.'
+  };
+  
+  // Function to update mode description
+  const modeDescriptionEl = document.getElementById('mode-description');
+  function updateModeDescription(mode) {
+    if (modeDescriptionEl) {
+      modeDescriptionEl.innerHTML = `<p>${modeDescriptions[mode] || modeDescriptions.gameOfLife}</p>`;
+    }
   }
+  
+  // Handle mode card clicks
+  modeCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const selectedMode = card.dataset.mode;
+      
+      // Update active state
+      modeCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      
+      // Update description
+      updateModeDescription(selectedMode);
+      
+      // Update UI based on selected mode
+      updateModeUI(selectedMode);
+    });
+  });
+  
+  // Set initial description
+  updateModeDescription(currentMode);
+  
+  // Store mode change handler for cleanup (for compatibility)
+  modeChangeHandler = () => {
+    const activeCard = document.querySelector('.mode-card.active');
+    if (activeCard) {
+      updateModeUI(activeCard.dataset.mode);
+    }
+  };
   
   // Function to update labels based on selected shape
   function updateShapeLabels(shapeKey) {
@@ -512,76 +1051,93 @@ function openShapeModal() {
     if (shapeKey === 'perlin') {
       // Perlin noise labels
       if (sizeLabelText) {
-        sizeLabelText.textContent = `Noise Detail (1 - 100)`;
+        sizeLabelText.textContent = `Noise Detail`;
       }
       if (sizeInfoIcon) {
         sizeInfoIcon.setAttribute('data-tooltip', 'Controls noise frequency detail. Lower values (1-10) create smoother, larger patterns. Medium values (10-30) create moderate detail. Higher values (30-100) create fine-grained, detailed patterns.');
       }
+      // Update range hint
+      const shapeSizeRangeHint = document.getElementById('shape-size-range');
+      if (shapeSizeRangeHint) {
+        shapeSizeRangeHint.textContent = `1 - 100`;
+      }
       if (densityLabelText) {
-        densityLabelText.textContent = `Fill Amount (0 - 1)`;
+        densityLabelText.textContent = `Fill Amount`;
       }
       if (densityInfoIcon) {
         densityInfoIcon.setAttribute('data-tooltip', 'Controls how many cells are alive. 0 = few cells, 1 = many cells. Higher values create denser patterns.');
       }
       // Show region size input for Perlin
-      if (regionSizeLabel) {
-        regionSizeLabel.classList.remove('hidden');
-        if (regionSizeLabelText) {
-          regionSizeLabelText.textContent = `Region Size (max ${maxSim})`;
-        }
-        if (regionSizeInfoIcon) {
-          regionSizeInfoIcon.setAttribute('data-tooltip', 'Size of the centered region where noise is generated. Smaller values create patterns in the center only.');
-        }
+      if (regionSizeRow) {
+        regionSizeRow.classList.remove('hidden');
+        regionSizeRow.style.display = '';
+      }
+      if (regionSizeLabelText) {
+        regionSizeLabelText.textContent = `Region Size (max ${maxSim})`;
+      }
+      if (regionSizeInfoIcon) {
+        regionSizeInfoIcon.setAttribute('data-tooltip', 'Size of the centered region where noise is generated. Smaller values create patterns in the center only.');
       }
       if (regionSizeInput) {
-        regionSizeInput.classList.remove('hidden');
         regionSizeInput.max = `${maxSim}`;
       }
     } else if (shapeKey === 'worley') {
       // Worley noise labels
       if (sizeLabelText) {
-        sizeLabelText.textContent = `Feature Points (1 - 50)`;
+        sizeLabelText.textContent = `Feature Points`;
       }
       if (sizeInfoIcon) {
         sizeInfoIcon.setAttribute('data-tooltip', 'Approximate number of feature points (cell centers) that generate the pattern. Uses cube root, so values like 8 or 27 work best. More points create more complex cellular structures.');
       }
+      // Update range hint
+      const shapeSizeRangeHint = document.getElementById('shape-size-range');
+      if (shapeSizeRangeHint) {
+        shapeSizeRangeHint.textContent = `1 - 50`;
+      }
       if (densityLabelText) {
-        densityLabelText.textContent = `Activation Distance (0 - 1)`;
+        densityLabelText.textContent = `Activation Distance`;
       }
       if (densityInfoIcon) {
         densityInfoIcon.setAttribute('data-tooltip', 'How far from feature points cells become alive. Lower values = cells only near feature points. Higher values = cells fill more space.');
       }
       // Show region size input for Worley
-      if (regionSizeLabel) {
-        regionSizeLabel.classList.remove('hidden');
-        if (regionSizeLabelText) {
-          regionSizeLabelText.textContent = `Region Size (max ${maxSim})`;
-        }
-        if (regionSizeInfoIcon) {
-          regionSizeInfoIcon.setAttribute('data-tooltip', 'Size of the centered region where noise is generated. Smaller values create patterns in the center only.');
-        }
+      if (regionSizeRow) {
+        regionSizeRow.classList.remove('hidden');
+        regionSizeRow.style.display = '';
+      }
+      if (regionSizeLabelText) {
+        regionSizeLabelText.textContent = `Region Size (max ${maxSim})`;
+      }
+      if (regionSizeInfoIcon) {
+        regionSizeInfoIcon.setAttribute('data-tooltip', 'Size of the centered region where noise is generated. Smaller values create patterns in the center only.');
       }
       if (regionSizeInput) {
-        regionSizeInput.classList.remove('hidden');
         regionSizeInput.max = `${maxSim}`;
       }
     } else {
       // Standard shape labels (cube, tetrahedron, octahedron)
       if (sizeLabelText) {
-        sizeLabelText.textContent = `Size (max ${maxSim})`;
+        sizeLabelText.textContent = `Size`;
       }
       if (sizeInfoIcon) {
         sizeInfoIcon.setAttribute('data-tooltip', 'Size of the shape in grid cells.');
       }
+      // Update range hint - will be updated by updateShapeSizeMax
+      const shapeSizeRangeHint = document.getElementById('shape-size-range');
+      if (shapeSizeRangeHint) {
+        shapeSizeRangeHint.textContent = `1 - ${maxSim}`;
+      }
       if (densityLabelText) {
-        densityLabelText.textContent = 'Density (0 - 1)';
+        densityLabelText.textContent = 'Density';
       }
       if (densityInfoIcon) {
         densityInfoIcon.setAttribute('data-tooltip', 'Probability that each cell in the shape is alive. 1 = all cells filled, 0 = no cells.');
       }
       // Hide region size input
-      if (regionSizeLabel) regionSizeLabel.classList.add('hidden');
-      if (regionSizeInput) regionSizeInput.classList.add('hidden');
+      if (regionSizeRow) {
+        regionSizeRow.classList.add('hidden');
+        regionSizeRow.style.display = 'none';
+      }
     }
   }
 
@@ -593,31 +1149,39 @@ function openShapeModal() {
     // Perlin noise detail has a fixed max of 100 (maps to noiseScale 0.5)
     // Worley feature points has a fixed max of 50 (creates 3-4 cells per dimension)
     // Other shapes use maxSim
+    let maxVal;
     if (currKey === 'perlin') {
       sizeInput.max = '100';
+      maxVal = 100;
     } else if (currKey === 'worley') {
       sizeInput.max = '50';
+      maxVal = 50;
     } else {
       sizeInput.max = `${maxSim}`;
+      maxVal = maxSim;
+    }
+    
+    // Update range hint for shape size
+    const shapeSizeRangeHint = document.getElementById('shape-size-range');
+    if (shapeSizeRangeHint) {
+      shapeSizeRangeHint.textContent = `1 - ${maxVal}`;
     }
     
     if (regionSizeInput) {
       regionSizeInput.max = `${maxSim}`;
       const currRegionSize = Math.max(1, parseInt(regionSizeInput.value || '1'));
       if (currRegionSize > maxSim) regionSizeInput.value = `${maxSim}`;
+      
+      // Update range hint for region size
+      const regionSizeRangeHint = document.getElementById('shape-region-size-range');
+      if (regionSizeRangeHint) {
+        regionSizeRangeHint.textContent = `1 - ${maxSim}`;
+      }
     }
     
     // Update labels with current max
     updateShapeLabels(currKey);
     const curr = Math.max(1, parseInt(sizeInput.value || '1'));
-    let maxVal;
-    if (currKey === 'perlin') {
-      maxVal = 100;
-    } else if (currKey === 'worley') {
-      maxVal = 50;
-    } else {
-      maxVal = maxSim;
-    }
     if (curr > maxVal) sizeInput.value = `${maxVal}`;
   }
   updateShapeSizeMax();
@@ -659,7 +1223,10 @@ function openShapeModal() {
   function updateBoundaryRulesVisibility() {
     if (boundaryRulesInputs && gridWrappingCheckbox) {
       // Show boundary rules when wrapping is OFF (checkbox unchecked)
-      boundaryRulesInputs.style.display = gridWrappingCheckbox.checked ? 'none' : 'block';
+      const shouldShow = !gridWrappingCheckbox.checked;
+      boundaryRulesInputs.style.display = shouldShow ? 'block' : 'none';
+      // Don't hide the entire section - it should always be visible in Game of Life mode
+      // The section visibility is controlled by updateModeUI
     }
   }
   
@@ -724,7 +1291,14 @@ function openShapeModal() {
     updateShapeLabels(key);
     modalShapeSelect.onchange = (e) => {
       pendingShapeKey = e.target.value;
-      updateShapeLabels(e.target.value);
+      const newShapeKey = e.target.value;
+      updateShapeLabels(newShapeKey);
+      
+      // Hide region size if not Perlin or Worley
+      if (newShapeKey !== 'perlin' && newShapeKey !== 'worley' && regionSizeRow) {
+        regionSizeRow.classList.add('hidden');
+        regionSizeRow.style.display = 'none';
+      }
       // Update density when switching shapes - use saved value or default to 0.3
       if (densityInput) {
         const newKey = e.target.value;
@@ -769,19 +1343,32 @@ function openShapeModal() {
   
   // Initialize region size input for Perlin and Worley
   // This must happen after updateShapeLabels to ensure the input is visible
-  if ((key === 'perlin' || key === 'worley') && regionSizeInput) {
-    // Use params.regionSize if it exists and is valid, otherwise default to 25
-    let initRegionSize = 25; // Default to 25
-    if (params && params.regionSize !== undefined && params.regionSize !== null) {
-      const parsedRegionSize = parseInt(params.regionSize);
-      if (!isNaN(parsedRegionSize) && parsedRegionSize > 0) {
-        initRegionSize = Math.min(initMaxSim, Math.max(1, parsedRegionSize));
-      }
+  // Only show and initialize if the current shape is Perlin or Worley
+  if (key === 'perlin' || key === 'worley') {
+    if (regionSizeRow) {
+      regionSizeRow.classList.remove('hidden');
+      regionSizeRow.style.display = '';
     }
-    // Ensure it doesn't exceed max and is at least 1
-    initRegionSize = Math.min(initMaxSim, Math.max(1, initRegionSize));
-    // Set the value - this should work now that labels are updated and input is visible
-    regionSizeInput.value = `${initRegionSize}`;
+    if (regionSizeInput) {
+      // Use params.regionSize if it exists and is valid, otherwise default to 25
+      let initRegionSize = 25; // Default to 25
+      if (params && params.regionSize !== undefined && params.regionSize !== null) {
+        const parsedRegionSize = parseInt(params.regionSize);
+        if (!isNaN(parsedRegionSize) && parsedRegionSize > 0) {
+          initRegionSize = Math.min(initMaxSim, Math.max(1, parsedRegionSize));
+        }
+      }
+      // Ensure it doesn't exceed max and is at least 1
+      initRegionSize = Math.min(initMaxSim, Math.max(1, initRegionSize));
+      // Set the value - this should work now that labels are updated and input is visible
+      regionSizeInput.value = `${initRegionSize}`;
+    }
+  } else {
+    // Hide region size for non-Perlin/Worley shapes
+    if (regionSizeRow) {
+      regionSizeRow.classList.add('hidden');
+      regionSizeRow.style.display = 'none';
+    }
   }
 
   if (simSizeInput) simSizeInput.addEventListener('input', updateShapeSizeMax);
@@ -798,39 +1385,88 @@ function openShapeModal() {
   };
 
   const onConfirm = async () => {
-    // Get selected simulation mode
-    const selectedMode = simulationModeSelect ? simulationModeSelect.value : 'gameOfLife';
+    // Get selected simulation mode from active card
+    const activeCard = document.querySelector('.mode-card.active');
+    const selectedMode = activeCard ? activeCard.dataset.mode : 'gameOfLife';
     state.simulationMode = selectedMode;
+    updateSimulationModeTitle();
 
-    // Set Rule 30 flags based on mode
+    // Set Rule 30 and Sine Wave flags based on mode
     if (selectedMode === 'rule30') {
-      state.useRule30 = true;
-      state.useRule30_2D = false;
+      // Read 2D checkbox value
+      const is2D = rule302DCheckbox ? rule302DCheckbox.checked : false;
+      state.useRule30 = !is2D;
+      state.useRule30_2D = is2D;
+      state.useSineWave = false;
+      state.useSandpile = false;
       state.shapeKey = 'rule30';
-      // Auto-calculate size for Rule 30 based on generations
+      // Auto-calculate size for Rule 30 based on generations and 2D mode
       const generations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
-      const calculatedSize = calculateRule30Size(generations, 'rule30');
+      const calculatedSize = calculateRule30Size(generations, is2D ? 'rule30_2D' : 'rule30');
       if (simSizeInput) {
         simSizeInput.value = calculatedSize;
       }
-    } else if (selectedMode === 'rule30_2D') {
+    } else if (selectedMode === 'sineWave') {
       state.useRule30 = false;
-      state.useRule30_2D = true;
-      state.shapeKey = 'rule30';
-      // Auto-calculate size for Rule 30 (3D) based on generations
-      const generations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
-      const calculatedSize = calculateRule30Size(generations, 'rule30_2D');
-      if (simSizeInput) {
-        simSizeInput.value = calculatedSize;
+      state.useRule30_2D = false;
+      state.useSineWave = true;
+      state.useSandpile = false;
+    } else if (selectedMode === 'sandpile') {
+      state.useRule30 = false;
+      state.useRule30_2D = false;
+      state.useSineWave = false;
+      state.useSandpile = true;
+      // Read sandpile parameters
+      const initialSandInput = document.getElementById('sandpile-initial-sand');
+      
+      if (initialSandInput) {
+        state.sandpileParams.initialSand = Math.max(0, Math.min(255, parseInt(initialSandInput.value) || 0));
       }
+      // Threshold is fixed at 4, not user-adjustable
+      state.sandpileParams.threshold = 4;
     } else {
       state.useRule30 = false;
       state.useRule30_2D = false;
+      state.useSineWave = false;
+      state.useSandpile = false;
+    }
+    
+    // For Game of Life, ensure defaults are set
+    if (selectedMode === 'gameOfLife') {
+      // Set default shape to cube if not set
+      if (modalShapeSelect && (!modalShapeSelect.value || modalShapeSelect.value === 'rule30')) {
+        modalShapeSelect.value = 'cube';
+        pendingShapeKey = 'cube';
+      }
+    }
+    
+    // Store values for current mode before updating
+    if (simSizeInput && simSizeInput.style.display !== 'none') {
+      const currentSize = parseInt(simSizeInput.value);
+      if (!isNaN(currentSize) && currentSize > 0) {
+        if (!state.modeValues[selectedMode]) {
+          state.modeValues[selectedMode] = {};
+        }
+        state.modeValues[selectedMode].size = currentSize;
+      }
+    }
+    if (simGenerationsInput) {
+      const currentGens = parseInt(simGenerationsInput.value);
+      if (!isNaN(currentGens) && currentGens > 0) {
+        if (!state.modeValues[selectedMode]) {
+          state.modeValues[selectedMode] = {};
+        }
+        state.modeValues[selectedMode].generations = currentGens;
+      }
     }
     
     // Compute proposed sim size/gens first so clamping uses new size
-    const newSimSize = simSizeInput ? Math.max(1, parseInt(simSizeInput.value)) : state.sim_size;
-    const newSimGenerations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
+    const newSimSize = simSizeInput ? Math.max(1, Math.min(200, parseInt(simSizeInput.value))) : state.sim_size;
+    // Cap generations at 100 for Game of Life mode
+    let newSimGenerations = simGenerationsInput ? Math.max(1, parseInt(simGenerationsInput.value)) : state.sim_generations;
+    if (selectedMode === 'gameOfLife') {
+      newSimGenerations = Math.min(100, Math.max(1, newSimGenerations));
+    }
     const newGridWrapping = gridWrappingCheckbox ? gridWrappingCheckbox.checked : state.gridWrapping ?? true;
     const size = Math.min(newSimSize, Math.max(1, parseInt(sizeInput.value)));
     const density = Math.min(1, Math.max(0, parseFloat(densityInput.value)));
@@ -952,9 +1588,10 @@ function openShapeModal() {
     if (densityOut && selectedMode === 'gameOfLife') densityOut.textContent = `${density.toFixed(2)}`;
     if (shapeOut) {
       if (selectedMode === 'rule30') {
-        shapeOut.textContent = 'rule30';
-      } else if (selectedMode === 'rule30_2D') {
-        shapeOut.textContent = 'rule30 (2D)';
+        const is2D = rule302DCheckbox ? rule302DCheckbox.checked : false;
+        shapeOut.textContent = is2D ? 'rule30 (2D)' : 'rule30';
+      } else if (selectedMode === 'sineWave') {
+        shapeOut.textContent = 'sine wave';
       } else {
         shapeOut.textContent = state.shapeKey;
       }
@@ -980,9 +1617,7 @@ function openShapeModal() {
   function cleanup() {
     confirmBtn.removeEventListener('click', onConfirm);
     cancelBtn.removeEventListener('click', onCancel);
-    if (simulationModeSelect && modeChangeHandler) {
-      simulationModeSelect.removeEventListener('change', modeChangeHandler);
-    }
+    // Mode cards don't need cleanup as they're recreated each time
   }
 
   confirmBtn.addEventListener('click', onConfirm);
@@ -1060,6 +1695,14 @@ function stringifyRule(arr) {
 }
 
 function resetControlsUI() {
+  // Reset state variables to initial values
+  state.viewMode = 'full';
+  state.sliceAxis = 'x';
+  state.sliceIndex = Math.floor((state.sim_size - 1) / 2);
+  state.currentGen = 0;
+  state.isPlaying = false;
+  state.isReversing = false;
+
   // 3D/2D button → set to 3D (full)
   const dual = document.getElementById('dualStateButton');
   if (dual) {
@@ -1090,28 +1733,38 @@ function resetControlsUI() {
 
   // Reset slice index to mid and label
   const slider = document.getElementById('slice-index');
-  const label = document.getElementById('slice-value');
   if (slider) {
-    slider.max = state.sim_size;
-    const mid = Math.floor(state.sim_size / 2);
+    slider.max = state.sim_size - 1;
+    const mid = Math.floor((state.sim_size - 1) / 2);
     slider.value = `${mid}`;
-    if (label) label.textContent = `${mid}`;
   }
 
   // Reset play/pause to paused and enable step
   const playPauseIcon = document.getElementById('playPauseIcon');
   if (playPauseIcon) playPauseIcon.className = 'play';
-  state.isPlaying = false;
   updateStepButtonVisibility();
+  updateStateDisplay();
 
   // Reset reverse (right arrow active only)
   const leftArrow = document.getElementById('leftArrow');
   const rightArrow = document.getElementById('rightArrow');
   if (leftArrow) leftArrow.classList.remove('active');
   if (rightArrow) rightArrow.classList.add('active');
-  state.isReversing = false;
+  updateDirectionDisplay();
+
+  // Reset step circles (right circle active only)
+  const leftStepCircle = document.getElementById('leftStepCircle');
+  const rightStepCircle = document.getElementById('rightStepCircle');
+  if (leftStepCircle) leftStepCircle.classList.remove('active');
+  if (rightStepCircle) rightStepCircle.classList.add('active');
 
   // Reset generation display
-  const genEl = document.getElementById('gen');
-  if (genEl) genEl.textContent = '0';
+  const bottomGen = document.getElementById('bottom-gen');
+  if (bottomGen) {
+    const maxGen = state.simulationData && state.simulationData.length > 0 ? state.simulationData.length - 1 : 0;
+    bottomGen.textContent = `0 / ${maxGen}`;
+  }
+
+  // Update tristate button visibility based on view mode
+  updateTriStateVisibility();
 }

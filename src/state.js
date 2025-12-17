@@ -59,10 +59,18 @@ export const state = {
   gridWrapping: true,
   showWireframeGrid: false,
   showCellWireframe: false,
+  showHUD: true, // HUD displays are visible by default
   cellSize: 1.2, // Size of cells (points and wireframe cubes)
   scene: null,
   renderer: null,
   camera: null,
+  controls: null,
+  autoRotateActive: false,
+  userHasInteracted: false,
+  autoRotateStartTime: null,
+  autoRotateInitialPosition: null,
+  autoRotateInitialRadius: null,
+  autoRotateInitialAngle: null,
   simulationData: null,
   simulationModel: null,
   clockData: null,
@@ -71,7 +79,21 @@ export const state = {
   simulationMode: "gameOfLife",
   useRule30: false,
   useRule30_2D: false,
+  useSineWave: false,
+  useSandpile: false,
   flipOrientation: false,
+  sandpileParams: {
+    initialSand: 0, // Optional initial sand at center (0 = start empty, 1 grain added per generation)
+    threshold: 4, // Threshold for toppling (fixed at 4, not user-adjustable)
+  },
+  // Store per-mode values for size and generations
+  modeValues: {
+    gameOfLife: { size: 50, generations: 100 },
+    sineWave: { size: 50, generations: 100 },
+    rule30: { size: null, generations: 100 }, // size is auto-calculated
+    sandpile: { size: 50, generations: 1000 },
+    monteCarlo: { size: 50, generations: 100 }
+  },
   shapes: {
     perlin: perlinShape(10, 0.3, 30),
     cube: cubeShape(5, 1),
